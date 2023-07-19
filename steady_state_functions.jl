@@ -40,17 +40,3 @@ function steady_state_and_valid(
     a .^ 2 .+ b ^ 2 .+ c .^ 2
 end
 
-omega_inv = 1 ./ (1 .- protection_acquisition)
-
-using NonlinearSolve, StaticArrays
-
-u0 = @SVector BigFloat[rand() for x in 1:n_neut_steps]
-
-fn_solve(inf_vec, p) = steady_state_and_valid(inf_vec, B, M, omega_inv, k, lambda, beta, gamma, sigma)
-
-probN = NonlinearProblem(fn_solve, u0)
-solver = solve(probN, NewtonRaphson(), abstol = 1e-16)
-
-
-
-fn_solve(solver.u, 1)

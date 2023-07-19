@@ -1,29 +1,47 @@
 
+struct model_parameters
+    c_max::Int32
+    k::Int32
 
+    beta::Float64
+    sigma::Float64
+    gamma::Float64
 
-const neuts_max = 8
-const k = 4
-const n_neut_steps = neuts_max * k
+    lambda::Float64
 
-const n_compartments = 3
+    b::Float64
+    m::Float64
 
+    c_jump_dist::Distribution
 
-const n_pop = 1.0
-const n_inf_0 = 1.0 / 1000
+    N::Int32
 
-const c_sus = 1
-const c_exp = 2
-const c_inf = 3
+    c_levels::Vector{Float64}
+    p_acq::Vector{Float64}
+end
 
+function make_model_parameters(;
+    c_max, k,
 
-const beta = 1.0
-const sigma = 1.0
-const gamma = 0.5
+    beta, sigma, gamma, lambda,
 
+    b, m,
 
-const lambda = 0.05
+    c_jump_dist
+)
+    N = c_max * k
+    c_levels = collect(1:N) / k
+    p_acq = 1 ./ (1 .+ exp.(-m .* (c_levels .- b)))
 
-const neut_levels = (collect(1:n_neut_steps)) / k
-const protection_acquisition = 1 ./ (1 .+ exp.(-4 .* (neut_levels .- 2.0)))
+    return model_parameters(
+        c_max, k,
 
-const neut_jump_dist = Normal(5, 0.5)
+        beta, sigma, gamma, lambda,
+
+        b, m,
+        c_jump_dist,
+
+        N,
+        c_levels, p_acq
+    )    
+end
