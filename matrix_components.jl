@@ -38,3 +38,6 @@ function build_immunity_matrix(params)
     end
     return mat_immunity
 end
+
+
+build_matrices_B_M(params) = (build_waning_matrix(params), build_immunity_matrix(params))

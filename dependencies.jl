@@ -1,5 +1,6 @@
 using Distributions
 using LinearAlgebra
+using MultiFloats
 
 include("model_globals.jl")
 include("matrix_components.jl")

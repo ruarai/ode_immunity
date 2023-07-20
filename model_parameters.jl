@@ -30,7 +30,7 @@ function make_model_parameters(;
     c_jump_dist
 )
     N = c_max * k
-    c_levels = collect(1:N) / k
+    c_levels = collect(1:N) ./ k
     p_acq = 1 ./ (1 .+ exp.(-m .* (c_levels .- b)))
 
     return model_parameters(

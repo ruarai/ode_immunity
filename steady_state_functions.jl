@@ -40,3 +40,25 @@ function steady_state_and_valid(
     a .^ 2 .+ b ^ 2 .+ c .^ 2
 end
 
+
+
+function get_steady_state(params)
+    B, M = build_matrices_B_M(params)
+
+    omega_inv = 1 ./ (1 .- params.p_acq)
+
+    u0 = @SVector Float64x2[1.0 / params.N for x in 1:params.N]
+
+    fn_solve(inf_vec, p) = steady_state_and_valid(
+        inf_vec, 
+        B, M, 
+        omega_inv, 
+        params.k, params.lambda, params.beta, params.gamma, params.sigma
+    )
+    
+    probN = NonlinearProblem(fn_solve, u0)
+    solver = solve(probN, NewtonRaphson(), abstol = 1e-16, maxiters = 20000)
+
+
+    return solver
+end
