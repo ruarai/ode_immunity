@@ -4,7 +4,6 @@ struct model_parameters
     k::Int32
 
     beta::Float64
-    sigma::Float64
     gamma::Float64
 
     lambda::Float64
@@ -28,7 +27,7 @@ end
 function make_model_parameters(;
     c_max, k,
 
-    beta, sigma, gamma, lambda,
+    beta, gamma, lambda,
 
     b, m,
 
@@ -44,7 +43,7 @@ function make_model_parameters(;
     return model_parameters(
         c_max, k,
 
-        beta, sigma, gamma, lambda,
+        beta, gamma, lambda,
 
         b, m,
         c_jump_dist,

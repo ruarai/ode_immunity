@@ -17,22 +17,18 @@ function ode_step!(du, u, model_params, t)
     du[ode_ix(1, 2:N, N)] = -flow_decay
     du[ode_ix(1, 1:(N - 1), N)] .+= flow_decay
 
-    flow_sus_to_exp = u[ode_ix(c_sus, 1:N, N)] .*
+    flow_sus_to_inf = u[ode_ix(c_sus, 1:N, N)] .*
         sum(u[ode_ix(c_inf, 1:N, N)]) .*
         model_params.beta .* 
         (1 .- model_params.p_acq)
 
-
-    flow_exp_to_inf = u[ode_ix(c_exp, 1:N, N)] .* model_params.sigma
-
     flow_inf_to_sus = u[ode_ix(c_inf, 1:N, N)] .* model_params.gamma
 
 
-    du[ode_ix(c_sus, 1:N, N)] .+= model_params.M * flow_inf_to_sus - flow_sus_to_exp
-    du[ode_ix(c_exp, 1:N, N)] .+= flow_sus_to_exp - flow_exp_to_inf
-    du[ode_ix(c_inf, 1:N, N)] .+= flow_exp_to_inf - flow_inf_to_sus
+    du[ode_ix(c_sus, 1:N, N)] .+= model_params.M * flow_inf_to_sus - flow_sus_to_inf
+    du[ode_ix(c_inf, 1:N, N)] .+= flow_sus_to_inf - flow_inf_to_sus
 
-    du[ode_ix(c_count, 1:N, N)] .+= flow_exp_to_inf
+    du[ode_ix(c_count, 1:N, N)] .+= flow_sus_to_inf
     
 end
 
@@ -49,20 +45,16 @@ function ode_step_no_count!(du, u, model_params, t)
     du[ode_ix(1, 2:N, N)] = -flow_decay
     du[ode_ix(1, 1:(N - 1), N)] .+= flow_decay
 
-    flow_sus_to_exp = u[ode_ix(c_sus, 1:N, N)] .*
+    flow_sus_to_inf = u[ode_ix(c_sus, 1:N, N)] .*
         sum(u[ode_ix(c_inf, 1:N, N)]) .*
         model_params.beta .* 
         (1 .- model_params.p_acq)
-
-
-    flow_exp_to_inf = u[ode_ix(c_exp, 1:N, N)] .* model_params.sigma
-
+    
     flow_inf_to_sus = u[ode_ix(c_inf, 1:N, N)] .* model_params.gamma
 
 
-    du[ode_ix(c_sus, 1:N, N)] .+= model_params.M * flow_inf_to_sus - flow_sus_to_exp
-    du[ode_ix(c_exp, 1:N, N)] .+= flow_sus_to_exp - flow_exp_to_inf
-    du[ode_ix(c_inf, 1:N, N)] .+= flow_exp_to_inf - flow_inf_to_sus
+    du[ode_ix(c_sus, 1:N, N)] .+= model_params.M * flow_inf_to_sus - flow_sus_to_inf
+    du[ode_ix(c_inf, 1:N, N)] .+= flow_sus_to_inf - flow_inf_to_sus
     
 end
 
