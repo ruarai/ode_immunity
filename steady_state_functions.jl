@@ -42,18 +42,18 @@ end
 
 
 
-function get_steady_state(params)
-    B, M = build_matrices_B_M(params)
+function get_steady_state(model_params)
+    omega_inv = 1 ./ (1 .- model_params.p_acq)
 
-    omega_inv = 1 ./ (1 .- params.p_acq)
+    N = model_params.N
 
-    u0 = @SVector Float64x2[1.0 / params.N for x in 1:params.N]
+    u0 = SVector{N}(convert.(Float64x2, [1.0 / N for x in 1:N]))
 
     fn_solve(inf_vec, p) = steady_state_and_valid(
         inf_vec, 
-        B, M, 
+        model_params.B, model_params.M, 
         omega_inv, 
-        params.k, params.lambda, params.beta, params.gamma, params.sigma
+        model_params.k, model_params.lambda, model_params.beta, model_params.gamma, model_params.sigma
     )
     
     probN = NonlinearProblem(fn_solve, u0)
