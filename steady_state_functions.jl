@@ -11,13 +11,17 @@ function steady_state(
 end
 
 
-# Gets the total population across S, E and I that is implied by inf_vec
+# Gets the total population across S and I that is implied by inf_vec
 function population_sum(
     inf_vec, I_sum,
     omega_inv,
-    beta, gamma, sigma
+    beta, gamma
 )
-    ((gamma / sigma) * I_sum + I_sum) / (1 - (gamma * inf_vec ⋅ omega_inv) / (beta * I_sum))
+    sus_vec = (gamma / (beta * I_sum)) * (inf_vec .* omega_inv)
+    
+    S_sum = sum(sus_vec)
+
+    return S_sum + I_sum
 end
 
 # Returns a zero vector iff inf_vec is positive
@@ -29,12 +33,12 @@ function steady_state_and_valid(
     inf_vec, 
     B, M,
     omega_inv,
-    k, lambda, beta, gamma, sigma
+    k, lambda, beta, gamma
 )
     I_sum = sum(inf_vec)
 
     a = steady_state(inf_vec, I_sum, B, M, omega_inv, k, lambda, beta)
-    b = 1 - population_sum(inf_vec, I_sum, omega_inv, beta, gamma, sigma)
+    b = 1 - population_sum(inf_vec, I_sum, omega_inv, beta, gamma)
     c = soft_inf_positive(inf_vec)
 
     a .^ 2 .+ b ^ 2 .+ c .^ 2
@@ -53,12 +57,13 @@ function get_steady_state(model_params)
         inf_vec, 
         model_params.B, model_params.M, 
         omega_inv, 
-        model_params.k, model_params.lambda, model_params.beta, model_params.gamma, model_params.sigma
+        model_params.k, model_params.lambda, model_params.beta, model_params.gamma
     )
     
     probN = NonlinearProblem(fn_solve, u0)
-    solver = solve(probN, NewtonRaphson(), abstol = 1e-16, maxiters = 20000)
+    inf_vec = solve(probN, RobustMultiNewton(), abstol = 1e-16, maxiters = 2000)
+    sus_vec = (model_params.gamma / (model_params.beta * sum(inf_vec))) * (inf_vec .* omega_inv)
 
 
-    return solver
+    return vcat(sus_vec, inf_vec)
 end
