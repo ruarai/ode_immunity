@@ -12,7 +12,7 @@ function ode_step!(du, u, model_params, t)
         du[i] = 0
     end
 
-    flow_decay = u[ode_ix(1, 2:N, N)] .* model_params.lambda
+    flow_decay = u[ode_ix(1, 2:N, N)] .* model_params.lambda .* model_params.k
 
     du[ode_ix(1, 2:N, N)] = -flow_decay
     du[ode_ix(1, 1:(N - 1), N)] .+= flow_decay
@@ -40,7 +40,7 @@ function ode_step_no_count!(du, u, model_params, t)
         du[i] = 0
     end
 
-    flow_decay = u[ode_ix(1, 2:N, N)] .* model_params.lambda
+    flow_decay = u[ode_ix(1, 2:N, N)] .* model_params.lambda .* model_params.k
 
     du[ode_ix(1, 2:N, N)] = -flow_decay
     du[ode_ix(1, 1:(N - 1), N)] .+= flow_decay
