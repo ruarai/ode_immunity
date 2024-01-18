@@ -76,7 +76,7 @@ function ode_solve(
 )
     ode_step_fn = ODEFunction(ode_step!; jac_prototype = float.(ode_sparsity))
 
-    u0 = zeros(Float64, n_compartments * model_params.N)
+    u0 = zeros(Double64, n_compartments * model_params.N)
     u0[ode_ix(c_sus, 1, model_params.N)] = 1.0 - n_inf_0
     u0[ode_ix(c_inf, 1, model_params.N)] = n_inf_0
 

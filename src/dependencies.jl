@@ -3,7 +3,8 @@ using Distributions
 using LinearAlgebra
 
 # Steady state solutions dependencies
-using MultiFloats
+#using MultiFloats
+using DoubleFloats
 using NonlinearSolve
 using StaticArrays
 
@@ -12,7 +13,7 @@ using DifferentialEquations
 using Symbolics
 using Plots
 
-include("model_globals.jl")
-include("steady_state_functions.jl")
-include("model_parameters.jl")
-include("solver.jl")
+include("src/model_globals.jl")
+include("src/steady_state_functions.jl")
+include("src/model_parameters.jl")
+include("src/solver.jl")

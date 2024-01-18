@@ -51,7 +51,7 @@ function get_steady_state(model_params)
 
     N = model_params.N
 
-    u0 = SVector{N}(convert.(Float64x2, [1.0 / N for x in 1:N]))
+    u0 = SVector{N}(convert.(Double64, [1.0 / N for x in 1:N]))
 
     fn_solve(inf_vec, p) = steady_state_and_valid(
         inf_vec, 
@@ -61,9 +61,14 @@ function get_steady_state(model_params)
     )
     
     probN = NonlinearProblem(fn_solve, u0)
-    inf_vec = solve(probN, RobustMultiNewton(), abstol = 1e-16, maxiters = 2000)
+    inf_vec = solve(
+        probN, NewtonRaphson();
+        abstol = 1e-30, maxiters = 4000,
+        show_trace = Val(true), trace_level = NonlinearSolve.TraceAll(10)
+    )
+
     sus_vec = (model_params.gamma / (model_params.beta * sum(inf_vec))) * (inf_vec .* omega_inv)
 
 
-    return vcat(sus_vec, inf_vec)
+    return (sus_vec, inf_vec)
 end

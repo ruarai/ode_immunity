@@ -1,5 +1,5 @@
 
-include("dependencies.jl")
+include("src/dependencies.jl")
 
 model_params = make_model_parameters(
     c_max = 8, k = 4,
