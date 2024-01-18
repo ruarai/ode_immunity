@@ -17,18 +17,21 @@ model_params_0 = make_model_parameters(
 ode_sparsity = ode_get_sparsity(model_params)
 
 n_inf_0 = 0.01
-n_days = 12000
+n_days = 16000
 
 
 
-x_lambda = 0.01:0.01:0.5
+x_lambda = collect(0.01:0.0025:0.5)
 #x_lambda = [0.02]
 
 y_fixed_I = zeros(length(x_lambda))
 
 y_I_sol = zeros(length(x_lambda), n_days)
 
-for i in eachindex(x_lambda)
+Threads.@threads for i in eachindex(x_lambda)
+    println(i)
+
+
     model_params = make_model_parameters(
         c_max = c_max, k = k, beta = beta, gamma = gamma, lambda = x_lambda[i],
         b = b, m = m, c_jump_dist = c_jump_dist
@@ -47,6 +50,7 @@ for i in eachindex(x_lambda)
     end
 
 end
+
 
 
 jldsave("data/bifurcations.jld2"; x_lambda, y_fixed_I, y_I_sol)

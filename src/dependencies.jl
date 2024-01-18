@@ -13,7 +13,13 @@ using DifferentialEquations
 using Symbolics
 using Plots
 
-include("src/model_globals.jl")
-include("src/steady_state_functions.jl")
-include("src/model_parameters.jl")
-include("src/solver.jl")
+include("model_globals.jl")
+include("steady_state_functions.jl")
+include("model_parameters.jl")
+include("solver.jl")
+
+
+function expand_grid(; kws...)
+    names, vals = keys(kws), values(kws)
+    return DataFrame(NamedTuple{names}(t) for t in Iterators.product(vals...))
+end

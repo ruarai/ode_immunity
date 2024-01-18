@@ -46,7 +46,7 @@ end
 
 
 
-function get_steady_state(model_params)
+function get_steady_state(model_params, verbose = false)
     omega_inv = 1 ./ (1 .- model_params.p_acq)
 
     N = model_params.N
@@ -64,7 +64,7 @@ function get_steady_state(model_params)
     inf_vec = solve(
         probN, NewtonRaphson();
         abstol = 1e-30, maxiters = 4000,
-        show_trace = Val(true), trace_level = NonlinearSolve.TraceAll(10)
+        show_trace = Val(verbose), trace_level = NonlinearSolve.TraceAll(10)
     )
 
     sus_vec = (model_params.gamma / (model_params.beta * sum(inf_vec))) * (inf_vec .* omega_inv)
