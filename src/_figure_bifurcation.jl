@@ -17,11 +17,11 @@ model_params_0 = make_model_parameters(
 ode_sparsity = ode_get_sparsity(model_params)
 
 n_inf_0 = 0.01
-n_days = 16000
+n_days = 32000
 
 
 
-x_lambda = collect(0.01:0.0025:0.5)
+x_lambda = collect(0.002:0.002:0.5)
 #x_lambda = [0.02]
 
 y_fixed_I = zeros(length(x_lambda))
@@ -48,7 +48,6 @@ Threads.@threads for i in eachindex(x_lambda)
     for d in 1:n_days
         y_I_sol[i, d] = sum(ode_solution(d)[ode_ix(c_inf, 1:model_params.N, model_params.N)])
     end
-
 end
 
 
