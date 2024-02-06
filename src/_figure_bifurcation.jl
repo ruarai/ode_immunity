@@ -1,37 +1,39 @@
 
-include("src/dependencies.jl")
+include("dependencies.jl")
+
+using JLD2
 
 c_max = 8
-k = 4
-beta = 1.5
-gamma = 0.5
-b = 3
-m = 4
-c_jump_dist = Normal(7, 0.5)
+k = 2
+R = 1.5
+gamma = 0.25
+beta = R * gamma
+b = 2
+m = 5
+c_jump_dist = Normal(4.5, 0.5)
 
 # Temporary model_parameters so sparsity can be generated
 model_params_0 = make_model_parameters(
     c_max = c_max, k = k, beta = beta, gamma = gamma, lambda = 0.1,
     b = b, m = m, c_jump_dist = c_jump_dist
 )
-ode_sparsity = ode_get_sparsity(model_params)
+ode_sparsity = ode_get_sparsity(model_params_0)
 
 n_inf_0 = 0.01
 n_days = 32000
 
 
 
-x_lambda = collect(0.002:0.002:0.5)
-#x_lambda = [0.02]
+x_lambda = collect(0.0:0.0005:0.05)
 
 y_fixed_I = zeros(length(x_lambda))
 
 y_I_sol = zeros(length(x_lambda), n_days)
 
+using ProgressMeter
+
+p = Progress(length(x_lambda))
 Threads.@threads for i in eachindex(x_lambda)
-    println(i)
-
-
     model_params = make_model_parameters(
         c_max = c_max, k = k, beta = beta, gamma = gamma, lambda = x_lambda[i],
         b = b, m = m, c_jump_dist = c_jump_dist
@@ -42,27 +44,26 @@ Threads.@threads for i in eachindex(x_lambda)
     y_fixed_I[i] = sum(inf_vec)
 
 
-    # Calculate a (non-stable) solution of the ODE over time
-    ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
+    # Calculate a (not-necessarily-stable) solution of the ODE over time
+    ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
 
     for d in 1:n_days
         y_I_sol[i, d] = sum(ode_solution(d)[ode_ix(c_inf, 1:model_params.N, model_params.N)])
     end
+
+    next!(p)
 end
+finish!(p)
 
 
-
-jldsave("data/bifurcations.jld2"; x_lambda, y_fixed_I, y_I_sol)
+jldsave("data/anziam2024/bifurcations.jld2"; x_lambda, y_fixed_I, y_I_sol)
 
 plot(x_lambda, y_fixed_I)
-plot!(x_lambda, maximum(y_I_sol[:, 8000:12000], dims = 2))
+plot!(x_lambda, maximum(y_I_sol[:, 30000:end], dims = 2))
+
+
+
+heatmap(y_I_sol[:,1:8000])
+heatmap(y_I_sol[:,20000:end])
 
 plot(y_I_sol[1,:], legend = false)
-
-
-x_lambda[10]
-plot(y_I_sol[10,1:500])
-
-
-x_lambda[40]
-plot(y_I_sol[40,1:500])

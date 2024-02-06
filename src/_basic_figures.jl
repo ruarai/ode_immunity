@@ -1,5 +1,5 @@
 
-include("src/dependencies.jl")
+include("dependencies.jl")
 
 c_max = 8
 k = 2
@@ -15,6 +15,8 @@ model_params = make_model_parameters(
     c_max = c_max, k = k, beta = beta, gamma = gamma, lambda = lambda,
     b = b, m = m, c_jump_dist = c_jump_dist
 )
+
+
 ode_sparsity = ode_get_sparsity(model_params)
 
 
@@ -39,5 +41,11 @@ end
 plot(sum(sol_I, dims = 2))
 heatmap(min.(sol_S[1:500,:], 0.1)')
 
-jldsave("data/anziam2024/basic.jld2"; model_params, sol_I, sol_S)
+
+mat_jump = model_params.M
+c_levels = model_params.c_levels
+
+mat_jump_no_boost = build_immunity_matrix_no_boost(model_params.N, model_params.c_levels, model_params.c_jump_dist)
+
+jldsave("data/anziam2024/basic.jld2"; mat_jump, c_levels, mat_jump_no_boost, sol_I, sol_S)
 

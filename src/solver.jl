@@ -71,16 +71,19 @@ function ode_solve(
     model_params,
     n_days,
     n_inf_0,
-    ode_sparsity
+    ode_sparsity;
+    saveat = 1,
+    dt = 0.01,
+    datatype = Float64
 )
     ode_step_fn = ODEFunction(ode_step!; jac_prototype = float.(ode_sparsity))
 
-    u0 = zeros(Float64, n_compartments * model_params.N)
+    u0 = zeros(datatype, n_compartments * model_params.N)
     u0[ode_ix(c_sus, 1, model_params.N)] = 1.0 - n_inf_0
     u0[ode_ix(c_inf, 1, model_params.N)] = n_inf_0
 
     tspan = (0.0, 1.0 * n_days)
     prob = ODEProblem{true, SciMLBase.FullSpecialize}(ode_step_fn, u0, tspan, model_params)
 
-    return DifferentialEquations.solve(prob, Euler(), dt = 0.01, saveat = 1);
+    return DifferentialEquations.solve(prob, Euler(), dt = dt, saveat = saveat);
 end

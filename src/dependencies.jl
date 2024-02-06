@@ -1,3 +1,6 @@
+using Pkg
+Pkg.activate(".")
+
 # Base dependencies
 using Distributions
 using LinearAlgebra

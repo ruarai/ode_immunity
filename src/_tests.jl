@@ -17,7 +17,7 @@ ode_sparsity = ode_get_sparsity(model_params)
 n_inf_0 = 0.01
 n_days = 2000
 
-ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
+ode_solution = @btime ode_solve(model_params, n_days, n_inf_0, ode_sparsity);
 
 infected = zeros(n_days, model_params.N)
 
