@@ -1,6 +1,5 @@
 
 struct model_parameters
-    c_max::Int32
     k::Int32
 
     beta::Float64
@@ -25,7 +24,7 @@ end
 
 
 function make_model_parameters(;
-    c_max, k,
+    k,
 
     beta, gamma, lambda,
 
@@ -35,19 +34,20 @@ function make_model_parameters(;
 
     boosting = true
 )
-    N = c_max * k
-    c_levels = collect(1:N) ./ k
+    N = k + 1
+    c_levels = collect((0 : k) / k)
+    
     p_acq = 1 ./ (1 .+ exp.(-m .* (c_levels .- b)))
 
     B = build_waning_matrix(N)
     if boosting
-        M = build_immunity_matrix(N, c_levels, c_jump_dist)
+        M = build_immunity_matrix_boost(N, c_levels, c_jump_dist)
     else
         M = build_immunity_matrix_no_boost(N, c_levels, c_jump_dist)
     end
 
     return model_parameters(
-        c_max, k,
+        k,
 
         beta, gamma, lambda,
 
@@ -79,36 +79,39 @@ end
 
 # Create the post-infection immunity matrix M. Captures the probability of transitioning from
 # strata j to strata i (bit backwards so matrix multiplication works)
-function build_immunity_matrix(N, c_levels, c_jump_dist)
+function build_immunity_matrix_boost(N, c_levels, c_jump_dist)
     mat_immunity = zeros(N, N)
 
-    for i in 1:N, j in 1:N
-    
-        # Edge cases for upper and lower bounds
-        if i == N
-            mat_immunity[i, j]  = 1 - cdf(c_jump_dist, c_levels[i - 1] - c_levels[j])
-        elseif i == 1
-            mat_immunity[i, j]  = cdf(c_jump_dist, c_levels[i] - c_levels[j])
+    for j in 1:N, i in j:N
+        if j == N
+            mat_immunity[i, j] = 1
+        elseif i == j
+            mat_immunity[i, j] = cdf(c_jump_dist, c_levels[i + 1] - c_levels[j])
+        elseif i == N
+            mat_immunity[i, j] = 1 - cdf(c_jump_dist, c_levels[i] - c_levels[j])
         else
-            mat_immunity[i, j] = cdf(c_jump_dist, c_levels[i] - c_levels[j]) - cdf(c_jump_dist, c_levels[i - 1] - c_levels[j])
+            mat_immunity[i, j] = cdf(c_jump_dist, c_levels[i + 1] - c_levels[j]) - cdf(c_jump_dist, c_levels[i] - c_levels[j])
         end
     end
+
     return mat_immunity
 end
+
 
 function build_immunity_matrix_no_boost(N, c_levels, c_jump_dist)
     mat_immunity = zeros(N, N)
 
-    for i in 1:N, j in 1:N
-    
-        # Edge cases for upper and lower bounds
-        if i == N
-            mat_immunity[i, j]  = 1 - cdf(c_jump_dist, c_levels[i - 1] )
-        elseif i == 1
-            mat_immunity[i, j]  = cdf(c_jump_dist, c_levels[i])
+    for j in 1:N, i in j:N
+        if j == N
+            mat_immunity[i, j] = 1
+        elseif i == j
+            mat_immunity[i, j] = cdf(c_jump_dist, c_levels[i + 1])
+        elseif i == N
+            mat_immunity[i, j] = 1 - cdf(c_jump_dist, c_levels[i])
         else
-            mat_immunity[i, j] = cdf(c_jump_dist, c_levels[i]) - cdf(c_jump_dist, c_levels[i - 1])
+            mat_immunity[i, j] = cdf(c_jump_dist, c_levels[i + 1]) - cdf(c_jump_dist, c_levels[i])
         end
     end
+
     return mat_immunity
 end

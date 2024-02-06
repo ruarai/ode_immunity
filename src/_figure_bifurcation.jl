@@ -3,19 +3,18 @@ include("dependencies.jl")
 
 using JLD2
 
-c_max = 8
-k = 2
+k = 16
 R = 1.5
 gamma = 0.25
 beta = R * gamma
-b = 2
-m = 5
-c_jump_dist = Normal(4.5, 0.5)
+b = 0.25
+m = 40
+c_jump_dist = Normal(0.8, 0.05)
 
 # Temporary model_parameters so sparsity can be generated
 model_params_0 = make_model_parameters(
-    c_max = c_max, k = k, beta = beta, gamma = gamma, lambda = 0.1,
-    b = b, m = m, c_jump_dist = c_jump_dist
+    k = k, beta = beta, gamma = gamma, lambda = 0.1,
+    b = b, m = m, c_jump_dist = c_jump_dist; boosting = false
 )
 ode_sparsity = ode_get_sparsity(model_params_0)
 
@@ -35,7 +34,7 @@ using ProgressMeter
 p = Progress(length(x_lambda))
 Threads.@threads for i in eachindex(x_lambda)
     model_params = make_model_parameters(
-        c_max = c_max, k = k, beta = beta, gamma = gamma, lambda = x_lambda[i],
+        k = k, beta = beta, gamma = gamma, lambda = x_lambda[i],
         b = b, m = m, c_jump_dist = c_jump_dist
     )
 
@@ -56,9 +55,9 @@ end
 finish!(p)
 
 
-jldsave("data/anziam2024/bifurcations.jld2"; x_lambda, y_fixed_I, y_I_sol)
+jldsave("data/paper/bifurcations.jld2"; x_lambda, y_fixed_I, y_I_sol)
 
-plot(x_lambda, y_fixed_I)
+plot(x_lambda, y_fixed_I, xlim = (0, 0.01))
 plot!(x_lambda, maximum(y_I_sol[:, 30000:end], dims = 2))
 
 

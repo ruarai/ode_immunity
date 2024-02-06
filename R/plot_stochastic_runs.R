@@ -26,16 +26,17 @@ p1 <- sol_basic %>%
   geom_line(aes(x = t, y = I),
             linewidth = 0.5) +
   
-  coord_cartesian(xlim = c(0, 13000)) +
+  coord_cartesian(xlim = c(0, 365 * 15)) +
   
-  scale_x_continuous(breaks = seq(0, 365 * 35, by = 365 * 5),
-                     labels = seq(0, 35, by = 5)) +
+  scale_x_continuous(breaks = seq(0, 365 * 35, by = 365 * 2),
+                     labels = seq(0, 35, by = 2)) +
   
   xlab("Time (years)") + ylab("Total Infected I") +
   
   plot_theme_paper +
   
   ggtitle("<b>A</b>")
+p1
 
 
 
@@ -56,10 +57,10 @@ p2 <- sol_eq %>%
   geom_line(aes(x = t, y = I),
             linewidth = 0.5) +
   
-  coord_cartesian(xlim = c(0, 13000)) +
+  coord_cartesian(xlim = c(0, 365 * 15)) +
   
-  scale_x_continuous(breaks = seq(0, 365 * 35, by = 365 * 5),
-                     labels = seq(0, 35, by = 5)) +
+  scale_x_continuous(breaks = seq(0, 365 * 35, by = 365 * 2),
+                     labels = seq(0, 35, by = 2)) +
   
   xlab("Time (years)") + ylab("Total Infected I") +
   
@@ -85,10 +86,10 @@ p3 <- sol_extinct %>%
   geom_line(aes(x = t, y = I),
             linewidth = 0.5) +
   
-  coord_cartesian(xlim = c(0, 2000)) +
+  coord_cartesian(xlim = c(0, 365 * 4)) +
   
-  scale_x_continuous(breaks = seq(0, 365 * 5, by = 365 * 1),
-                     labels = 0:5) +
+  scale_x_continuous(breaks = seq(0, 365 * 4, by = 365 * 1),
+                     labels = 0:4) +
   
   # scale_x_continuous(breaks = seq(0, 365 * 1, by = 365 * 2),
   #                    labels = seq(0, 34, by = 2)) +
@@ -120,12 +121,22 @@ p4 <- sol_survival %>%
   group_by(t) %>%
   summarise(p_extinct = sum(extinct) / n()) %>% 
   ggplot() +
+  
+  annotate("rect", xmin = 0, xmax = 30, ymin = -Inf, ymax = Inf,
+           fill = colour_B, alpha = 0.3) +
+  
+  annotate("rect", xmin = 140, xmax = 250, ymin = -Inf, ymax = Inf,
+           fill = colour_A, alpha = 0.3) +
+  
+  annotate("rect", xmin = 380, xmax = 440, ymin = -Inf, ymax = Inf,
+           fill = colour_A, alpha = 0.3) +
+  
   geom_line(aes(x = t, y = p_extinct)) +
   
-  scale_x_continuous(breaks = seq(0, 365 * 5, by = 365 * 1),
-                     labels = 0:5) +
+  scale_x_continuous(breaks = seq(0, 365 * 4, by = 365 * 1),
+                     labels = 0:4) +
   
-  coord_cartesian(xlim = c(0, 2000)) +
+  coord_cartesian(xlim = c(0, 365 * 4)) +
   
   xlab("Time (years)") +
   ylab("Extinction probability") +
@@ -133,12 +144,16 @@ p4 <- sol_survival %>%
   plot_theme_paper +
   
   ggtitle("<b>D</b>")
+p4
 
+
+p_blank <- ggplot() + geom_blank() + theme_void()
 
 cowplot::plot_grid(
-  p1, p2, p3, p4,
+  p1, p2, p_blank, p_blank, p3, p4,
+  rel_widths = c(1, 0.1, 1),
   byrow = FALSE,
-  ncol = 2
+  ncol = 3
 )
 
 
@@ -147,7 +162,7 @@ ggsave(
   "results/results_stochasticity.png",
   scale = 10 / 16,
   dpi = 300,
-  width = 18, height = 8,
+  width = 16, height = 9,
   bg = "white"
 )
 
