@@ -16,10 +16,13 @@ using DifferentialEquations
 using Symbolics
 using Plots
 
+using Random
+
 include("model_globals.jl")
 include("steady_state_functions.jl")
 include("model_parameters.jl")
 include("solver.jl")
+include("solve_stochastic.jl")
 
 
 function expand_grid(; kws...)

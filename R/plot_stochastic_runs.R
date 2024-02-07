@@ -6,6 +6,8 @@ library(ggtext)
 source("R/plot_theme.R")
 
 
+x_lambda <- h5read("data/paper/bifurcations.jld2", "x_lambda")
+y_fixed_I <- h5read("data/paper/bifurcations.jld2", "y_fixed_I")
 
 sol_S_basic <- h5read("data/paper/stochastic_basic.jld2", "sol_S")
 sol_I_basic <- h5read("data/paper/stochastic_basic.jld2", "sol_I")
@@ -23,6 +25,9 @@ sol_basic <- data.table::data.table(
 p1 <- sol_basic %>%
   summarise(I = sum(I), .by = t) %>% 
   ggplot() +
+  
+  geom_hline(yintercept = y_fixed_I[x_lambda == 0.006] * 1e5,
+             linewidth = 0.4, colour = colour_C) +
   geom_line(aes(x = t, y = I),
             linewidth = 0.5) +
   
@@ -54,6 +59,10 @@ sol_eq <- data.table::data.table(
 p2 <- sol_eq %>%
   summarise(I = sum(I), .by = t) %>% 
   ggplot() +
+  
+  geom_hline(yintercept = y_fixed_I[x_lambda == 0.008] * 1e5,
+             linewidth = 0.4, colour = colour_C)  +
+  
   geom_line(aes(x = t, y = I),
             linewidth = 0.5) +
   
@@ -67,7 +76,7 @@ p2 <- sol_eq %>%
   plot_theme_paper +
   
   ggtitle("<b>B</b>")
-
+p2
 
 
 sol_S_extinct <- h5read("data/paper/stochastic_extinction.jld2", "sol_S")
@@ -128,7 +137,10 @@ p4 <- sol_survival %>%
   annotate("rect", xmin = 140, xmax = 250, ymin = -Inf, ymax = Inf,
            fill = colour_A, alpha = 0.3) +
   
-  annotate("rect", xmin = 380, xmax = 440, ymin = -Inf, ymax = Inf,
+  annotate("rect", xmin = 350, xmax = 410, ymin = -Inf, ymax = Inf,
+           fill = colour_A, alpha = 0.3) +
+  
+  annotate("rect", xmin = 570, xmax = 650, ymin = -Inf, ymax = Inf,
            fill = colour_A, alpha = 0.3) +
   
   geom_line(aes(x = t, y = p_extinct)) +

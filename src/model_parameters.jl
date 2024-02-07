@@ -1,6 +1,6 @@
 
 struct model_parameters
-    k::Int32
+    k::Int64
 
     beta::Float64
     gamma::Float64
@@ -11,8 +11,6 @@ struct model_parameters
     m::Float64
 
     c_jump_dist::Distribution
-
-    N::Int64
 
     c_levels::Vector{Float64}
     p_acq::Vector{Float64}
@@ -34,16 +32,15 @@ function make_model_parameters(;
 
     boosting = true
 )
-    N = k + 1
-    c_levels = collect((0 : k) / k)
+    c_levels = collect((0 : (k - 1)) / k)
     
     p_acq = 1 ./ (1 .+ exp.(-m .* (c_levels .- b)))
 
-    B = build_waning_matrix(N)
+    B = build_waning_matrix(k)
     if boosting
-        M = build_immunity_matrix_boost(N, c_levels, c_jump_dist)
+        M = build_immunity_matrix_boost(k, c_levels, c_jump_dist)
     else
-        M = build_immunity_matrix_no_boost(N, c_levels, c_jump_dist)
+        M = build_immunity_matrix_no_boost(k, c_levels, c_jump_dist)
     end
 
     return model_parameters(
@@ -54,7 +51,6 @@ function make_model_parameters(;
         b, m,
         c_jump_dist,
 
-        N,
         c_levels, p_acq,
 
         B, M

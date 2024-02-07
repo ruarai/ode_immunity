@@ -49,9 +49,9 @@ end
 function get_steady_state(model_params, verbose = false)
     omega_inv = 1 ./ (1 .- model_params.p_acq)
 
-    N = model_params.N
+    k = model_params.k
 
-    u0 = SVector{N}(convert.(Double64, [1.0 / N for x in 1:N]))
+    u0 = SVector{k}(convert.(Double64, [1.0 / k for x in 1:k]))
 
     fn_solve(inf_vec, p) = steady_state_and_valid(
         inf_vec, 

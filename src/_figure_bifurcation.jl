@@ -1,4 +1,5 @@
 
+println("Bifurcation plots")
 include("dependencies.jl")
 
 using JLD2
@@ -23,15 +24,12 @@ n_days = 32000
 
 
 
-x_lambda = collect(0.0:0.0005:0.05)
+x_lambda = collect(0.0:0.0001:0.015)
 
 y_fixed_I = zeros(length(x_lambda))
 
 y_I_sol = zeros(length(x_lambda), n_days)
 
-using ProgressMeter
-
-p = Progress(length(x_lambda))
 Threads.@threads for i in eachindex(x_lambda)
     model_params = make_model_parameters(
         k = k, beta = beta, gamma = gamma, lambda = x_lambda[i],
@@ -47,12 +45,11 @@ Threads.@threads for i in eachindex(x_lambda)
     ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
 
     for d in 1:n_days
-        y_I_sol[i, d] = sum(ode_solution(d)[ode_ix(c_inf, 1:model_params.N, model_params.N)])
+        y_I_sol[i, d] = sum(ode_solution(d)[ode_ix(c_inf, 1:model_params.k, model_params.k)])
     end
 
-    next!(p)
+    println(i)
 end
-finish!(p)
 
 
 jldsave("data/paper/bifurcations.jld2"; x_lambda, y_fixed_I, y_I_sol)

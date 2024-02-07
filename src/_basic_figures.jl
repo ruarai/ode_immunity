@@ -29,12 +29,12 @@ n_days = 365*10
 
 ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
 
-sol_I = zeros(n_days, model_params.N)
-sol_S = zeros(n_days, model_params.N)
+sol_I = zeros(n_days, model_params.k)
+sol_S = zeros(n_days, model_params.k)
 
-for d in 1:n_days, i in 1:model_params.N
-    sol_S[d, :] = ode_solution(d)[ode_ix(c_sus, 1:model_params.N, model_params.N)]
-    sol_I[d, :] = ode_solution(d)[ode_ix(c_inf, 1:model_params.N, model_params.N)]
+for d in 1:n_days, i in 1:model_params.k
+    sol_S[d, :] = ode_solution(d)[ode_ix(c_sus, 1:model_params.k, model_params.k)]
+    sol_I[d, :] = ode_solution(d)[ode_ix(c_inf, 1:model_params.k, model_params.k)]
 end
 
 plot(sum(sol_I, dims = 2))
@@ -45,7 +45,7 @@ heatmap(min.(sol_S[1:500,:], 0.1)')
 mat_jump = model_params.M
 c_levels = model_params.c_levels
 
-mat_jump_no_boost = build_immunity_matrix_no_boost(model_params.N, model_params.c_levels, model_params.c_jump_dist)
+mat_jump_no_boost = build_immunity_matrix_no_boost(model_params.k, model_params.c_levels, model_params.c_jump_dist)
 
 jldsave("data/paper/basic.jld2"; mat_jump, c_levels, mat_jump_no_boost, sol_I, sol_S)
 
