@@ -173,6 +173,7 @@ cowplot::plot_grid(
 ggsave(
   "results/results_stochasticity.png",
   scale = 10 / 16,
+  device = png,
   dpi = 300,
   width = 16, height = 9,
   bg = "white"

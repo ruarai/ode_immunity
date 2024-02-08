@@ -97,7 +97,7 @@ p_examples <- cowplot::plot_grid(
     
     plot_theme_paper +
     
-    ggtitle("<b>B</b>", "λ = 0.06"),
+    ggtitle("<b>B</b>", "λ = 0.006"),
   
   tibble(I = y_I_sol[which(x_lambda == 0.008),]) %>% 
     mutate(t = row_number()) %>%
@@ -120,7 +120,7 @@ p_examples <- cowplot::plot_grid(
     
     plot_theme_paper +
     
-    ggtitle("<b>C</b>", "λ = 0.08"),
+    ggtitle("<b>C</b>", "λ = 0.008"),
   
   ncol = 2, align = "h", axis = "tb"
 )
@@ -132,11 +132,8 @@ cowplot::plot_grid(
   ncol = 1
 )
 
-library(ragg)
-
 ggsave(
   "results/results_bifurcation.png",
-  device = ragg::agg_png,
   scale = 10 / 16,
   dpi = 300,
   width = 16, height = 10,
