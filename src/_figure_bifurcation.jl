@@ -33,7 +33,7 @@ y_I_sol = zeros(length(x_lambda), n_days)
 Threads.@threads for i in eachindex(x_lambda)
     model_params = make_model_parameters(
         k = k, beta = beta, gamma = gamma, lambda = x_lambda[i],
-        b = b, m = m, c_jump_dist = c_jump_dist
+        b = b, m = m, c_jump_dist = c_jump_dist, boosting = false
     )
 
     # Calculate the fixed point/steady state solution

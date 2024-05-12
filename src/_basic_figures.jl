@@ -1,6 +1,8 @@
 
 include("dependencies.jl")
 
+using JLD2
+
 k = 16
 R = 1.5
 gamma = 0.25
@@ -17,15 +19,8 @@ model_params = make_model_parameters(
 
 ode_sparsity = ode_get_sparsity(model_params)
 
-
-plot(model_params.c_levels, model_params.p_acq)
-heatmap(model_params.c_levels, model_params.c_levels, model_params.M)
-
-plot(model_params.c_levels, model_params.M[:,1])
-
 n_inf_0 = 0.0001
-n_days = 365*10
-
+n_days = 365*20
 
 ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
 
@@ -37,15 +32,30 @@ for d in 1:n_days, i in 1:model_params.k
     sol_I[d, :] = ode_solution(d)[ode_ix(c_inf, 1:model_params.k, model_params.k)]
 end
 
-plot(sum(sol_I, dims = 2))
-heatmap(min.(sol_S[:,:], 0.1)')
-heatmap(min.(sol_S[1:500,:], 0.1)')
 
-
-mat_jump = model_params.M
 c_levels = model_params.c_levels
 
-mat_jump_no_boost = build_immunity_matrix_no_boost(model_params.k, model_params.c_levels, model_params.c_jump_dist)
+jldsave("data/paper/basic.jld2"; c_levels, sol_I, sol_S)
 
-jldsave("data/paper/basic.jld2"; mat_jump, c_levels, mat_jump_no_boost, sol_I, sol_S)
 
+
+model_params_boosting = make_model_parameters(
+    k = k, beta = beta, gamma = gamma, lambda = lambda,
+    b = b, m = m, c_jump_dist = c_jump_dist; boosting = true
+)
+
+n_inf_0 = 0.0001
+n_days = 365*20
+
+ode_solution = @time ode_solve(model_params_boosting, n_days, n_inf_0, ode_sparsity)
+
+sol_I = zeros(n_days, model_params.k)
+sol_S = zeros(n_days, model_params.k)
+
+for d in 1:n_days, i in 1:model_params.k
+    sol_S[d, :] = ode_solution(d)[ode_ix(c_sus, 1:model_params.k, model_params.k)]
+    sol_I[d, :] = ode_solution(d)[ode_ix(c_inf, 1:model_params.k, model_params.k)]
+end
+
+
+jldsave("data/paper/basic_boosting.jld2"; sol_I, sol_S)

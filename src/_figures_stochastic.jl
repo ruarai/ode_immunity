@@ -77,7 +77,7 @@ plot(inf_sims, legend = false, lc = "black")
 
 
 
-u_t, inf = ctmc_sim(model_params, n_days, 10, 4)
+u_t, inf = ctmc_sim(model_params, n_days, 10, 0)
 plot(inf)
 
 

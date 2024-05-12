@@ -1,4 +1,6 @@
 
+library(ggtext)
+
 colour_A <- "#7BB5CA"
 colour_B <- "#CC9D57"
 colour_C <- "#CC5790"
@@ -24,6 +26,8 @@ plot_theme_paper <- list(
   theme(panel.grid = element_blank(),
         axis.line = element_line(),
         axis.ticks = element_line(),
+        title = element_text(family = "Palatino", colour = "black", size = 14),
+        strip.text = element_text(family = "Palatino", colour = "black", size = 14),
         text = element_text(family = "Helvetica", colour = "black", size = 14),
         line = element_line(linewidth = 0.7),
         axis.text.x = element_markdown(margin = margin(t = 0.3, unit = "cm"), colour = "black"),

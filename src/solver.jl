@@ -12,7 +12,7 @@ function ode_step!(du, u, model_params, t)
         du[i] = 0
     end
 
-    flow_decay = @views u[ode_ix(1, 2:k, k)] .* model_params.lambda .* k
+    flow_decay = @views u[ode_ix(1, 2:k, k)] .* model_params.wane_transition_rate
 
     du[ode_ix(1, 2:k, k)] = -flow_decay
     du[ode_ix(1, 1:(k - 1), k)] .+= flow_decay
@@ -39,7 +39,7 @@ function ode_step_no_count!(du, u, model_params, t)
         du[i] = 0
     end
 
-    flow_decay = u[ode_ix(1, 2:k, k)] .* model_params.lambda .* model_params.k
+    flow_decay = u[ode_ix(1, 2:k, k)] .* model_params.wane_transition_rate
 
     du[ode_ix(1, 2:k, k)] = -flow_decay
     du[ode_ix(1, 1:(k - 1), k)] .+= flow_decay

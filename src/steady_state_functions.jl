@@ -5,9 +5,9 @@ function steady_state(
     inf_vec, I_sum,
     B, M,
     omega_inv,
-    k, lambda, beta
+    wane_transition_rate, beta
 )
-    ((k * lambda) / (beta * I_sum)) * (B * (inf_vec .* omega_inv)) .- inf_vec .+ M * inf_vec
+    (wane_transition_rate / (beta * I_sum)) * (B * (inf_vec .* omega_inv)) .- inf_vec .+ M * inf_vec
 end
 
 
@@ -33,11 +33,11 @@ function steady_state_and_valid(
     inf_vec, 
     B, M,
     omega_inv,
-    k, lambda, beta, gamma
+    wane_transition_rate, beta, gamma
 )
     I_sum = sum(inf_vec)
 
-    a = steady_state(inf_vec, I_sum, B, M, omega_inv, k, lambda, beta)
+    a = steady_state(inf_vec, I_sum, B, M, omega_inv, wane_transition_rate, beta)
     b = 1 - population_sum(inf_vec, I_sum, omega_inv, beta, gamma)
     c = soft_inf_positive(inf_vec)
 
@@ -57,7 +57,7 @@ function get_steady_state(model_params, verbose = false)
         inf_vec, 
         model_params.B, model_params.M, 
         omega_inv, 
-        model_params.k, model_params.lambda, model_params.beta, model_params.gamma
+        model_params.wane_transition_rate, model_params.beta, model_params.gamma
     )
     
     probN = NonlinearProblem(fn_solve, u0)

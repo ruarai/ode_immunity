@@ -8,7 +8,7 @@ function ctmc_step!(du, u, model_params, dt)
         du[i] = 0
     end
 
-    counts_decay = @views rand.(Binomial.(u[ode_ix(1, 2:k, k)], model_params.lambda .* k .* dt))
+    counts_decay = @views rand.(Binomial.(u[ode_ix(1, 2:k, k)], model_params.wane_transition_rate .* dt))
 
     du[ode_ix(1, 2:k, k)] = -counts_decay
     du[ode_ix(1, 1:(k - 1), k)] .+= counts_decay

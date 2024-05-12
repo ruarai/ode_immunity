@@ -2,14 +2,13 @@
 
 library(tidyverse)
 library(rhdf5)
-library(ggtext)
 
 source("R/plot_theme.R")
 
 
 
-sol_S <- h5read("data/anziam2024/basic.jld2", "sol_S")
-sol_I <- h5read("data/anziam2024/basic.jld2", "sol_I")
+sol_S <- h5read("data/paper/basic.jld2", "sol_S")
+sol_I <- h5read("data/paper/basic.jld2", "sol_I")
 
 
 c_levels <- 0:(ncol(sol_I) - 1) / 16

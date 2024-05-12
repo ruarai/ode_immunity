@@ -7,6 +7,8 @@ struct model_parameters
 
     lambda::Float64
 
+    wane_transition_rate::Float64
+
     b::Float64
     m::Float64
 
@@ -43,10 +45,14 @@ function make_model_parameters(;
         M = build_immunity_matrix_no_boost(k, c_levels, c_jump_dist)
     end
 
+    wane_transition_rate = lambda * (k - 1)
+
     return model_parameters(
         k,
 
         beta, gamma, lambda,
+
+        wane_transition_rate,
 
         b, m,
         c_jump_dist,
