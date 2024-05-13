@@ -1,5 +1,3 @@
-
-println("Bifurcation plots")
 include("dependencies.jl")
 
 using JLD2
@@ -45,7 +43,7 @@ Threads.@threads for i in eachindex(x_lambda)
     ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
 
     for d in 1:n_days
-        y_I_sol[i, d] = sum(ode_solution(d)[ode_ix(c_inf, 1:model_params.k, model_params.k)])
+        y_I_sol[i, d] = sum(ode_solution(d)[ode_ix(c_inf, 1:model_params.S, model_params.S)])
     end
 
     println(i)

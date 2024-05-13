@@ -2,7 +2,7 @@
 const stoch_pop_size = 100000
 
 function ctmc_step!(du, u, model_params, dt)
-    k = model_params.k
+    k = model_params.S
 
     for i in 1:(k * n_compartments)
         du[i] = 0
@@ -41,11 +41,11 @@ function ctmc_step!(du, u, model_params, dt)
 end
 
 function ctmc_sim(model_params, n_days, n_inf_0, seed)
-    u0 = zeros(Int64, model_params.k * n_compartments)
-    u0[ode_ix(c_sus, 1, model_params.k)] = stoch_pop_size - n_inf_0
-    u0[ode_ix(c_inf, 1, model_params.k)] = n_inf_0
+    u0 = zeros(Int64, model_params.S * n_compartments)
+    u0[ode_ix(c_sus, 1, model_params.S)] = stoch_pop_size - n_inf_0
+    u0[ode_ix(c_inf, 1, model_params.S)] = n_inf_0
     
-    du = zeros(Int64, model_params.k * n_compartments)
+    du = zeros(Int64, model_params.S * n_compartments)
     
     u = copy(u0)
     u_t = zeros(length(du), n_days)
@@ -57,10 +57,10 @@ function ctmc_sim(model_params, n_days, n_inf_0, seed)
     for t in 1:n_days
     
         u_t[:,t] = u
-        inf[t] = sum(u[ode_ix(c_inf, 1:model_params.k, model_params.k)])
+        inf[t] = sum(u[ode_ix(c_inf, 1:model_params.S, model_params.S)])
 
         # If in trivial steady state (all in S_0), do not simulate any more
-        if u[ode_ix(c_sus, 1, model_params.k)] == stoch_pop_size
+        if u[ode_ix(c_sus, 1, model_params.S)] == stoch_pop_size
             continue
         end
     

@@ -49,7 +49,7 @@ end
 function get_steady_state(model_params, verbose = false)
     omega_inv = 1 ./ (1 .- model_params.p_acq)
 
-    k = model_params.k
+    k = model_params.S
 
     u0 = SVector{k}(convert.(Double64, [1.0 / k for x in 1:k]))
 

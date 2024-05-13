@@ -24,12 +24,12 @@ n_days = 365*20
 
 ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
 
-sol_I = zeros(n_days, model_params.k)
-sol_S = zeros(n_days, model_params.k)
+sol_I = zeros(n_days, model_params.S)
+sol_S = zeros(n_days, model_params.S)
 
-for d in 1:n_days, i in 1:model_params.k
-    sol_S[d, :] = ode_solution(d)[ode_ix(c_sus, 1:model_params.k, model_params.k)]
-    sol_I[d, :] = ode_solution(d)[ode_ix(c_inf, 1:model_params.k, model_params.k)]
+for d in 1:n_days, i in 1:model_params.S
+    sol_S[d, :] = ode_solution(d)[ode_ix(c_sus, 1:model_params.S, model_params.S)]
+    sol_I[d, :] = ode_solution(d)[ode_ix(c_inf, 1:model_params.S, model_params.S)]
 end
 
 
@@ -49,12 +49,12 @@ n_days = 365*20
 
 ode_solution = @time ode_solve(model_params_boosting, n_days, n_inf_0, ode_sparsity)
 
-sol_I = zeros(n_days, model_params.k)
-sol_S = zeros(n_days, model_params.k)
+sol_I = zeros(n_days, model_params.S)
+sol_S = zeros(n_days, model_params.S)
 
-for d in 1:n_days, i in 1:model_params.k
-    sol_S[d, :] = ode_solution(d)[ode_ix(c_sus, 1:model_params.k, model_params.k)]
-    sol_I[d, :] = ode_solution(d)[ode_ix(c_inf, 1:model_params.k, model_params.k)]
+for d in 1:n_days, i in 1:model_params.S
+    sol_S[d, :] = ode_solution(d)[ode_ix(c_sus, 1:model_params.S, model_params.S)]
+    sol_I[d, :] = ode_solution(d)[ode_ix(c_inf, 1:model_params.S, model_params.S)]
 end
 
 

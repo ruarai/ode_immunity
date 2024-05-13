@@ -6,7 +6,7 @@ end
 
 
 function ode_step!(du, u, model_params, t)
-    k = model_params.k
+    k = model_params.S
 
     for i in 1:(k * n_compartments)
         du[i] = 0
@@ -33,7 +33,7 @@ end
 
 
 function ode_step_no_count!(du, u, model_params, t)
-    k = model_params.k
+    k = model_params.S
 
     for i in 1:(k * 3)
         du[i] = 0
@@ -61,7 +61,7 @@ end
 function ode_get_sparsity(
     model_params
 )
-    u0 = zeros(Float64, n_compartments * model_params.k)
+    u0 = zeros(Float64, n_compartments * model_params.S)
     du0 = copy(u0)
     return Symbolics.jacobian_sparsity((du, u) -> ode_step!(du, u, model_params, 0.0), du0, u0)
 end
@@ -78,9 +78,9 @@ function ode_solve(
 )
     ode_step_fn = ODEFunction(ode_step!; jac_prototype = float.(ode_sparsity))
 
-    u0 = zeros(datatype, n_compartments * model_params.k)
-    u0[ode_ix(c_sus, 1, model_params.k)] = 1.0 - n_inf_0
-    u0[ode_ix(c_inf, 1, model_params.k)] = n_inf_0
+    u0 = zeros(datatype, n_compartments * model_params.S)
+    u0[ode_ix(c_sus, 1, model_params.S)] = 1.0 - n_inf_0
+    u0[ode_ix(c_inf, 1, model_params.S)] = n_inf_0
 
     tspan = (0.0, 1.0 * n_days)
     prob = ODEProblem{true, SciMLBase.FullSpecialize}(ode_step_fn, u0, tspan, model_params)

@@ -1,7 +1,7 @@
 
 
 function step_abm!(population_state, n_pop_size, model_params, dt)
-    k = model_params.k
+    k = model_params.S
 
     I = sum(population_state .> ode_ix(c_sus, k, k))
 
@@ -63,7 +63,7 @@ function simulate_agent_based(n_days, n_track, n_pop_size, model_params, seed)
         for i in 1:n_track
             track_state[d, i] = population_state[i]
         end
-        I_t[d] = sum(population_state .> ode_ix(c_sus, model_params.k, model_params.k))
+        I_t[d] = sum(population_state .> ode_ix(c_sus, model_params.S, model_params.S))
     
         for t in 1:100
             step_abm!(population_state, n_pop_size, model_params, 0.01)

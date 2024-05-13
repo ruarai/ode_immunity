@@ -1,6 +1,7 @@
 
 struct model_parameters
     k::Int64
+    S::Int64
 
     beta::Float64
     gamma::Float64
@@ -34,21 +35,22 @@ function make_model_parameters(;
 
     boosting = true
 )
-    c_levels = collect((0 : (k - 1)) / k)
+    S = k + 1
+    c_levels = collect((0 : k) / k)
     
     p_acq = 1 ./ (1 .+ exp.(-m .* (c_levels .- b)))
 
-    B = build_waning_matrix(k)
+    B = build_waning_matrix(S)
     if boosting
-        M = build_immunity_matrix_boost(k, c_levels, c_jump_dist)
+        M = build_immunity_matrix_boost(S, c_levels, c_jump_dist)
     else
-        M = build_immunity_matrix_no_boost(k, c_levels, c_jump_dist)
+        M = build_immunity_matrix_no_boost(S, c_levels, c_jump_dist)
     end
 
-    wane_transition_rate = lambda * (k - 1)
+    wane_transition_rate = lambda * k
 
     return model_parameters(
-        k,
+        k, S,
 
         beta, gamma, lambda,
 

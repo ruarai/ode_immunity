@@ -180,7 +180,7 @@ I_SIR = zeros(n_days)
 I_SIRS = zeros(n_days)
 
 for d in 1:n_days
-    I_structured[d] = sum(ode_solution(d)[ode_ix(c_inf, 1:model_params.k, model_params.k)])
+    I_structured[d] = sum(ode_solution(d)[ode_ix(c_inf, 1:model_params.S, model_params.S)])
     I_dde[d] = I_t[d]
     I_SI[d] = sol_si(d)[2]
     I_SIR[d] = sol_sir(d)[2]

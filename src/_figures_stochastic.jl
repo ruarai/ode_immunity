@@ -13,15 +13,15 @@ u_t, inf = ctmc_sim(model_params, n_days, 10, 0)
 
 plot(u_t', legend = false)
 
-heatmap(log.(u_t[1:(model_params.k * 2),:] .+ 1))
+heatmap(log.(u_t[1:(model_params.S * 2),:] .+ 1))
 plot(inf)
 
-sol_I = zeros(n_days, model_params.k)
-sol_S = zeros(n_days, model_params.k)
+sol_I = zeros(n_days, model_params.S)
+sol_S = zeros(n_days, model_params.S)
 
-for d in 1:n_days, i in 1:model_params.k
-    sol_S[d, :] = u_t[ode_ix(c_sus, 1:model_params.k, model_params.k), d]
-    sol_I[d, :] = u_t[ode_ix(c_inf, 1:model_params.k, model_params.k), d]
+for d in 1:n_days, i in 1:model_params.S
+    sol_S[d, :] = u_t[ode_ix(c_sus, 1:model_params.S, model_params.S), d]
+    sol_I[d, :] = u_t[ode_ix(c_inf, 1:model_params.S, model_params.S), d]
 end
 
 jldsave("data/paper/stochastic_basic.jld2"; sol_I, sol_S)
@@ -40,12 +40,12 @@ u_t, inf = ctmc_sim(model_params, n_days, 10, 0)
 plot(inf)
 
 
-sol_I = zeros(n_days, model_params.k)
-sol_S = zeros(n_days, model_params.k)
+sol_I = zeros(n_days, model_params.S)
+sol_S = zeros(n_days, model_params.S)
 
-for d in 1:n_days, i in 1:model_params.k
-    sol_S[d, :] = u_t[ode_ix(c_sus, 1:model_params.k, model_params.k), d]
-    sol_I[d, :] = u_t[ode_ix(c_inf, 1:model_params.k, model_params.k), d]
+for d in 1:n_days, i in 1:model_params.S
+    sol_S[d, :] = u_t[ode_ix(c_sus, 1:model_params.S, model_params.S), d]
+    sol_I[d, :] = u_t[ode_ix(c_inf, 1:model_params.S, model_params.S), d]
 end
 
 jldsave("data/paper/stochastic_around_equilbrium.jld2"; sol_I, sol_S)
@@ -81,12 +81,12 @@ u_t, inf = ctmc_sim(model_params, n_days, 10, 0)
 plot(inf)
 
 
-sol_I = zeros(n_days, model_params.k)
-sol_S = zeros(n_days, model_params.k)
+sol_I = zeros(n_days, model_params.S)
+sol_S = zeros(n_days, model_params.S)
 
-for d in 1:n_days, i in 1:model_params.k
-    sol_S[d, :] = u_t[ode_ix(c_sus, 1:model_params.k, model_params.k), d]
-    sol_I[d, :] = u_t[ode_ix(c_inf, 1:model_params.k, model_params.k), d]
+for d in 1:n_days, i in 1:model_params.S
+    sol_S[d, :] = u_t[ode_ix(c_sus, 1:model_params.S, model_params.S), d]
+    sol_I[d, :] = u_t[ode_ix(c_inf, 1:model_params.S, model_params.S), d]
 end
 
 jldsave("data/paper/stochastic_extinction.jld2"; sol_I, sol_S)
