@@ -21,6 +21,7 @@ using DifferentialEquations
 using Symbolics
 using Plots
 
+# Stochastics/agent-based dependencies
 using Random
 
 include("model_globals.jl")
@@ -29,6 +30,7 @@ include("model_parameters.jl")
 include("solver.jl")
 include("solve_stochastic.jl")
 include("agent_based.jl")
+include("dde.jl")
 
 
 function expand_grid(; kws...)

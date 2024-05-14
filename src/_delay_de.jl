@@ -1,7 +1,9 @@
-using DifferentialEquations
 
 
 include("dependencies.jl")
+
+using DataFrames
+using JLD2
 
 
 function sim_dde(; R0, γ, τ, dt, n_days, n_inf_0)
@@ -23,8 +25,6 @@ function sim_dde(; R0, γ, τ, dt, n_days, n_inf_0)
     if isnothing(ix_P_t_neglible)
         ix_P_t_neglible = length(P_t)
     end
-
-    println(ix_P_t_neglible)
     
     for t in 1:(n_t_steps - 1)
         I = I_t[t]
@@ -40,7 +40,6 @@ function sim_dde(; R0, γ, τ, dt, n_days, n_inf_0)
 
     
         S = 1 - I - R
-
     
         dI = -γ * I + β * I * S
     
@@ -51,24 +50,30 @@ function sim_dde(; R0, γ, τ, dt, n_days, n_inf_0)
 
     end
 
-    return (0:n_days,
-            S_t[1:round(Int, 1 / dt):end],
-            I_t[1:round(Int, 1 / dt):end],
-            R_t[1:round(Int, 1 / dt):end],
-            dI_t[1:round(Int, 1 / dt):end])
+
+    return(0:dt:n_days, S_t, I_t, R_t, dI_t)
+
+    # return (0:n_days,
+    #         S_t[1:round(Int, 1 / dt):end],
+    #         I_t[1:round(Int, 1 / dt):end],
+    #         R_t[1:round(Int, 1 / dt):end],
+    #         dI_t[1:round(Int, 1 / dt):end])
 end
 
 
-n_days = 365*20
+n_days = 365*10
 
-c_jump_dist = Normal(1.0, 0.05)
-lambda = 0.03
+
+println("Initial run.")
+
+c_jump_dist = Normal(0.8, 0.05)
+lambda = 0.002
 
 τ = c_jump_dist / lambda
 
 t_days, S_t, I_t, R_t, dI_t = sim_dde(;
     R0 = 1.5,
-    γ = 0.5,
+    γ = 0.25,
     τ = τ,
     dt = 0.01,
     n_days, 
@@ -83,74 +88,69 @@ plot(t_days, dI_t)
 plot(t_days, S_t .+ I_t .+ R_t)
 
 
-lambdas = 0.01:0.001:0.05
+lambdas = 0.001:0.001:0.05
+R0s = 1.0:0.02:3.5
 
-results = zeros(length(lambdas), n_days + 1)
+param_sets = expand_grid(R0 = R0s, lambda = lambdas)
 
-Threads.@threads for (i, lambda) in collect(enumerate(lambdas))
-    println(lambda)
+n_params = size(param_sets, 1)
+results_peak_mag = Array{Array{Float64}}(undef, n_params)
+results_troughs_mag = Array{Array{Float64}}(undef, n_params)
 
-    τ = c_jump_dist / lambda
+results_peak_trough_diff = Array{Array{Float64}}(undef, n_params)
+
+results_peak_mag_diff_final = Array{Float64}(undef, n_params)
+results_peak_trough_diff_final = Array{Float64}(undef, n_params)
+
+
+println("Running across $n_params sets of parameters.")
+
+using ProgressMeter
+p = Progress(n_params)
+
+Threads.@threads for i in axes(param_sets, 1)
+    row = param_sets[i, :]
+
+    τ = c_jump_dist / row.lambda
     t_days, S_t, I_t, R_t, dI_t = sim_dde(;
-        R0 = 1.5, 
+        R0 = row.R0, 
         γ = 0.5,
         τ = τ,
         dt = 0.01,
         n_days, 
         n_inf_0 = 0.01
     )
-    results[i,:] = I_t
+
+    res_diff = diff(I_t)
+    res_peaks = res_diff[1:(end - 1)] .> 0 .&& res_diff[2:end] .<= 0
+    results_peak_mag[i] = I_t[2:(end - 1)][res_peaks]
+
+    res_troughs = res_diff[1:(end - 1)] .< 0 .&& res_diff[2:end] .>= 0
+    results_troughs_mag[i] = I_t[2:(end - 1)][res_troughs]
+
+    min_common_len = min(length(results_peak_mag[i]), length(results_troughs_mag[i]))
+
+    results_peak_trough_diff[i] = zeros(min_common_len)
+
+    for j in 1:min_common_len
+        results_peak_trough_diff[i][j] = results_peak_mag[i][j] - results_troughs_mag[i][j]
+    end
+
+    if length(results_peak_mag[i]) > 1
+        results_peak_mag_diff_final[i] = diff(results_peak_mag[i])[end]
+        results_peak_trough_diff_final[i] = results_peak_trough_diff[i][end]
+    end
+
+    next!(p)
 end
+finish!(p)
 
-heatmap(results)
-plot(results')
-plot(results[findfirst(collect(lambdas) .== 0.0375),:])
+jldsave("data/paper/delay_de.jld2"; 
+    param_sets,
+    results_peak_mag,
+    results_troughs_mag,
+    results_peak_trough_diff,
+    results_peak_mag_diff_final,
+    results_peak_trough_diff_final
+)
 
-
-
-periods = zeros(length(lambdas))
-changes = zeros(length(lambdas))
-sum_change = zeros(length(lambdas))
-
-for i in eachindex(lambdas)
-    res_subset = results[i, 2000:end]
-    res_diff = diff(res_subset)
-    # Adjust for half a day offset here?
-    res_match = (res_diff[1:(end - 1)] .> 0) .& (res_diff[2:end] .<= 0)
-    
-    
-    res_ix = findall(res_match)
-    
-    res_ix_offset = res_ix[2:end] .- res_ix[1]
-    
-    periods[i] = mean(res_ix_offset ./ (1:length(res_ix_offset)))
-
-    a = res_subset[res_ix]
-
-    changes[i] = mean(abs2.(a .- mean(a)))
-    sum_change[i] = sum(res_diff)
-end
-
-plot(lambdas, periods)
-plot(lambdas, changes)
-plot(lambdas, abs.(sum_change) .< 1e-6)
-
-
-
-i = 5
-res_diff = diff(results[i, 2000:end])
-res_match = (res_diff[1:(end - 1)] .> 0) .& (res_diff[2:end] .<= 0)
-
-plot(results[i,2000:end])
-plot!(res_match ./ 20)
-
-res_ix = findall(res_match)
-
-a = results[i, 2000:end][res_ix]
-plot(a)
-
-mean(abs.(a .- mean(a)))
-
-res_ix_offset = res_ix[2:end] .- res_ix[1]
-
-periods[i] = mean(res_ix_offset ./ (1:length(res_ix_offset)))

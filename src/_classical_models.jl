@@ -24,7 +24,6 @@ n_days = 365*20
 
 ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
 
-
 c_levels = model_params.c_levels
 
 
