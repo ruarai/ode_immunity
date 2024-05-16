@@ -35,7 +35,7 @@ hline!([γ/β])
 
 
 # TODO: double check if there is an error in the minus one here?
-eq_A(y, γ, τ, β) = (γ ./ y) .* sin.(τ .* y) .- 1
+eq_A(y, γ, τ, β) = (γ ./ y) .* sin.(τ .* y) .+ 1
 eq_B(y, γ, τ, β) = (γ ./ y) .* β .* I_eq(γ, τ, β) .* (1 .- cos.(τ .* y)) .- y
 
 
@@ -80,9 +80,11 @@ Threads.@threads for i in eachindex(taus)
     end
 end
 
+[length(unique(b)) for b in betas]
+
 beta_firsts = [b[1] for b in betas]
 
-plot(beta_firsts[does_converge] / 0.5, lambdas[does_converge])
+plot!(beta_firsts[does_converge] / 0.5, lambdas[does_converge], xlim = (1.0, 3.0))
 
 ys = 0:1e-4:0.5
 
