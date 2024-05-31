@@ -5,10 +5,10 @@
 library(tidyverse)
 
 plot_data <- expand_grid(
-  R0 = seq(0, 4, by = 0.05),
+  R0 = seq(1, 4, by = 0.05),
   lambda = seq(0, 0.2, by = 0.001),
   mu = 1,
-  sigma = 0.05,
+  sigma = 0.01,
   gamma = c(0.5, 1.0, 1.5)
 ) %>%
   mutate(stable_lower = 2 * lambda * (lambda + mu * gamma) /  (gamma ^ 2 * (sigma ^ 2 + mu ^ 2)) + 1 <= R0,

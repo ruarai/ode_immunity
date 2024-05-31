@@ -115,4 +115,15 @@ ggsave(
 )
 
 
+ggsave(
+  "results/results_classical.pdf",
+  scale = 10 / 16,
+  dpi = 300,
+  width = 18, height = 9,
+  bg = "white"
+)
+
+
+
+
 
