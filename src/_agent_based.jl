@@ -5,39 +5,34 @@ include("dependencies.jl")
 
 using JLD2
 
-k = 16
-R = 1.5
-gamma = 0.25
-beta = R * gamma
-b = 0.25
-lambda = 0.008
-m = 40
-c_jump_dist = Normal(0.8, 0.05)
 
-# Temporary model_parameters so sparsity can be generated
 model_params = make_model_parameters(
-    k = k, beta = beta, gamma = gamma, lambda = lambda,
-    b = b, m = m, c_jump_dist = c_jump_dist; boosting = true
+    k = 128, beta = 1.5 * 0.25, gamma = 0.25, lambda = 0.002,
+    b = 0.6, m = 20, c_jump_dist = Normal(0.8, 0.1); boosting = false
 )
 
+plot(model_params.p_acq)
 
-n_days = 1000
+heatmap(model_params.M)
+
+n_days = 2000
 
 n_pop_size = 100000
-n_track = 100
+n_track = 10000
 
 
-# track_state, I_t = simulate_agent_based(n_days, n_track, n_pop_size, model_params, 2)
+track_state, I_t = simulate_agent_based(n_days, n_track, n_pop_size, model_params, 1)
 
-# jldsave("data/paper/agent_based_with_boost.jld2"; track_state, I_t)
+plot(I_t)
+track_corr = (track_state .- 1) .% model_params.S
+
+track_acq = 1 ./ (1 .+ exp.(-model_params.m .* (track_corr / model_params.k .- model_params.b)))
+
+plot(track_corr[:,10:300], legend = false, lc = "black", linealpha = 0.1)
+heatmap(track_corr[:,10:1000]')
+
+plot(track_acq[:,10:20], legend = false)
+heatmap(track_acq[:,10:1000]')
 
 
-# Temporary model_parameters so sparsity can be generated
-model_params_no_boost = make_model_parameters(
-    k = k, beta = beta, gamma = gamma, lambda = lambda,
-    b = b, m = m, c_jump_dist = c_jump_dist; boosting = false
-)
-
-track_state, I_t = simulate_agent_based(n_days, n_track, n_pop_size, model_params_no_boost, 2)
-
-jldsave("data/paper/agent_based_no_boost.jld2"; track_state, I_t)
+jldsave("data/paper/agent_based_transition.jld2"; track_state, track_acq, I_t)

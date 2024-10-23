@@ -1,7 +1,7 @@
 
 const stoch_pop_size = 100000
 
-function ctmc_step!(du, u, model_params, dt)
+function ctmc_step!(du, u, model_params, dt; beta_mult = 1.0, flow_vacc = 0.0)
     k = model_params.S
 
     for i in 1:(k * n_compartments)
@@ -15,16 +15,25 @@ function ctmc_step!(du, u, model_params, dt)
 
     flow_sus_to_inf = @views sum(u[ode_ix(c_inf, 1:k, k)]) .*
         model_params.beta .* 
+        beta_mult .*
         (1 .- model_params.p_acq) ./
         stoch_pop_size
 
     count_sus_to_inf = @views rand.(Binomial.(u[ode_ix(c_sus, 1:k, k)], -expm1.(-flow_sus_to_inf .* dt)))
+
+    sus_not_vacc = u[ode_ix(c_sus, 1:k, k)] .- count_sus_to_inf
+
+    flow_sus_vacc = sus_not_vacc[1] * flow_vacc 
+    count_vacc = rand(Binomial(sus_not_vacc[1], -expm1(-flow_sus_vacc * dt)))
         
 
     du[ode_ix(c_sus, 1:k, k)] .+= -count_sus_to_inf
     du[ode_ix(c_inf, 1:k, k)] .+= count_sus_to_inf 
 
     du[ode_ix(c_count, 1:k, k)] .+= count_sus_to_inf 
+
+    du[ode_ix(c_sus, 1, k)] -= count_vacc
+    du[ode_ix(c_sus, k, k)] += count_vacc
 
     for j in 1:k
         count_inf_depart = @views rand(Binomial(u[ode_ix(c_inf, j, k)], -expm1.(-model_params.gamma .* dt)))

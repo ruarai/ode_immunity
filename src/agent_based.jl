@@ -3,13 +3,13 @@
 function step_abm!(population_state, n_pop_size, model_params, dt)
     k = model_params.S
 
-    I = sum(population_state .> ode_ix(c_sus, k, k))
+    I = sum(population_state .> ode_ix(c_sus, model_params.k, model_params.S))
 
     for i in 1:n_pop_size
         state = population_state[i]
         new_state = state
 
-        infected = state > ode_ix(c_sus, k, k)
+        infected = state > ode_ix(c_sus, k, model_params.S)
         strata = (state - 1) % k + 1
 
         r = rand()
@@ -18,8 +18,8 @@ function step_abm!(population_state, n_pop_size, model_params, dt)
             p_recover = -expm1(- model_params.gamma * dt)
             
             if r < p_recover
-                new_strata = wsample(1:k, model_params.M[:,strata])
-                new_state = ode_ix(c_sus, new_strata, k)
+                new_strata = wsample(1:model_params.S, model_params.M[:,strata])
+                new_state = ode_ix(c_sus, new_strata, model_params.S)
             end
         else
             # Susceptible
@@ -30,13 +30,13 @@ function step_abm!(population_state, n_pop_size, model_params, dt)
                 p_decay = -expm1(- model_params.wane_transition_rate * dt)
 
                 if r < p_decay
-                    new_state = ode_ix(c_sus, strata - 1, k)
+                    new_state = ode_ix(c_sus, strata - 1, model_params.S)
                 elseif r < p_decay + p_infected 
-                    new_state = ode_ix(c_inf, strata, k)
+                    new_state = ode_ix(c_inf, strata, model_params.S)
                 end
             else
                 if r < p_infected 
-                    new_state = ode_ix(c_inf, strata, k)
+                    new_state = ode_ix(c_inf, strata, model_params.S)
                 end
             end
         end
@@ -48,10 +48,10 @@ end
 
 function simulate_agent_based(n_days, n_track, n_pop_size, model_params, seed)
 
-    population_state = zeros(Int8, n_pop_size)
+    population_state = zeros(Int16, n_pop_size)
 
-    population_state[1:n_pop_size] .= ode_ix(c_sus, 1, k)
-    population_state[1:10] .= ode_ix(c_inf, 1, k)
+    population_state[1:n_pop_size] .= ode_ix(c_sus, 1, model_params.S)
+    population_state[1:10] .= ode_ix(c_inf, 1, model_params.S)
     
     track_state = zeros(n_days, n_track)
     I_t = zeros(n_days)
@@ -63,10 +63,14 @@ function simulate_agent_based(n_days, n_track, n_pop_size, model_params, seed)
         for i in 1:n_track
             track_state[d, i] = population_state[i]
         end
-        I_t[d] = sum(population_state .> ode_ix(c_sus, model_params.S, model_params.S))
+        I_t[d] = sum(population_state .> ode_ix(c_sus, model_params.k, model_params.S))
+
+        if I_t[d] == 0
+            continue
+        end
     
-        for t in 1:100
-            step_abm!(population_state, n_pop_size, model_params, 0.01)
+        for t in 1:10
+            step_abm!(population_state, n_pop_size, model_params, 0.1)
         end
      
     end
