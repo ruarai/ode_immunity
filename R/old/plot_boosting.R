@@ -90,18 +90,18 @@ p_abm <- cowplot::plot_grid(
 )
 p_abm
 
-x_lambda <- h5read("data/paper/bifurcations.jld2", "x_lambda")
+x_rho <- h5read("data/paper/bifurcations.jld2", "x_rho")
 y_I_sol <- h5read("data/paper/bifurcations.jld2", "y_I_sol")
 y_fixed_I <- h5read("data/paper/bifurcations.jld2", "y_fixed_I")
 
 
 
-x_lambda_boost <- h5read("data/paper/bifurcations_w_boost.jld2", "x_lambda")
+x_rho_boost <- h5read("data/paper/bifurcations_w_boost.jld2", "x_rho")
 y_I_sol_boost <- h5read("data/paper/bifurcations_w_boost.jld2", "y_I_sol")
 y_fixed_I_boost <- h5read("data/paper/bifurcations_w_boost.jld2", "y_fixed_I")
 
-plot(y_I_sol_boost[x_lambda_boost == 0.006,28000:30000])
-plot(y_I_sol[x_lambda_boost == 0.006,28000:30000])
+plot(y_I_sol_boost[x_rho_boost == 0.006,28000:30000])
+plot(y_I_sol[x_rho_boost == 0.006,28000:30000])
 
 
 
@@ -111,14 +111,14 @@ maximums_boost <- apply(y_I_sol_boost[,28000:32000], 1, FUN = max)
 
 
 plot_data_bifurcation <- tibble(
-  lambda = x_lambda,
+  rho = x_rho,
   fixed_I = y_fixed_I,
   maximum = maximums
 ) 
 
 
 plot_data_bifurcation_boost <- tibble(
-  lambda = x_lambda_boost,
+  rho = x_rho_boost,
   fixed_I = y_fixed_I_boost,
   maximum = maximums_boost
 ) 
@@ -126,26 +126,26 @@ plot_data_bifurcation_boost <- tibble(
 
 p_bifurcation <- ggplot() +
   
-  geom_line(aes(x = lambda, y = maximum),
+  geom_line(aes(x = rho, y = maximum),
             linewidth = 1.0,
             colour = ggokabeito::palette_okabe_ito(3), alpha = 0.5,
-            plot_data_bifurcation_boost %>% filter(lambda > 0.0002)) +
-  geom_line(aes(x = lambda, y = fixed_I),
+            plot_data_bifurcation_boost %>% filter(rho > 0.0002)) +
+  geom_line(aes(x = rho, y = fixed_I),
             linewidth = 1.0, colour = ggokabeito::palette_okabe_ito(3),
-            plot_data_bifurcation_boost %>% filter(lambda > 0.0071)) +
-  geom_line(aes(x = lambda, y = fixed_I),
+            plot_data_bifurcation_boost %>% filter(rho > 0.0071)) +
+  geom_line(aes(x = rho, y = fixed_I),
             linewidth = 1.0, linetype = "11",
-            plot_data_bifurcation_boost %>% filter(lambda <= 0.0071)) +
+            plot_data_bifurcation_boost %>% filter(rho <= 0.0071)) +
   
-  geom_line(aes(x = lambda, y = maximum),
+  geom_line(aes(x = rho, y = maximum),
             linewidth = 0.5, 
-            plot_data_bifurcation %>% filter(lambda > 0.0002, lambda <= 0.0071)) +
-  geom_line(aes(x = lambda, y = fixed_I),
+            plot_data_bifurcation %>% filter(rho > 0.0002, rho <= 0.0071)) +
+  geom_line(aes(x = rho, y = fixed_I),
             linewidth = 0.5,
-            plot_data_bifurcation %>% filter(lambda > 0.0071)) +
-  geom_line(aes(x = lambda, y = fixed_I),
+            plot_data_bifurcation %>% filter(rho > 0.0071)) +
+  geom_line(aes(x = rho, y = fixed_I),
             linewidth = 0.5, linetype = "11", alpha = 0.5,
-            plot_data_bifurcation %>% filter(lambda <= 0.0071)) +
+            plot_data_bifurcation %>% filter(rho <= 0.0071)) +
   
   xlab("Decay rate λ") +
   ylab("Infected I") +

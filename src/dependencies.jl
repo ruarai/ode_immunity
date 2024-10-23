@@ -1,10 +1,16 @@
 
+
+using Pkg
+
+if dirname(Base.active_project()) != pwd()
+    Pkg.activate(".")
+end
+
+
 if VERSION != v"1.10.0"
     println("Julia version has changed. Is this correct?")
 end
 
-using Pkg
-Pkg.activate(".")
 
 # Base dependencies
 using Distributions

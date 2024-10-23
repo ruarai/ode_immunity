@@ -7,7 +7,7 @@ using JLD2
 
 
 model_params = make_model_parameters(
-    k = 128, beta = 1.5 * 0.25, gamma = 0.25, lambda = 0.002,
+    k = 128, beta = 1.5 * 0.25, gamma = 0.25, rho = 0.002,
     b = 0.6, m = 20, c_jump_dist = Normal(0.8, 0.1); boosting = false
 )
 

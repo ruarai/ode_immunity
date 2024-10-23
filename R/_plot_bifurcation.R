@@ -16,6 +16,7 @@ maximums <- apply(y_I_sol[,28000:32000], 1, FUN = max)
 
 
 
+
 plot_data_bifurcation <- tibble(
   rho = x_rho,
   fixed_I = y_fixed_I,

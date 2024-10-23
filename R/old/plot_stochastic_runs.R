@@ -6,7 +6,7 @@ library(ggtext)
 source("R/plot_theme.R")
 
 
-x_lambda <- h5read("data/paper/bifurcations.jld2", "x_lambda")
+x_rho <- h5read("data/paper/bifurcations.jld2", "x_rho")
 y_fixed_I <- h5read("data/paper/bifurcations.jld2", "y_fixed_I")
 
 sol_S_basic <- h5read("data/paper/stochastic_basic.jld2", "sol_S")
@@ -26,7 +26,7 @@ p1 <- sol_basic %>%
   summarise(I = sum(I), .by = t) %>% 
   ggplot() +
   
-  geom_hline(yintercept = y_fixed_I[x_lambda == 0.006] * 1e5,
+  geom_hline(yintercept = y_fixed_I[x_rho == 0.006] * 1e5,
              linewidth = 0.4, colour = colour_C) +
   geom_line(aes(x = t, y = I),
             linewidth = 0.5) +
@@ -60,7 +60,7 @@ p2 <- sol_eq %>%
   summarise(I = sum(I), .by = t) %>% 
   ggplot() +
   
-  geom_hline(yintercept = y_fixed_I[x_lambda == 0.008] * 1e5,
+  geom_hline(yintercept = y_fixed_I[x_rho == 0.008] * 1e5,
              linewidth = 0.4, colour = colour_C)  +
   
   geom_line(aes(x = t, y = I),

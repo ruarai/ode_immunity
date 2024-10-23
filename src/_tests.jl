@@ -8,13 +8,13 @@ k = 16
 R = 1.5
 gamma = 0.25
 beta = R * gamma
-lambda = 0.002
+rho = 0.002
 b = 0.25
 m = 40
 c_jump_dist = Normal(0.8, 0.05)
 
 model_params = make_model_parameters(
-    k = k, beta = beta, gamma = gamma, lambda = lambda,
+    k = k, beta = beta, gamma = gamma, rho = rho,
     b = b, m = m, c_jump_dist = c_jump_dist; boosting = false
 )
 
@@ -56,7 +56,7 @@ end
 end
 
 model_params_stoch = make_model_parameters(
-    k = 16, beta = 0.25 * 1.5, gamma = 0.25, lambda = 0.006,
+    k = 16, beta = 0.25 * 1.5, gamma = 0.25, rho = 0.006,
     b = 0.25, m = 40, c_jump_dist = Normal(0.8, 0.05); boosting = false
 )
 

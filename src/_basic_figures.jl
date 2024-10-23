@@ -3,19 +3,28 @@ include("dependencies.jl")
 
 using JLD2
 
-k = 16
+k = 32
+C = 8.0
 R = 1.5
 gamma = 0.25
 beta = R * gamma
-lambda = 0.002
-b = 0.25
-m = 40
-c_jump_dist = Normal(0.8, 0.05)
+rho = 0.002
+b = 2^3
+h = 8
+c_jump_dist = Normal(2^6, 2^3)
 
 model_params = make_model_parameters(
-    k = k, beta = beta, gamma = gamma, lambda = lambda,
-    b = b, m = m, c_jump_dist = c_jump_dist; boosting = false
+    k = k, beta = beta, gamma = gamma, C = C, rho = rho,
+    b = b, h = h, c_jump_dist = c_jump_dist; boosting = false
 )
+
+plot(model_params.c_levels)
+
+p_acq = (model_params.c_levels .^ h) ./ (b ^ h .+ model_params.c_levels .^ h)
+plot(log2.(model_params.c_levels), p_acq)
+
+
+heatmap(min.(model_params.M, 0.2))
 
 ode_sparsity = ode_get_sparsity(model_params)
 
@@ -37,12 +46,16 @@ c_levels = model_params.c_levels
 
 jldsave("data/paper/basic.jld2"; c_levels, sol_I, sol_S)
 
+plot(sum(sol_I,dims = 2)[1:3000])
 
 
 model_params_boosting = make_model_parameters(
-    k = k, beta = beta, gamma = gamma, lambda = lambda,
-    b = b, m = m, c_jump_dist = c_jump_dist; boosting = true
+    k = k, beta = beta, gamma = gamma, C = C, rho = rho,
+    b = b, h = h, c_jump_dist = c_jump_dist; boosting = true
 )
+
+
+heatmap(min.(model_params_boosting.M, 0.2))
 
 n_inf_0 = 0.0001
 n_days = 365*20
@@ -59,3 +72,4 @@ end
 
 
 jldsave("data/paper/basic_boosting.jld2"; sol_I, sol_S)
+

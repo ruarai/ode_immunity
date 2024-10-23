@@ -6,7 +6,7 @@ using JLD2
 # Continued periodic behaviour
 n_days = 8000
 model_params = make_model_parameters(
-    k = 16, beta = 0.25 * 1.5, gamma = 0.25, lambda = 0.006,
+    k = 16, beta = 0.25 * 1.5, gamma = 0.25, rho = 0.006,
     b = 0.25, m = 40, c_jump_dist = Normal(0.8, 0.05); boosting = false
 )
 u_t, inf = ctmc_sim(model_params, n_days, 10, 0)
@@ -32,7 +32,7 @@ jldsave("data/paper/stochastic_basic.jld2"; sol_I, sol_S)
 # Periodic behaviour around the limit cycle
 n_days = 8000
 model_params = make_model_parameters(
-    k = 16, beta = 0.25 * 1.5, gamma = 0.25, lambda = 0.008,
+    k = 16, beta = 0.25 * 1.5, gamma = 0.25, rho = 0.008,
     b = 0.25, m = 40, c_jump_dist = Normal(0.8, 0.05); boosting = false
 )
 u_t, inf = ctmc_sim(model_params, n_days, 10, 0)
@@ -54,7 +54,7 @@ jldsave("data/paper/stochastic_around_equilbrium.jld2"; sol_I, sol_S)
 # Extinction
 
 model_params = make_model_parameters(
-    k = 16, beta = 0.25 * 1.5, gamma = 0.25, lambda = 0.005,
+    k = 16, beta = 0.25 * 1.5, gamma = 0.25, rho = 0.005,
     b = 0.25, m = 40, c_jump_dist = Normal(0.8, 0.05); boosting = false
 )
 
@@ -101,7 +101,7 @@ jldsave("data/paper/stochastic_extinction.jld2"; sol_I, sol_S)
 const stoch_pop_size = 30000 # need to re evaluate functions after this
 n_days = 1000
 model_params = make_model_parameters(
-    k = 16, beta = 0.25 * 1.5, gamma = 0.25, lambda = 0.007,
+    k = 16, beta = 0.25 * 1.5, gamma = 0.25, rho = 0.007,
     b = 0.25, m = 40, c_jump_dist = Normal(0.8, 0.5); boosting = false
 )
 u_t, inf = ctmc_sim(model_params, n_days, 10, 0)
