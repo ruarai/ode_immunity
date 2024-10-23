@@ -11,7 +11,7 @@ source("../ode_immunity_multi/R/plot_theme.R")
 sol_S <- h5read("data/paper/basic.jld2", "sol_S")
 sol_I <- h5read("data/paper/basic.jld2", "sol_I")
 
-k <- 32
+k <- 16
 
 
 c_levels <- 0:(ncol(sol_I) - 1) / k
@@ -39,20 +39,22 @@ p_summ <- sol %>%
   plot_theme_paper +
   theme(panel.grid.major = element_gridline) +
   
+  # scale_y_log10() +
+  
   ggtitle("A — Infection prevalence")
 
 p_heatmap <- sol %>%
   
-  mutate(S = pmin(S, 0.06)) %>% 
+  mutate(S = pmin(S, 0.1)) %>% 
   
   ggplot() +
   geom_tile(aes(x = t, y = c * k, fill = S, colour = S)) +
   
   scale_fill_viridis_c(option = "B", name = "Proportion",
-                       breaks = c(0.001, 0.03, 0.06), labels = c("0.00", "0.03", "≥0.06"))  +
+                       breaks = c(0.001, 0.05, 0.1), labels = c("0.00", "0.05", "≥0.10"))  +
   
   scale_colour_viridis_c(option = "B", name = "Proportion",
-                         breaks = c(0.001, 0.03, 0.06), labels = c("0.00", "0.03", "≥0.06")) +
+                         breaks = c(0.001, 0.05, 0.1), labels = c("0.00", "0.05", "≥0.10")) +
   
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +

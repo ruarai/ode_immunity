@@ -36,7 +36,7 @@ function make_model_parameters(;
 
     c_jump_dist,
 
-    boosting = true
+    boosting = "none"
 )
     S = k + 1
     c_levels = collect(2 .^ (C .* (0:k) / k))
@@ -44,10 +44,14 @@ function make_model_parameters(;
     p_acq = (c_levels .^ h) ./ (b ^ h .+ c_levels .^ h)
 
     B = build_waning_matrix(S)
-    if boosting
+    if boosting == "linear"
         M = build_immunity_matrix_boost(S, c_levels, c_jump_dist)
-    else
+    elseif boosting == "loglinear"
+        M = build_immunity_matrix_boost_loglinear(S, c_levels, c_jump_dist)
+    elseif boosting == "none"
         M = build_immunity_matrix_no_boost(S, c_levels, c_jump_dist)
+    else
+        throw(ArgumentError("Unknown boosting method specified"))
     end
 
     wane_transition_rate = rho * k
@@ -87,7 +91,7 @@ function build_waning_matrix(N)
 end
 
 # Create the post-infection immunity matrix M. Captures the probability of transitioning from
-# strata j to strata i (bit backwards so matrix multiplication works)
+# strata j to strata i (bit backwards so matrix multiplication works later)
 function build_immunity_matrix_boost(N, c_levels, c_jump_dist)
     mat_immunity = zeros(N, N)
 
@@ -100,6 +104,24 @@ function build_immunity_matrix_boost(N, c_levels, c_jump_dist)
             mat_immunity[i, j] = 1 - cdf(c_jump_dist, c_levels[i] - c_levels[j])
         else
             mat_immunity[i, j] = cdf(c_jump_dist, c_levels[i + 1] - c_levels[j]) - cdf(c_jump_dist, c_levels[i] - c_levels[j])
+        end
+    end
+
+    return mat_immunity
+end
+
+function build_immunity_matrix_boost_loglinear(N, c_levels, c_jump_dist)
+    mat_immunity = zeros(N, N)
+
+    for j in 1:N, i in j:N
+        if j == N
+            mat_immunity[i, j] = 1
+        elseif i == j
+            mat_immunity[i, j] = cdf(c_jump_dist, log2(c_levels[i + 1]) - log2(c_levels[j]))
+        elseif i == N
+            mat_immunity[i, j] = 1 - cdf(c_jump_dist, log2(c_levels[i]) - log2(c_levels[j]))
+        else
+            mat_immunity[i, j] = cdf(c_jump_dist, log2(c_levels[i + 1]) - log2(c_levels[j])) - cdf(c_jump_dist, log2(c_levels[i]) - log2(c_levels[j]))
         end
     end
 

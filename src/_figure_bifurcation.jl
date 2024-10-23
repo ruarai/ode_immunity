@@ -3,18 +3,20 @@ include("dependencies.jl")
 using JLD2
 
 k = 32
+C = 8.0
 R = 1.5
 gamma = 0.25
 beta = R * gamma
-b = 0.25
-m = 40
-c_jump_dist = Normal(0.8, 0.05)
+rho_0 = 0.0025
+b = 2^3
+h = 8
+c_jump_dist = Normal(2^6, 2^5)
 
-# Temporary model_parameters so sparsity can be generated
 model_params_0 = make_model_parameters(
-    k = k, beta = beta, gamma = gamma, rho = 0.1,
-    b = b, m = m, c_jump_dist = c_jump_dist; boosting = false
+    k = k, beta = beta, gamma = gamma, C = C, rho = rho_0,
+    b = b, h = h, c_jump_dist = c_jump_dist; boosting = "none"
 )
+
 ode_sparsity = ode_get_sparsity(model_params_0)
 
 n_inf_0 = 0.01
@@ -22,16 +24,17 @@ n_days = 32000
 
 
 
-x_rho = collect(0.0:0.0001:0.015)
+x_rho = collect(0.0:0.00005:0.007)
 
 y_fixed_I = zeros(length(x_rho))
 
 y_I_sol = zeros(length(x_rho), n_days)
 
 Threads.@threads for i in eachindex(x_rho)
+
     model_params = make_model_parameters(
-        k = k, beta = beta, gamma = gamma, rho = x_rho[i],
-        b = b, m = m, c_jump_dist = c_jump_dist, boosting = false
+        k = k, beta = beta, gamma = gamma, C = C, rho = x_rho[i],
+        b = b, h = h, c_jump_dist = c_jump_dist; boosting = "none"
     )
 
     # Calculate the fixed point/steady state solution
