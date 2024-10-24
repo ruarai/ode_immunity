@@ -15,6 +15,7 @@ end
 # Base dependencies
 using Distributions
 using LinearAlgebra
+using ProgressMeter
 
 # Steady state solutions dependencies
 #using MultiFloats

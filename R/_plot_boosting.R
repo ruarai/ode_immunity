@@ -2,6 +2,7 @@
 
 library(tidyverse)
 library(rhdf5)
+library(patchwork)
 
 
 source("../ode_immunity_multi/R/plot_theme.R")
@@ -26,12 +27,6 @@ plot_data_summ_inf <- plot_data %>%
   summarise(prevalence = sum(prevalence), .groups = "drop") %>%
   filter(class == "I")
 
-
-
-
-
-
-
 plot_data_means <- plot_data %>%
   group_by(t, scenario, class) %>%
   mutate(p = prevalence / sum(prevalence)) %>% 
@@ -39,102 +34,220 @@ plot_data_means <- plot_data %>%
   filter(class == "S")
 
 
-cowplot::plot_grid(
-  ggplot() +
-    geom_line(aes(x = t, y = prevalence, colour = scenario),
-              plot_data_summ_inf %>% filter(scenario != "None"),
-              linewidth = 0.7) +
-    geom_line(aes(x = t, y = prevalence, colour = scenario),
-              plot_data_summ_inf %>% filter(scenario == "None"),
-              linewidth = 1) +
-    
-    coord_cartesian(xlim = c(0, 2000)) +
-    
-    scale_x_continuous(breaks = scales::breaks_extended(),
-                       labels = scales::label_comma()) +
-    
-    ggokabeito::scale_colour_okabe_ito(name = "Boosting", order = c(5, 3, 9)) +
-    
-    xlab("Time *t* (days)") + ylab("Infection prevalence") +
-    
-    plot_theme_paper +
-    theme(panel.grid.major = element_gridline,
-          legend.position = "none") +
-    
-    ggtitle("A — Infection prevalence"),
-  ggplot() +
-    geom_line(aes(x = t, y = c, colour = scenario),
-              linewidth = 0.7,
-              plot_data_means %>% filter(scenario != "None")) +
-    geom_line(aes(x = t, y = c, colour = scenario),
-              linewidth = 1.0,
-              plot_data_means %>% filter(scenario == "None")) +
-    
-    coord_cartesian(xlim = c(0, 2000), ylim = c(2^-0.5, 2^6)) +
-    
-    xlab("Time *t* (days)") + ylab("Concentration") +
-    
-    ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
-    
-    scale_y_continuous(trans = "log2", labels = scales::label_log(base = 2), breaks = c(2^0, 2^2, 2^4, 2^6)) +
-    
-    scale_x_continuous(breaks = scales::breaks_extended(),
-                       labels = scales::label_comma()) +
-    
-    plot_theme_paper +
-    theme(panel.grid.major = element_gridline,
-          legend.position = "bottom") +
-    ggtitle("B — Population mean antibody concentration"),
+p_example_prevalence <- ggplot() +
+  geom_line(aes(x = t, y = prevalence, colour = scenario),
+            plot_data_summ_inf %>% filter(scenario != "None"),
+            linewidth = 0.7) +
+  geom_line(aes(x = t, y = prevalence, colour = scenario),
+            plot_data_summ_inf %>% filter(scenario == "None"),
+            linewidth = 1) +
   
-  ncol = 1, rel_heights = c(1, 1.2)
-)
+  coord_cartesian(xlim = c(0, 2000)) +
   
-
-
-ggsave(
-  "results/results_basic_boosting.png",
-  width = 10, height = 7,
-  bg = "white"
-)
-
-boosting_matrices <- h5read("data/paper/basic_boosting.jld2", "boosting_matrices")
-
-plot_data_matrices <- boosting_matrices %>%
-  reshape2::melt(varnames = c("scenario", "i", "j"), value.name = "p") %>%
-  mutate(
-    scenario = c("none", "linear", "loglinear")[scenario],
-    scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting"))
-  ) %>%
-  mutate(scenario = fct_rev(scenario)) %>%
-  mutate(p = pmin(p, 0.2))
-
-
-ggplot() +
-  geom_tile(aes(x = j - 0.5, y = i - 0.5, fill = p),
-            plot_data_matrices) +
+  scale_x_continuous(breaks = scales::breaks_extended(),
+                     labels = scales::label_comma()) +
   
-  geom_abline(intercept = 0, slope = 1,
-              colour = "white", linewidth = 0.7, linetype = "44") +
+  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
+  guides(colour = guide_legend(reverse = TRUE)) +
   
-  facet_wrap(~scenario, ncol = 3) +
-  
-  geom_hline(yintercept = 32 * (3/8), colour = "white") +
-  
-  coord_fixed() +
-  
-  xlab("*I~i~*") + ylab("*S~j~*") +
-  
-  scale_fill_viridis_c(option = "A", name = "P(*I~i~* → *S~j~*)",
-                       breaks = c(0.001, 0.1, 0.2), labels = c("0.0", "0.1", "≥0.2")) +
+  xlab("Time *t* (days)") + ylab("Prevalence") +
   
   plot_theme_paper +
-  theme(legend.title = element_markdown()) +
-  ggtitle("Transition probabilities under different boosting scenarios")
+  theme(panel.grid.major = element_gridline,
+        legend.position = "right",
+        legend.direction = "horizontal") +
+  
+  ggtitle(NULL, "Infection prevalence")
+p_example_mean_antibodies <- ggplot() +
+  geom_line(aes(x = t, y = c, colour = scenario),
+            linewidth = 0.7,
+            plot_data_means %>% filter(scenario != "None")) +
+  geom_line(aes(x = t, y = c, colour = scenario),
+            linewidth = 1.0,
+            plot_data_means %>% filter(scenario == "None")) +
+  
+  coord_cartesian(xlim = c(0, 2000), ylim = c(2^-0.5, 2^6)) +
+  
+  xlab("Time *t* (days)") + ylab("Concentration") +
+                                   
+  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
+  guides(colour = guide_legend(reverse = TRUE)) +
+  
+  scale_y_continuous(trans = "log2", labels = scales::label_log(base = 2), breaks = c(2^0, 2^2, 2^4, 2^6)) +
+  
+  scale_x_continuous(breaks = scales::breaks_extended(),
+                     labels = scales::label_comma()) +
+  
+  plot_theme_paper +
+  theme(panel.grid.major = element_gridline,
+        legend.position = "none") +
+  ggtitle(NULL, "Population mean antibody concentration")
 
+
+
+x_rho <- h5read("data/paper/bifurcations_w_boost.jld2", "x_rho")
+y_I_sol <- h5read("data/paper/bifurcations_w_boost.jld2", "y_I_sol")
+y_fixed_I <- h5read("data/paper/bifurcations_w_boost.jld2", "y_fixed_I")
+
+
+data_I_sol <- y_I_sol %>%
+  reshape2::melt(varnames = c("rho", "scenario", "t"), value.name = "prev") %>% 
+  mutate(scenario = c("none", "linear", "loglinear")[scenario],
+         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
+         rho = x_rho[rho])
+
+maxmins <- data_I_sol %>%
+  filter(t > 28000, rho > 0.0003) %>% 
+  group_by(rho, scenario) %>%
+  summarise(max = max(prev), min = min(prev))
+
+data_fixed <- y_fixed_I %>%
+  reshape2::melt(varnames = c("rho", "scenario"), value.name = "prev") %>% 
+  mutate(scenario = c("none", "linear", "loglinear")[scenario],
+         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
+         rho = x_rho[rho])
+
+
+rho_to_halflife <- function(x) {1 / (8 * x)}
+
+bifur_points <- maxmins %>% 
+  left_join(data_fixed) %>%
+  mutate(diff = max - prev) %>%
+  ungroup() %>% 
+  group_by(scenario) %>% 
+  filter(diff > 1e-4) %>%
+  slice(n()) %>%
+  select(rho, scenario, prev = prev)
+
+
+p_bifurcation <- ggplot() +
+  geom_vline(xintercept = 0.0025,
+             colour = "grey80", linewidth = 1.0, alpha = 0.5) +
+  geom_line(aes(x = rho, y = max, colour = scenario, linewidth = scenario),
+            maxmins) +
+  geom_line(aes(x = rho, y = prev, colour = scenario, linewidth = scenario),
+            linetype = "44",
+            data_fixed) +
+  
+  
+  geom_point(aes(x = rho, y = prev, colour = scenario), 
+             bifur_points,
+             size = 3) +
+  
+  geom_point(aes(x = rho, y = prev), 
+             bifur_points,
+             size = 1.5, colour = "white") +
+  
+  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
+  
+  scale_linewidth_manual(values = c("Log-linear boosting" = 0.7, "Linear boosting" = 0.7, "No boosting" = 1.0)) +
+  
+  xlab("Waning constant <i>ρ</i>") +
+  ylab("Infection prevalence") +
+  
+  coord_cartesian(xlim = c(-0.0002, 0.0075),
+                  ylim = c(-0.005, 0.06),
+                  expand = FALSE) +
+  
+  plot_theme_paper +
+  theme(legend.position = "none",
+        axis.text.x.top = element_text(margin = margin(b = 0.3, unit = "cm")),
+        panel.grid.major = element_gridline,
+        plot.subtitle = element_markdown()) +
+  
+  ggtitle(NULL, "Bifurcation over <i>ρ</i>")
+
+p_bifurcation
+
+
+period <- h5read("data/paper/bifurcations_w_boost.jld2", "period")
+attack_rate <- h5read("data/paper/bifurcations_w_boost.jld2", "attack_rate")
+
+data_period <- period %>%
+  reshape2::melt(varnames = c("rho", "scenario"), value.name = "period") %>% 
+  mutate(scenario = c("none", "linear", "loglinear")[scenario],
+         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
+         rho = x_rho[rho]) %>%
+  
+  left_join(bifur_points %>% select(rho_bifur = rho, scenario)) %>%
+  filter(rho < rho_bifur, period > 0)
+
+min_periods <- data_period %>% group_by(scenario) %>% slice(1) %>%
+  select(rho_min = rho, scenario)
+
+data_attack_rate <- attack_rate %>%
+  reshape2::melt(varnames = c("rho", "scenario"), value.name = "attack_rate") %>% 
+  mutate(scenario = c("none", "linear", "loglinear")[scenario],
+         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
+         rho = x_rho[rho]) %>%
+  
+  left_join(bifur_points %>% select(rho_bifur = rho, scenario)) %>%
+  left_join(min_periods) %>% 
+  filter(rho < rho_bifur, rho >= rho_min)
+
+
+p_period <- ggplot() +
+  geom_vline(xintercept = 0.0025,
+             colour = "grey80", linewidth = 1.0, alpha = 0.5) +
+  geom_line(aes(x = rho, y = period, colour = scenario, linewidth = scenario),
+            data_period) +
+  
+  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
+  
+  scale_linewidth_manual(values = c("Log-linear boosting" = 0.7, "Linear boosting" = 0.7, "No boosting" = 1.0)) +
+  
+  xlab("Waning constant <i>ρ</i>") +
+  ylab("Period (days)") +
+  
+  coord_cartesian(xlim = c(-0.0002, 0.0075),
+                  ylim = c(-0.05, NA),
+                  expand = FALSE) +
+  
+  plot_theme_paper +
+  theme(legend.position = "none",
+        panel.grid.major = element_gridline) +
+  
+  ggtitle(NULL,"Periodic solution period")
+
+
+p_attack_rate <- ggplot() +
+  geom_vline(xintercept = 0.0025,
+             colour = "grey80", linewidth = 1.0, alpha = 0.5) +
+  geom_line(aes(x = rho, y = attack_rate, colour = scenario, linewidth = scenario),
+            data_attack_rate) +
+  
+  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
+  
+  scale_linewidth_manual(values = c("Log-linear boosting" = 0.7, "Linear boosting" = 0.7, "No boosting" = 1.0)) +
+  
+  xlab("Waning constant <i>ρ</i>") +
+  ylab("Attack rate") +
+  
+  coord_cartesian(xlim = c(-0.0002, 0.0075),
+                  ylim = c(-0.05, 0.7),
+                  expand = FALSE) +
+  
+  plot_theme_paper +
+  theme(legend.position = "none",
+        panel.grid.major = element_gridline) +
+  
+  ggtitle(NULL, "Attack rate across periodic solution")
+
+p_left <- (p_bifurcation / p_period / p_attack_rate) +
+  plot_layout(tag_level = "new")
+
+p_right <- (p_example_prevalence / p_example_mean_antibodies) +
+  plot_layout(tag_level = "keep")
+
+(p_left | p_right) / guide_area() + 
+  plot_layout(guides = "collect", heights = c(1, 0.1)) +
+  plot_annotation(tag_levels = list(c("A", "B", " "), c("i.", "ii.", "iii.")), tag_sep = " ") &
+  theme(plot.tag = element_text(face = "bold", size = 15))
 
 ggsave(
-  "results/results_boosting_matrices.png",
-  width = 10, height = 4.5,
+  "results/results_boosting.pdf",
+  device = cairo_pdf,
+  width = 12, height = 9,
   bg = "white"
 )
 
