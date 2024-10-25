@@ -8,7 +8,7 @@ C = 8.0
 R = 1.5
 gamma = 0.25
 beta = R * gamma
-rho = 0.0025
+rho = 0.003
 b = 2^3
 h = 8
 c_jump_dist = Normal(2^6, 2^5)
@@ -40,11 +40,6 @@ for d in 1:n_days, i in 1:model_params.S
     sol_t[1, d, 1, :] = ode_solution(d)[ode_ix(c_sus, 1:model_params.S, model_params.S)]
     sol_t[1, d, 2, :] = ode_solution(d)[ode_ix(c_inf, 1:model_params.S, model_params.S)]
 end
-
-
-
-plot(sum(sol_I,dims = 2)[1:3000])
-
 
 model_params_boosting = make_model_parameters(
     k = k, beta = beta, gamma = gamma, C = C, rho = rho,

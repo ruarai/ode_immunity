@@ -231,7 +231,7 @@ p_attack_rate <- ggplot() +
   theme(legend.position = "none",
         panel.grid.major = element_gridline) +
   
-  ggtitle(NULL, "Attack rate across periodic solution")
+  ggtitle(NULL, "Periodic solution attack rate")
 
 p_left <- (p_bifurcation / p_period / p_attack_rate) +
   plot_layout(tag_level = "new")
@@ -247,7 +247,7 @@ p_right <- (p_example_prevalence / p_example_mean_antibodies) +
 ggsave(
   "results/results_boosting.pdf",
   device = cairo_pdf,
-  width = 12, height = 9,
+  width = 14, height = 9,
   bg = "white"
 )
 

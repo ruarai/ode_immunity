@@ -58,7 +58,6 @@ Threads.@threads for i in eachindex(x_rho)
 end
 
 
-jldsave("data/paper/bifurcations_w_boost.jld2"; x_rho, y_fixed_I, y_I_sol)
 
 
 plot(y_I_sol[20,1,1:1000])
@@ -90,7 +89,7 @@ function get_period(y)
     period_len = period_lens[ix_first_min + 1]
 
     if period_len * 2 > length(y)
-        return - 1
+        return -1
     else
         return period_len
     end
@@ -111,7 +110,7 @@ y_inc_sol = diff(y_count_sol, dims = 3)
 burn_in_days = 40000
 
 
-period = zeros(length(x_rho), 3)
+period = zeros(Int, length(x_rho), 3)
 attack_rate = zeros(length(x_rho), 3)
 
 @showprogress Threads.@threads for i in eachindex(x_rho)
@@ -123,4 +122,8 @@ attack_rate = zeros(length(x_rho), 3)
 end
 
 
+plot(x_rho, period)
 plot(x_rho, attack_rate)
+
+
+jldsave("data/paper/bifurcations_w_boost.jld2"; x_rho, y_fixed_I, y_I_sol, y_inc_sol, period, attack_rate)
