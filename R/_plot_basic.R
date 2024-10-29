@@ -12,7 +12,7 @@ c_levels <- h5read("data/paper/basic_boosting.jld2", "c_levels")
 plot_data <- sol_t %>%
   reshape2::melt(varnames = c("scenario", "t", "class", "strata"), value.name = "prevalence") %>% 
   mutate(class = c("S", "I")[class], c = c_levels[strata]) %>%
-  filter(scenario == 1, t < 2000)
+  filter(scenario == 1, t < 1500)
 
 
 plot_data_summ_inf <- plot_data %>%
@@ -34,7 +34,7 @@ p_summ <- plot_data_summ_inf %>%
   geom_line(aes(x = t, y = prevalence),
             linewidth = 0.7) +
   
-  coord_cartesian(xlim = c(0, 2000)) +
+  coord_cartesian(xlim = c(0, 1500)) +
   
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
@@ -73,7 +73,7 @@ p_heatmap <- plot_data %>%
                        name = "Strata *i*"
                      )) +
   
-  coord_cartesian(xlim = c(0, 2000), ylim = c(2^0, 2^8)) +
+  coord_cartesian(xlim = c(0, 1500), ylim = c(2^0, 2^8)) +
   
   xlab("Time *t* (days)") + ylab("Antibody<br>concentration *c~i~*") +
   
@@ -91,7 +91,7 @@ p_heatmap <- plot_data %>%
 
 ggsave(
   "results/results_basic.png",
-  width = 10, height = 8,
+  width = 10, height = 7,
   bg = "white"
 )
 

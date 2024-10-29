@@ -6,6 +6,8 @@ struct model_parameters
     beta::Float64
     gamma::Float64
 
+    eta::Float64
+
     C::Float64
     rho::Float64
 
@@ -29,6 +31,7 @@ function make_model_parameters(;
     k,
 
     beta, gamma, 
+
     
     C, rho,
 
@@ -36,6 +39,7 @@ function make_model_parameters(;
 
     c_jump_dist,
 
+    eta = 0.0,
     boosting = "none"
 )
     S = k + 1
@@ -60,6 +64,8 @@ function make_model_parameters(;
         k, S,
 
         beta, gamma, 
+
+        eta,
         
         C, rho,
 

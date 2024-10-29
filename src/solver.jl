@@ -17,9 +17,11 @@ function ode_step!(du, u, model_params, t)
     du[ode_ix(1, 2:k, k)] = -flow_decay
     du[ode_ix(1, 1:(k - 1), k)] .+= flow_decay
 
+    beta_t = model_params.beta * (1 + model_params.eta * sin(2 * pi * t / 365.0))
+
     flow_sus_to_inf = @views u[ode_ix(c_sus, 1:k, k)] .*
         sum(u[ode_ix(c_inf, 1:k, k)]) .*
-        model_params.beta .* 
+        beta_t .* 
         (1 .- model_params.p_acq)
 
     flow_inf_to_sus = @views u[ode_ix(c_inf, 1:k, k)] .* model_params.gamma
