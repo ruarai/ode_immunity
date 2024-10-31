@@ -1,9 +1,7 @@
 
 include("dependencies.jl")
 
-
-
-
+using JLD2
 
 function ode_ab!(du, u, p, t)
     k1 = p[1]
@@ -35,6 +33,8 @@ for i in eachindex(x_c1), j in eachindex(x_c2)
     y_prop[i, j] = sol[3,end] / (sol[2,end] + sol[3,end])
 end
 
+
+jldsave("data/paper/binding_approx.jld2"; x_c1, x_c2, y_prop)
 
 plot(log10.(x_c1), y_prop)
 vline!([log10.(1.0)])

@@ -66,3 +66,5 @@ heatmap(y_I_sol[:,1:8000])
 heatmap(y_I_sol[:,20000:end])
 
 plot(y_I_sol[:,end], legend = false)
+
+

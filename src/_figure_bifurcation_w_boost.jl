@@ -64,46 +64,7 @@ plot(y_I_sol[20,1,1:1000])
 
 
 
-function get_period(y)
-    period_lens = 10:length(y)
-    err_period = zeros(length(period_lens))
 
-    y = log.(y)
-
-    for i in eachindex(period_lens)
-        err_period[i] = sum(abs.(y[1:(end - period_lens[i]), :]' .- y[(period_lens[i] + 1):(end), :]'))
-    end
-
-    err_diff = diff(err_period)
-    err_diff[abs.(err_diff) .< 1e-4] .= 0
-    err_diff_sign = sign.(err_diff)
-
-    err_mins = (err_diff_sign[1:(end - 1)] .< 0) .&&  (err_diff_sign[2:end] .> 0)
-    
-    ix_first_min = findfirst(err_mins)
-
-    if isnothing(ix_first_min)
-        return -1
-    end
-
-    period_len = period_lens[ix_first_min + 1]
-
-    if period_len * 2 > length(y)
-        return -1
-    else
-        return period_len
-    end
-end
-
-function get_periodic_attack_rate(incidence, period_len)
-    windows = [(i, i + period_len - 1) for i in 1:(length(incidence) - period_len)]
-    sums = [sum(incidence[w[1]:w[2]]) for w in windows]
-
-    if length(sums) >= 1
-        return median(sums)
-    end
-    return NaN
-end
 
 y_inc_sol = diff(y_count_sol, dims = 3)
 

@@ -16,6 +16,7 @@ end
 using Distributions
 using LinearAlgebra
 using ProgressMeter
+using NaNMath
 
 # Steady state solutions dependencies
 #using MultiFloats
@@ -37,7 +38,7 @@ include("model_parameters.jl")
 include("solver.jl")
 include("solve_stochastic.jl")
 include("agent_based.jl")
-include("dde.jl")
+include("periodic.jl")
 
 
 function expand_grid(; kws...)
