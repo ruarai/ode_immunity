@@ -43,8 +43,8 @@ ggplot() +
             linewidth = 0.7, colour = colour_C,
             plot_data_approx) +
   
-  geom_rug(aes(x = c2), plot_data_c2, 
-           length = unit(0.15, "npc")) +
+  # geom_rug(aes(x = c2), plot_data_c2, 
+  #          length = unit(0.15, "npc")) +
   
   xlab("*c<sub>x</sub>*") +
   ylab("*p*<sub>bound</sub>") +
@@ -59,3 +59,10 @@ ggplot() +
   plot_theme_paper +
   theme(strip.text = element_markdown(),
         panel.grid.major = element_gridline)
+
+ggsave(
+  "results/results_binding_approx.pdf",
+  device = cairo_pdf,
+  width = 12, height = 5,
+  bg = "white"
+)
