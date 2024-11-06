@@ -65,6 +65,8 @@ plot(y_I_sol[8, 30000:end])
 heatmap(y_I_sol[:,1:8000])
 heatmap(y_I_sol[:,20000:end])
 
-plot(y_I_sol[:,end], legend = false)
+
+
+plot(x_h, mean(y_I_sol[:,20000:end], dims = 2), legend = false, xaxis = :log2)
 
 

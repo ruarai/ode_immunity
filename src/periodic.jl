@@ -1,40 +1,48 @@
-function get_period(y)
-    period_lens = 10:(length(y) ÷ 2)
-    err_period = zeros(length(period_lens))
+function get_period(ode_sol, model_params, burn_in_days, n_days, Δt, ϵ)
+    t = burn_in_days:Δt:n_days
+    y = ode_sol(t)[1:(model_params.S * 2), :]'
+    y_zeroed = copy(y)
 
-    log_y = log.(y)
+    for j in axes(y, 1)
+        y_zeroed[j, :] .= y[j, :] .- y[1, :]
+    end
+    sum_abs2 = vec(sum(abs2.(y_zeroed), dims = 2))
 
-    min_err = Inf
-    min_err_index = -1
-    for i in eachindex(period_lens)
-        err_p = 0.0
+    t_repeats = t[findall(sum_abs2 .< ϵ)]
+    n_repeats = length(t_repeats)
+    t_repeat_groups = zeros(Int, length(t_repeats))
+    t_repeat_groups[1] = 1
 
-        diff = abs.(log_y[1:(end - period_lens[i]), :]' .- log_y[(period_lens[i] + 1):(end), :]')
-
-        for j in eachindex(diff)
-            if !isnan(diff[j]) && !isinf(diff[j])
-                err_p += diff[j]
-            end
-        end
-
-        err_period[i] = err_p
-
-        if err_p < min_err - 20
-            min_err = err_p
-            min_err_index = i
+    for i in 2:n_repeats
+        diff = t_repeats[i] - t_repeats[i - 1]
+        if diff > 10.0
+            t_repeat_groups[i] = t_repeat_groups[i - 1] + 1
+        else
+            t_repeat_groups[i] = t_repeat_groups[i - 1]
         end
     end
 
-    
-    return period_lens[min_err_index]
+    t_repeats_grouped = zeros(maximum(t_repeat_groups))
+
+    for i in eachindex(t_repeats_grouped)
+        t_repeats_grouped[i] = mean(t_repeats[t_repeat_groups .== i])
+    end
+
+    period_samples = (t_repeats_grouped .- t_repeats_grouped[1]) ./ (0:(length(t_repeats_grouped) - 1))
+
+    return (mean(period_samples[2:end]), std(period_samples[2:end]), length(period_samples[2:end]))
 end
 
-function get_periodic_attack_rate(incidence, period_len)
-    windows = [(i, i + period_len - 1) for i in 1:(length(incidence) - period_len)]
-    sums = [sum(incidence[w[1]:w[2]]) for w in windows]
 
-    if length(sums) >= 1
-        return median(sums)
+function get_periodic_attack_rate(ode_solution, model_params, burn_in_days, n_days, mean_period)
+    if isnan(mean_period)
+        return NaN
     end
-    return NaN
+
+    windows = [[i, i + mean_period] for i in burn_in_days:(n_days - mean_period)] 
+
+    cumulative_attacks = [sum(ode_solution(t)[(model_params.S * 2 + 1):(model_params.S * 3),:], dims = 1) for t in windows]
+    attack_mat = mapreduce(permutedims, hcat, cumulative_attacks)
+
+    return mean(attack_mat[2, :] .- attack_mat[1, :])
 end

@@ -7,23 +7,6 @@ library(patchwork)
 
 source("../ode_immunity_multi/R/plot_theme.R")
 
-
-
-sol_t <- h5read("data/paper/basic_boosting.jld2", "sol_t")
-c_levels <- h5read("data/paper/basic_boosting.jld2", "c_levels")
-
-plot_data <- sol_t %>%
-  reshape2::melt(varnames = c("scenario", "t", "class", "strata"), value.name = "prevalence") %>% 
-  mutate(class = c("S", "I")[class], c = c_levels[strata]) %>%
-  filter(scenario == 1)
- 
-
-plot_data_summ_inf <- plot_data %>%
-  group_by(scenario, t, class) %>%
-  summarise(prevalence = sum(prevalence), .groups = "drop") %>%
-  filter(class == "I")
-
-
 rhos <- c(0.001, 0.003, 0.005)
 
 
@@ -38,7 +21,7 @@ data_I_sol <- y_I_sol %>%
   filter(scenario == 1)
 
 maxmins <- data_I_sol %>%
-  filter(t > 28000, rho > 0.0003) %>% 
+  filter(t > 20000, rho > 0.0003) %>% 
   group_by(rho, scenario) %>%
   summarise(max = max(prev), min = min(prev))
 
@@ -147,12 +130,15 @@ period <- h5read("data/paper/bifurcations_w_boost.jld2", "period")
 attack_rate <- h5read("data/paper/bifurcations_w_boost.jld2", "attack_rate")
 
 data_period <- period %>%
-  reshape2::melt(varnames = c("rho", "scenario"), value.name = "period") %>% 
-  mutate(rho = x_rho[rho]) %>%
-  filter(scenario == 1) %>% 
+  reshape2::melt(varnames = c("rho", "scenario", "name"), value.name = "value") %>% 
+  mutate(name = c("period", "period_sd", "period_n")[name],
+         rho = x_rho[rho]) %>%
+  filter(scenario == 1) %>%
+  
+  pivot_wider() %>% 
   
   left_join(bifur_points %>% select(rho_bifur = rho, scenario)) %>%
-  filter(rho < rho_bifur, period > 0)
+  filter(rho < rho_bifur, period_sd < 1, period_n > 1)
 
 min_periods <- data_period %>% group_by(scenario) %>% slice(1) %>%
   select(rho_min = rho, scenario)
@@ -191,9 +177,6 @@ p_period <- ggplot() +
 
 
 p_attack_rate <- ggplot() +
-  # geom_vline(aes(xintercept = rho), 
-  #            tibble(rho = rhos), 
-  #            colour = "grey80", linewidth = 1.0, alpha = 0.5) +
   geom_line(aes(x = rho, y = attack_rate),
             linewidth = 1.0,
             data_attack_rate) +
@@ -221,11 +204,11 @@ p_examples <- data_I_sol %>%
   geom_line(aes(x = t, y = prev),
             linewidth = 0.7) +
   
-  geom_hline(aes(yintercept = fixed_prev, linetype = stable), 
-             tibble(rho = rhos, fixed_prev = y_fixed_I_rhos) %>% 
-               mutate(stable = rho > bifur_point[1],
-                      rho_label = str_c("<i>ρ </i>  = ", rho)),
-             linewidth = 0.7, colour = "black") +
+  # geom_hline(aes(yintercept = fixed_prev, linetype = stable), 
+  #            tibble(rho = rhos, fixed_prev = y_fixed_I_rhos) %>% 
+  #              mutate(stable = rho > bifur_point[1],
+  #                     rho_label = str_c("<i>ρ </i>  = ", rho)),
+  #            linewidth = 0.7, colour = "black") +
   
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
@@ -267,3 +250,22 @@ ggsave(
   bg = "white"
 )
 
+
+ggplot() +
+  geom_line(aes(x = rho, y = attack_rate / period),
+            linewidth = 1.0,
+            data_attack_rate) +
+  geom_line(aes(x = rho, y = prev * 0.25),
+            linewidth = 1.0,
+            data_fixed %>% filter(rho >= bifur_points$rho[1])) +
+  
+  xlab("Waning constant <i>ρ</i>") +
+  ylab("Attack rate") +
+  
+  coord_cartesian(xlim = c(-0.0002, 0.0075)) +
+  
+  plot_theme_paper +
+  theme(legend.position = "none",
+        panel.grid.major = element_gridline) +
+  
+  ggtitle(NULL, "Attack rate across period")

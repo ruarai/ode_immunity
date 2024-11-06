@@ -24,16 +24,23 @@ model_params_0 = make_model_parameters(
 
 ode_sparsity = ode_get_sparsity(model_params_0)
 
+ϵ = 10^-6
+
+Δt = 0.25
 n_inf_0 = 0.01
-n_days = 64000
+burn_in_days = 20000
+n_days = 25000
 
 x_rho = collect(0.0:0.00005:0.007)
 
 y_fixed_I = zeros(length(x_rho), length(boost_scenarios))
 y_I_sol = zeros(length(x_rho), length(boost_scenarios), n_days)
-y_count_sol = zeros(length(x_rho), length(boost_scenarios), n_days)
 
-Threads.@threads for i in eachindex(x_rho)
+
+period = zeros(length(x_rho), 3, 3)
+attack_rate = zeros(length(x_rho), 3)
+
+@showprogress Threads.@threads for i in eachindex(x_rho)
     for j in eachindex(boost_scenarios)
         model_params = make_model_parameters(
             k = k, beta = beta, gamma = gamma, C = C, rho = x_rho[i],
@@ -46,45 +53,27 @@ Threads.@threads for i in eachindex(x_rho)
     
     
         # Calculate a (not-necessarily-stable) solution of the ODE over time
-        ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
+        ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat = Δt)
     
         for d in 1:n_days
             y_I_sol[i, j, d] = sum(ode_solution(d)[ode_ix(c_inf, 1:model_params.S, model_params.S)])
-            y_count_sol[i, j, d] = sum(ode_solution(d)[ode_ix(c_count, 1:model_params.S, model_params.S)])
         end
 
-    end
-    println(i)
-end
+
+        period_mean, period_sd, period_n = get_period(ode_solution, model_params, burn_in_days, n_days, Δt, ϵ)
+
+        period[i, j, :] = [period_mean period_sd period_n]
+        attack_rate[i, j] = get_periodic_attack_rate(ode_solution, model_params, burn_in_days, n_days, period_mean)
 
 
-
-
-plot(y_I_sol[20,1,1:1000])
-
-
-
-
-
-y_inc_sol = diff(y_count_sol, dims = 3)
-
-burn_in_days = 40000
-
-
-period = zeros(Int, length(x_rho), 3)
-attack_rate = zeros(length(x_rho), 3)
-
-@showprogress Threads.@threads for i in eachindex(x_rho)
-    for j in 1:3
-        incidence = y_inc_sol[i, j, burn_in_days:end]
-        period[i, j] = get_period(incidence)
-        attack_rate[i, j] = get_periodic_attack_rate(incidence, period[i, j])
     end
 end
 
+ix_good = period[:,:,2] .< 1
 
-plot(x_rho, period)
+plot(x_rho, period[:,:,1])
+plot(x_rho, period[:,:,2])
 plot(x_rho, attack_rate)
 
 
-jldsave("data/paper/bifurcations_w_boost.jld2"; x_rho, y_fixed_I, y_I_sol, y_inc_sol, period, attack_rate)
+jldsave("data/paper/bifurcations_w_boost.jld2"; x_rho, y_fixed_I, y_I_sol, period, attack_rate)

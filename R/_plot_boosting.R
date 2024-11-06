@@ -97,7 +97,7 @@ data_I_sol <- y_I_sol %>%
          rho = x_rho[rho])
 
 maxmins <- data_I_sol %>%
-  filter(t > 28000, rho > 0.0003) %>% 
+  filter(t > 20000, rho > 0.0003) %>% 
   group_by(rho, scenario) %>%
   summarise(max = max(prev), min = min(prev))
 
@@ -164,13 +164,16 @@ period <- h5read("data/paper/bifurcations_w_boost.jld2", "period")
 attack_rate <- h5read("data/paper/bifurcations_w_boost.jld2", "attack_rate")
 
 data_period <- period %>%
-  reshape2::melt(varnames = c("rho", "scenario"), value.name = "period") %>% 
+  reshape2::melt(varnames = c("rho", "scenario", "name"), value.name = "value") %>% 
   mutate(scenario = c("none", "linear", "loglinear")[scenario],
+         name = c("period", "period_sd", "period_n")[name],
          scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
          rho = x_rho[rho]) %>%
   
+  pivot_wider() %>% 
+  
   left_join(bifur_points %>% select(rho_bifur = rho, scenario)) %>%
-  filter(rho < rho_bifur, period > 0)
+  filter(rho < rho_bifur, period_sd < 1, period_n > 1)
 
 min_periods <- data_period %>% group_by(scenario) %>% slice(1) %>%
   select(rho_min = rho, scenario)
@@ -183,7 +186,9 @@ data_attack_rate <- attack_rate %>%
   
   left_join(bifur_points %>% select(rho_bifur = rho, scenario)) %>%
   left_join(min_periods) %>% 
-  filter(rho < rho_bifur, rho >= rho_min)
+  filter(rho < rho_bifur, rho >= rho_min) %>%
+  
+  left_join(data_period %>% select(rho, scenario, period))
 
 
 p_period <- ggplot() +
@@ -224,7 +229,7 @@ p_attack_rate <- ggplot() +
   ylab("Attack rate") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(-0.05, 0.7),
+                  ylim = c(0.0, 0.7),
                   expand = FALSE) +
   
   plot_theme_paper +
@@ -232,6 +237,8 @@ p_attack_rate <- ggplot() +
         panel.grid.major = element_gridline) +
   
   ggtitle(NULL, "Periodic solution attack rate")
+
+p_attack_rate
 
 p_left <- (p_bifurcation / p_period / p_attack_rate) +
   plot_layout(tag_level = "new")
@@ -247,7 +254,7 @@ p_right <- (p_example_prevalence / p_example_mean_antibodies) +
 ggsave(
   "results/results_boosting.pdf",
   device = cairo_pdf,
-  width = 14, height = 9,
+  width = 14, height = 10,
   bg = "white"
 )
 

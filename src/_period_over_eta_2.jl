@@ -1,5 +1,7 @@
 include("dependencies.jl")
 
+using JLD2
+
 k = 32
 C = 8.0
 R = 1.5
@@ -20,8 +22,8 @@ ode_sparsity = ode_get_sparsity(model_params_0)
 
 
 n_inf_0 = 0.0001
-n_days = 60000
 n_days_burn_in = 30000
+n_days = (n_days_burn_in + 365 * 100 * 2)
 
 ϵ = 1e-6
 Δt = 0.25
@@ -93,9 +95,14 @@ heatmap( log.(y_inf))
 heatmap((n_days - 10000):n_days, x_eta, log.(y_inf[:,(n_days - 10000):n_days]))
 
 
-i = 48
+i = 200
 scatter(x_eta[good_est], y_period[good_est, 1], ylim = (0, 2000))
 vline!([x_eta[i]])
 plot(log.(y_inf[i,1:2000]))
 plot!(log.(y_inf[i, round(Int, y_period[i, 1]):2000]))
 vline!([j * y_period[i, 1] for j in 1:2])
+
+
+t_seq = collect(t_daily)
+x_eta = collect(x_eta)
+jldsave("data/paper/period_over_eta.jld2"; x_eta, y_period, y_inf, t_seq)

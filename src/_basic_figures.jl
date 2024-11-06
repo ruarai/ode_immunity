@@ -20,7 +20,7 @@ model_params = make_model_parameters(
 
 plot(model_params.c_levels)
 
-p_acq = (model_params.c_levels .^ h) ./ (b ^ h .+ model_params.c_levels .^ h)
+p_acq = model_params.p_acq
 plot(log2.(model_params.c_levels), p_acq)
 
 
@@ -34,12 +34,18 @@ n_days = 365*20
 
 sol_t = zeros(3, n_days, 2, model_params.S)
 
-ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
+ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat = 0.25)
 
 for d in 1:n_days, i in 1:model_params.S
     sol_t[1, d, 1, :] = ode_solution(d)[ode_ix(c_sus, 1:model_params.S, model_params.S)]
     sol_t[1, d, 2, :] = ode_solution(d)[ode_ix(c_inf, 1:model_params.S, model_params.S)]
 end
+
+period_mean, period_sd, period_n = get_period(ode_solution, model_params, 365*10, n_days, 0.25, 10^-6)
+
+get_periodic_attack_rate(ode_solution, model_params, 365 * 10, n_days, period_mean)
+
+get_steady_state(model_params, true)
 
 model_params_boosting = make_model_parameters(
     k = k, beta = beta, gamma = gamma, C = C, rho = rho,
@@ -84,4 +90,4 @@ boosting_matrices[2,:,:] = model_params_boosting.M
 boosting_matrices[3,:,:] = model_params_boosting_loglinear.M
 
 
-jldsave("data/paper/basic_boosting.jld2"; sol_t, c_levels, boosting_matrices)
+jldsave("data/paper/basic_boosting.jld2"; sol_t, c_levels, boosting_matrices, p_acq)
