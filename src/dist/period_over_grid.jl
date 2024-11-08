@@ -36,8 +36,14 @@ n_days = (n_days_burn_in + 365 * 100 * 2)
 t = n_days_burn_in:Δt:n_days
 t_daily = (n_days_burn_in + 1):n_days
 
-x_eta = 0.00:0.0002:0.05
-x_rho = 0.0025:0.0025:0.5
+# Seasonality
+x_eta = 0.00:0.002:0.5
+length(x_eta)
+
+# Waning
+rho_step = 0.00002
+x_rho = rho_step:rho_step:0.005
+length(x_rho)
 
 x_vals = vec([(x1, x2) for x1 in x_eta, x2 in x_rho])
 
