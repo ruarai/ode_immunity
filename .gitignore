@@ -3,3 +3,7 @@ Manifest.toml
 .Rproj.user
 .Rhistory
 .RData
+data_dist/
+slurm_out/
+data/
+.vscode/
