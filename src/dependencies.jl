@@ -17,6 +17,7 @@ using Distributions
 using LinearAlgebra
 using ProgressMeter
 using NaNMath
+using JLD2
 
 # Steady state solutions dependencies
 #using MultiFloats
@@ -39,6 +40,13 @@ include("solver.jl")
 include("solve_stochastic.jl")
 include("agent_based.jl")
 include("periodic.jl")
+
+
+function get_jobs(arg_ix, n_array, n_jobs)
+    jobs_per_array = ceil(Int, n_jobs / n_array)
+    
+    return ((arg_ix - 1) * jobs_per_array + 1):min(n_jobs, arg_ix * jobs_per_array)
+end
 
 
 function expand_grid(; kws...)
