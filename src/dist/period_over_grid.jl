@@ -37,11 +37,11 @@ t = n_days_burn_in:Δt:n_days
 t_daily = (n_days_burn_in + 1):n_days
 
 # Seasonality
-x_eta = 0.00:0.002:0.5
+x_eta = 0.00:0.001:0.5
 length(x_eta)
 
 # Waning
-rho_step = 0.00002
+rho_step = 0.00001
 x_rho = rho_step:rho_step:0.005
 length(x_rho)
 
@@ -54,6 +54,7 @@ x_vals_job = x_vals[ix_jobs]
 
 y_period = zeros(length(x_vals_job), 3)
 y_inf_maxima = zeros(length(x_vals_job), 2)
+attack_rate = zeros(length(x_vals_job))
 
 time_start = Base.time()
 
@@ -69,49 +70,21 @@ Threads.@threads for i in eachindex(x_vals_job)
 
     y = ode_solution(t)[1:(model_params.S * 2), :]'
 
-    y_daily = ode_solution(t_daily)[(model_params.S + 1):(model_params.S * 2), :]'
+    y_inf = ode_solution(t)[(model_params.S + 1):(model_params.S * 2), :]'
     y_inf_maxima[i, 1] = minimum(sum(y_daily, dims = 2))
     y_inf_maxima[i, 2] = maximum(sum(y_daily, dims = 2))
 
-    y_zeroed = copy(y)
+    period_mean, period_sd, period_n = get_period(ode_solution, model_params, burn_in_days, n_days, Δt, ϵ)
 
-    for j in axes(y, 1)
-        y_zeroed[j, :] .= y[j, :] .- y[1, :]
-    end
-    sum_abs2 = vec(sum(abs2.(y_zeroed), dims = 2))
-
-    t_repeats = t[findall(sum_abs2 .< ϵ)]
-    n_repeats = length(t_repeats)
-    t_repeat_groups = zeros(Int, length(t_repeats))
-    t_repeat_groups[1] = 1
-
-    for i in 2:n_repeats
-        diff = t_repeats[i] - t_repeats[i - 1]
-        if diff > 10.0
-            t_repeat_groups[i] = t_repeat_groups[i - 1] + 1
-        else
-            t_repeat_groups[i] = t_repeat_groups[i - 1]
-        end
-    end
-
-    t_repeats_grouped = zeros(maximum(t_repeat_groups))
-
-    for i in eachindex(t_repeats_grouped)
-        t_repeats_grouped[i] = mean(t_repeats[t_repeat_groups .== i])
-    end
-
-    period_samples = (t_repeats_grouped .- t_repeats_grouped[1]) ./ (0:(length(t_repeats_grouped) - 1))
-    y_period[i, 1] = mean(period_samples[2:end])
-    y_period[i, 2] = std(period_samples[2:end])
-    y_period[i, 3] = length(period_samples[2:end])
+    period[i, :] = [period_mean period_sd period_n]
+    attack_rate[i] = get_periodic_attack_rate(ode_solution, model_params, burn_in_days, n_days, period_mean)
 end
 
 time_elapsed = Base.time() - time_start
 
 println("Completed $(length(ix_jobs)) jobs in $(round(time_elapsed, digits = 2)), ($(round(time_elapsed/length(ix_jobs), digits = 2)) seconds/job)")
 
-t_seq = collect(t_daily)
 x_vals_job = stack(x_vals_job)
-jldsave("data_dist/period_grid/$(arg_ix).jld2"; x_vals_job, t_seq, y_period, y_inf_maxima)
+jldsave("data_dist/period_grid/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_maxima, attack_rate)
 
 println("Outputs saved.")
