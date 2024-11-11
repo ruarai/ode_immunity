@@ -53,8 +53,8 @@ x_vals_job = x_vals[ix_jobs]
 
 
 y_period = zeros(length(x_vals_job), 3)
-y_inf_maxima = zeros(length(x_vals_job), 2)
-attack_rate = zeros(length(x_vals_job))
+y_inf_maxima = zeros(length(x_vals_job), 3)
+y_attack_rate = zeros(length(x_vals_job))
 
 time_start = Base.time()
 
@@ -71,13 +71,15 @@ Threads.@threads for i in eachindex(x_vals_job)
     y = ode_solution(t)[1:(model_params.S * 2), :]'
 
     y_inf = ode_solution(t)[(model_params.S + 1):(model_params.S * 2), :]'
-    y_inf_maxima[i, 1] = minimum(sum(y_daily, dims = 2))
-    y_inf_maxima[i, 2] = maximum(sum(y_daily, dims = 2))
+    y_inf_sum = sum(y_inf, dims = 2)
+    y_inf_maxima[i, 1] = minimum(y_inf_sum)
+    y_inf_maxima[i, 2] = maximum(y_inf_sum)
+    y_inf_maxima[i, 3] = mean(y_inf_sum)
 
-    period_mean, period_sd, period_n = get_period(ode_solution, model_params, burn_in_days, n_days, Δt, ϵ)
+    period_mean, period_sd, period_n = get_period(ode_solution, model_params, n_days_burn_in, n_days, Δt, ϵ)
 
-    period[i, :] = [period_mean period_sd period_n]
-    attack_rate[i] = get_periodic_attack_rate(ode_solution, model_params, burn_in_days, n_days, period_mean)
+    y_period[i, :] = [period_mean period_sd period_n]
+    y_attack_rate[i] = get_periodic_attack_rate(ode_solution, model_params, n_days_burn_in, n_days, period_mean)
 end
 
 time_elapsed = Base.time() - time_start
@@ -85,6 +87,6 @@ time_elapsed = Base.time() - time_start
 println("Completed $(length(ix_jobs)) jobs in $(round(time_elapsed, digits = 2)), ($(round(time_elapsed/length(ix_jobs), digits = 2)) seconds/job)")
 
 x_vals_job = stack(x_vals_job)
-jldsave("data_dist/period_grid/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_maxima, attack_rate)
+jldsave("data_dist/period_grid/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_maxima, y_attack_rate)
 
 println("Outputs saved.")
