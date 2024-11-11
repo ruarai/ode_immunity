@@ -5,7 +5,7 @@ C = 8.0
 R = 1.5
 gamma = 0.25
 beta = R * gamma
-rho = 0.003
+rho = 0.0028
 b = 2^3
 h = 8
 c_jump_dist = Normal(2^6, 2^5)
@@ -21,12 +21,16 @@ t = n_days_burn_in:Δt:n_days
 
 model_params = make_model_parameters(
     k = k, beta = beta, gamma = gamma, C = C, rho = rho,
-    b = b, h = h, c_jump_dist = c_jump_dist; boosting = "none", eta = 0.1
+    b = b, h = h, c_jump_dist = c_jump_dist; boosting = "none", eta = 0.3
 )
 
 ode_sparsity = ode_get_sparsity(model_params)
 ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat = 0.1)
 
+
+y_inf = ode_solution(t)[(model_params.S + 1):(model_params.S * 2), :]
+
+plot(sum(y_inf, dims = 1)[1:100000])
 
 y = ode_solution(t)[1:(model_params.S * 2), :]'
 y_zeroed = copy(y)
