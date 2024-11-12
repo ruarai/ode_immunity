@@ -29,12 +29,13 @@ ode_sparsity = ode_get_sparsity(model_params_0)
 Δt = 0.25
 n_inf_0 = 0.01
 burn_in_days = 20000
-n_days = 25000
+n_days = 40000
 
 x_rho = collect(0.0:0.00005:0.007)
 
 y_fixed_I = zeros(length(x_rho), length(boost_scenarios))
 y_I_sol = zeros(length(x_rho), length(boost_scenarios), n_days)
+y_inc_sol = zeros(length(x_rho), length(boost_scenarios), n_days)
 
 
 period = zeros(length(x_rho), 3, 3)
@@ -57,6 +58,7 @@ attack_rate = zeros(length(x_rho), 3)
     
         for d in 1:n_days
             y_I_sol[i, j, d] = sum(ode_solution(d)[ode_ix(c_inf, 1:model_params.S, model_params.S)])
+            y_inc_sol[i, j, d] = sum(ode_solution(d)[ode_ix(c_count, 1:model_params.S, model_params.S)])
         end
 
 
@@ -69,6 +71,8 @@ attack_rate = zeros(length(x_rho), 3)
     end
 end
 
+y_inc_sol = diff(y_inc_sol, dims = 3)
+
 ix_good = period[:,:,2] .< 1
 
 plot(x_rho, period[:,:,1])
@@ -76,4 +80,4 @@ plot(x_rho, period[:,:,2])
 plot(x_rho, attack_rate)
 
 
-jldsave("data/paper/bifurcations_w_boost.jld2"; x_rho, y_fixed_I, y_I_sol, period, attack_rate)
+jldsave("data/paper/bifurcations_w_boost.jld2"; x_rho, y_fixed_I, y_I_sol, y_inc_sol, period, attack_rate)

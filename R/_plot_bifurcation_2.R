@@ -7,12 +7,16 @@ library(patchwork)
 
 source("../ode_immunity_multi/R/plot_theme.R")
 
+rho_to_halflife <- function(x) {1 / (8 * x)}
 rhos <- c(0.001, 0.003, 0.005)
 
 
 x_rho <- h5read("data/paper/bifurcations_w_boost.jld2", "x_rho")
 y_I_sol <- h5read("data/paper/bifurcations_w_boost.jld2", "y_I_sol")
+y_inc_sol <- h5read("data/paper/bifurcations_w_boost.jld2", "y_inc_sol")
 y_fixed_I <- h5read("data/paper/bifurcations_w_boost.jld2", "y_fixed_I")
+
+days_burn_in <- 20000
 
 
 data_I_sol <- y_I_sol %>%
@@ -20,8 +24,19 @@ data_I_sol <- y_I_sol %>%
   mutate(rho = x_rho[rho]) %>%
   filter(scenario == 1)
 
+
+data_inc_sol <- y_inc_sol %>%
+  reshape2::melt(varnames = c("rho", "scenario", "t"), value.name = "inc") %>% 
+  mutate(rho = x_rho[rho]) %>%
+  filter(scenario == 1)
+
+data_mean_incidence <- data_inc_sol %>%
+  filter(t > 10000) %>% 
+  group_by(rho) %>%
+  summarise(mean_inc = mean(inc))
+
 maxmins <- data_I_sol %>%
-  filter(t > 20000, rho > 0.0003) %>% 
+  filter(t > days_burn_in, rho > 0.0003) %>% 
   group_by(rho, scenario) %>%
   summarise(max = max(prev), min = min(prev))
 
@@ -41,9 +56,9 @@ bifur_points <- maxmins %>%
 
 
 p_bifurcation <- ggplot() +
-  # geom_vline(aes(xintercept = rho), 
-  #            tibble(rho = rhos), 
-  #            colour = "grey80", linewidth = 1.0, alpha = 0.5) +
+  geom_vline(aes(xintercept = rho),
+             tibble(rho = rhos),
+             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
   
   geom_line(aes(x = rho, y = max),
             linewidth = 1.0,
@@ -81,10 +96,12 @@ p_bifurcation <- ggplot() +
   
   ggtitle(NULL, "Bifurcation over <i>ρ</i>")
 
+p_bifurcation
+
 p_bifurcation_min <- ggplot() +
-  # geom_vline(aes(xintercept = rho), 
-  #            tibble(rho = rhos), 
-  #            colour = "grey80", linewidth = 1.0, alpha = 0.5) +
+  geom_vline(aes(xintercept = rho),
+             tibble(rho = rhos),
+             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
   geom_line(aes(x = rho, y = min),
             linewidth = 1.0,
             colour = colour_C,
@@ -110,10 +127,11 @@ p_bifurcation_min <- ggplot() +
   ylab("Infection prevalence") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(1e-9, 0.06),
+                  ylim = c(1e-10, 1.0),
                   expand = FALSE) +
   
-  scale_y_log10(labels = scales::label_log()) +
+  scale_y_log10(labels = scales::label_log(),
+                breaks = scales::breaks_log(n = 5)) +
   
   plot_theme_paper +
   theme(legend.position = "none",
@@ -155,45 +173,78 @@ data_attack_rate <- attack_rate %>%
 
 
 p_period <- ggplot() +
-  # geom_vline(aes(xintercept = rho), 
-  #            tibble(rho = rhos), 
-  #            colour = "grey80", linewidth = 1.0, alpha = 0.5) +
-  geom_line(aes(x = rho, y = period),
+  geom_vline(aes(xintercept = rho),
+             tibble(rho = rhos),
+             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+  geom_line(aes(x = rho, y = 365 / period),
             linewidth = 1.0,
             data_period) +
   
   xlab("Waning constant <i>ρ</i>") +
-  ylab("Period (days)") +
+  ylab("Frequency (years<sup>-1</sup>)") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(-0.05, NA),
+                  ylim = c(-0.1, 2.5),
                   expand = FALSE) +
+  
+  scale_y_continuous(labels = scales::label_comma()) +
   
   plot_theme_paper +
   theme(legend.position = "none",
         panel.grid.major = element_gridline) +
   
-  ggtitle(NULL,"Periodic solution period")
+  ggtitle(NULL,"Periodic solution frequency")
+
+p_period
+
+# p_attack_rate <- ggplot() +
+#   geom_vline(aes(xintercept = rho),
+#              tibble(rho = rhos),
+#              colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+#   geom_line(aes(x = rho, y = attack_rate),
+#             linewidth = 1.0,
+#             data_attack_rate) +
+#   
+#   xlab("Waning constant <i>ρ</i>") +
+#   ylab("Attack rate") +
+#   
+#   coord_cartesian(xlim = c(-0.0002, 0.0075),
+#                   ylim = c(-0.05, 0.7),
+#                   expand = FALSE) +
+#   
+#   plot_theme_paper +
+#   theme(legend.position = "none",
+#         panel.grid.major = element_gridline) +
+#   
+#   ggtitle(NULL, "Attack rate across period")
 
 
-p_attack_rate <- ggplot() +
-  geom_line(aes(x = rho, y = attack_rate),
+p_mean_inc <- ggplot() +
+  geom_vline(aes(xintercept = rho),
+             tibble(rho = rhos),
+             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+  geom_line(aes(x = rho, y = mean_inc * 365),
             linewidth = 1.0,
-            data_attack_rate) +
+            data_mean_incidence) +
   
   xlab("Waning constant <i>ρ</i>") +
-  ylab("Attack rate") +
+  ylab("Infection incidence") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(-0.05, 0.7),
+                  ylim = c(-0.1, 0.007 * 365),
                   expand = FALSE) +
+  
   
   plot_theme_paper +
   theme(legend.position = "none",
         panel.grid.major = element_gridline) +
   
-  ggtitle(NULL, "Attack rate across period")
+  ggtitle(NULL, "Mean yearly infection incidence")
 
+plot_data_ex_fixed_points <- data_fixed %>%
+  filter(rho %in% rhos) %>%
+  mutate(stable = rho >= bifur_points$rho[[1]]) %>% 
+  mutate(rho_label = str_c("<i>ρ </i>  = ", rho))
 
 
 p_examples <- data_I_sol %>%
@@ -203,12 +254,10 @@ p_examples <- data_I_sol %>%
   
   geom_line(aes(x = t, y = prev),
             linewidth = 0.7) +
-  
-  # geom_hline(aes(yintercept = fixed_prev, linetype = stable), 
-  #            tibble(rho = rhos, fixed_prev = y_fixed_I_rhos) %>% 
-  #              mutate(stable = rho > bifur_point[1],
-  #                     rho_label = str_c("<i>ρ </i>  = ", rho)),
-  #            linewidth = 0.7, colour = "black") +
+
+  geom_hline(aes(yintercept = prev, linetype = stable),
+             plot_data_ex_fixed_points,
+             linewidth = 0.7, colour = "black") +
   
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
@@ -230,11 +279,15 @@ p_examples <- data_I_sol %>%
         panel.grid.major.x = element_gridline)
 
 
+p_period / p_mean_inc / p_attack_rate
+
 p_top <- (
   (p_bifurcation / p_bifurcation_min) |
-  (p_period / p_attack_rate)
+  (p_period / p_mean_inc)
 ) +
   plot_layout(tag_level = "new")
+
+p_top
 
 (p_top / p_examples) +
   plot_layout(heights = c(2, 1)) + 
@@ -251,21 +304,9 @@ ggsave(
 )
 
 
-ggplot() +
-  geom_line(aes(x = rho, y = attack_rate / period),
-            linewidth = 1.0,
-            data_attack_rate) +
-  geom_line(aes(x = rho, y = prev * 0.25),
-            linewidth = 1.0,
-            data_fixed %>% filter(rho >= bifur_points$rho[1])) +
-  
-  xlab("Waning constant <i>ρ</i>") +
-  ylab("Attack rate") +
-  
-  coord_cartesian(xlim = c(-0.0002, 0.0075)) +
-  
-  plot_theme_paper +
-  theme(legend.position = "none",
-        panel.grid.major = element_gridline) +
-  
-  ggtitle(NULL, "Attack rate across period")
+
+
+data_I_sol %>%
+  filter(t > 20000, rho > 0.0003) %>% 
+  group_by(rho, scenario) %>%
+  mutate(inc = prev)
