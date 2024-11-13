@@ -1,5 +1,4 @@
 
-
 using Pkg
 
 if dirname(Base.active_project()) != pwd()
@@ -18,6 +17,7 @@ using LinearAlgebra
 using ProgressMeter
 using NaNMath
 using JLD2
+using Dates
 
 # Steady state solutions dependencies
 #using MultiFloats
@@ -53,3 +53,6 @@ function expand_grid(; kws...)
     names, vals = keys(kws), values(kws)
     return DataFrame(NamedTuple{names}(t) for t in Iterators.product(vals...))
 end
+
+
+println("$(now()) -- dependencies loaded")

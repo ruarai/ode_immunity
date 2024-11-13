@@ -1,10 +1,10 @@
 println("Running: period over grid")
 
-include("../dependencies.jl")
-
 arg_ix = parse(Int, ARGS[1])
 n_array = parse(Int, ARGS[2])
 println("Job at array index $arg_ix of $n_array, with n_cpu = $(Threads.nthreads())")
+
+include("../dependencies.jl")
 
 
 k = 32
@@ -53,7 +53,7 @@ x_vals_job = x_vals[ix_jobs]
 
 
 y_period = zeros(length(x_vals_job), 3)
-y_inf_maxima = zeros(length(x_vals_job), 3)
+y_inf_summary = zeros(length(x_vals_job), 6)
 y_attack_rate = zeros(length(x_vals_job))
 
 time_start = Base.time()
@@ -68,13 +68,17 @@ Threads.@threads for i in eachindex(x_vals_job)
 
     ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat = Δt)
 
-    y = ode_solution(t)[1:(model_params.S * 2), :]'
+    y_inf = vec(sum(ode_solution(t)[ode_ix(c_inf, 1:model_params.S, model_params.S), :], dims = 1))
+    y_inf_summary[i, 1] = minimum(y_inf)
+    y_inf_summary[i, 2] = maximum(y_inf)
+    y_inf_summary[i, 3] = mean(y_inf)
 
-    y_inf = ode_solution(t)[(model_params.S + 1):(model_params.S * 2), :]'
-    y_inf_sum = sum(y_inf, dims = 2)
-    y_inf_maxima[i, 1] = minimum(y_inf_sum)
-    y_inf_maxima[i, 2] = maximum(y_inf_sum)
-    y_inf_maxima[i, 3] = mean(y_inf_sum)
+    y_count = vec(sum(ode_solution(t)[ode_ix(c_count, 1:model_params.S, model_params.S), :], dims = 1))
+    y_inc = diff(y_count)
+    y_inf_summary[i, 4] = minimum(y_inc)
+    y_inf_summary[i, 5] = maximum(y_inc)
+    y_inf_summary[i, 6] = mean(y_inc)
+
 
     period_mean, period_sd, period_n = get_period(ode_solution, model_params, n_days_burn_in, n_days, Δt, ϵ)
 
@@ -87,6 +91,6 @@ time_elapsed = Base.time() - time_start
 println("Completed $(length(ix_jobs)) jobs in $(round(time_elapsed, digits = 2)), ($(round(time_elapsed/length(ix_jobs), digits = 2)) seconds/job)")
 
 x_vals_job = stack(x_vals_job)
-jldsave("data_dist/period_grid/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_maxima, y_attack_rate)
+jldsave("data_dist/period_grid/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_summary, y_attack_rate)
 
 println("Outputs saved.")

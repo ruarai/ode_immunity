@@ -13,8 +13,8 @@ c_jump_dist = Normal(2^6, 2^5)
 
 
 n_inf_0 = 0.0001
-n_days = 120000
-n_days_burn_in = 40000
+n_days = 40000
+n_days_burn_in = 20000
 
 Δt = 0.1
 t = n_days_burn_in:Δt:n_days
@@ -90,3 +90,18 @@ plot!(y_zeroed[period_ix:10:(period_ix + 60000),:], lc = "red", alpha = 0.5, leg
 
 vline!([i * period / Δt for i in 1:10])
 
+
+y_inf = vec(sum(ode_solution(t)[ode_ix(c_inf, 1:model_params.S, model_params.S), :], dims = 1))
+minimum(y_inf)
+maximum(y_inf)
+
+y_count = vec(sum(ode_solution(t)[ode_ix(c_count, 1:model_params.S, model_params.S), :], dims = 1))
+y_inc = diff(y_count)
+
+
+[minimum(y_inc) maximum(y_inc) mean(y_inc)]
+y_mean_inc = minimum(y_inc)
+y_mean_inc = maximum(y_inc)
+y_mean_inc = mean(y_inc)
+
+plot(y_inc)
