@@ -7,14 +7,32 @@ library(patchwork)
 
 source("../ode_immunity_multi/R/plot_theme.R")
 
-rho_to_halflife <- function(x) {1 / (8 * x)}
 rhos <- c(0.001, 0.003, 0.005)
+
+
+
+rho_to_halflife <- function(x) {1 / (8 * x)}
+
+sec_x_axis <- list(
+  scale_x_continuous(
+    labels = NULL,
+    sec.axis = sec_axis(
+      identity,
+      name = "Antibody half-life (days)",
+      labels = rho_to_halflife,
+      breaks = rho_to_halflife(c(5, 10, 15, 20, 30, 50, 100, 400))
+  ))
+)
 
 
 x_rho <- h5read("data/paper/bifurcations_w_boost.jld2", "x_rho")
 y_I_sol <- h5read("data/paper/bifurcations_w_boost.jld2", "y_I_sol")
 y_inc_sol <- h5read("data/paper/bifurcations_w_boost.jld2", "y_inc_sol")
 y_fixed_I <- h5read("data/paper/bifurcations_w_boost.jld2", "y_fixed_I")
+
+hide_x_axis <- list(
+  theme(axis.text.x = element_blank(), axis.title.x = element_blank())
+)
 
 days_burn_in <- 20000
 
@@ -81,14 +99,17 @@ p_bifurcation <- ggplot() +
              bifur_points,
              size = 1.5, colour = "white") +
   
-  xlab("Waning constant <i>ρ</i>") +
-  ylab("Infection prevalence") +
+  xlab(NULL) +
+  ylab("Prevalence") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
                   ylim = c(-0.005, 0.06),
                   expand = FALSE) +
   
+  # sec_x_axis +
+  
   plot_theme_paper +
+  
   theme(legend.position = "none",
         axis.text.x.top = element_text(margin = margin(b = 0.3, unit = "cm")),
         panel.grid.major = element_gridline,
@@ -124,7 +145,7 @@ p_bifurcation_min <- ggplot() +
              size = 1.5, colour = "white") +
   
   xlab("Waning constant <i>ρ</i>") +
-  ylab("Infection prevalence") +
+  ylab("Prevalence") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
                   ylim = c(1e-10, 1.0),
@@ -135,7 +156,6 @@ p_bifurcation_min <- ggplot() +
   
   plot_theme_paper +
   theme(legend.position = "none",
-        axis.text.x.top = element_text(margin = margin(b = 0.3, unit = "cm")),
         panel.grid.major = element_gridline,
         plot.subtitle = element_markdown()) +
   
@@ -180,7 +200,7 @@ p_period <- ggplot() +
             linewidth = 1.0,
             data_period) +
   
-  xlab("Waning constant <i>ρ</i>") +
+  xlab(NULL) +
   ylab("Frequency (years<sup>-1</sup>)") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
@@ -188,38 +208,19 @@ p_period <- ggplot() +
                   expand = FALSE) +
   
   scale_y_continuous(labels = scales::label_comma()) +
+  # sec_x_axis +
   
   plot_theme_paper +
+  
   theme(legend.position = "none",
+        axis.text.x.top = element_text(margin = margin(b = 0.3, unit = "cm")),
         panel.grid.major = element_gridline) +
   
   ggtitle(NULL,"Periodic solution frequency")
 
 p_period
 
-# p_attack_rate <- ggplot() +
-#   geom_vline(aes(xintercept = rho),
-#              tibble(rho = rhos),
-#              colour = "grey80", linewidth = 1.0, alpha = 0.3) +
-#   geom_line(aes(x = rho, y = attack_rate),
-#             linewidth = 1.0,
-#             data_attack_rate) +
-#   
-#   xlab("Waning constant <i>ρ</i>") +
-#   ylab("Attack rate") +
-#   
-#   coord_cartesian(xlim = c(-0.0002, 0.0075),
-#                   ylim = c(-0.05, 0.7),
-#                   expand = FALSE) +
-#   
-#   plot_theme_paper +
-#   theme(legend.position = "none",
-#         panel.grid.major = element_gridline) +
-#   
-#   ggtitle(NULL, "Attack rate across period")
-
-
-p_mean_inc <- ggplot() +
+p_attack_rate <- ggplot() +
   geom_vline(aes(xintercept = rho),
              tibble(rho = rhos),
              colour = "grey80", linewidth = 1.0, alpha = 0.3) +
@@ -228,10 +229,10 @@ p_mean_inc <- ggplot() +
             data_mean_incidence) +
   
   xlab("Waning constant <i>ρ</i>") +
-  ylab("Infection incidence") +
+  ylab("Attack rate") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(-0.1, 0.007 * 365),
+                  ylim = c(-0.3, 0.007 * 365),
                   expand = FALSE) +
   
   
@@ -239,7 +240,7 @@ p_mean_inc <- ggplot() +
   theme(legend.position = "none",
         panel.grid.major = element_gridline) +
   
-  ggtitle(NULL, "Mean yearly infection incidence")
+  ggtitle(NULL, "Yearly infection attack rate")
 
 plot_data_ex_fixed_points <- data_fixed %>%
   filter(rho %in% rhos) %>%
@@ -268,7 +269,7 @@ p_examples <- data_I_sol %>%
   
   facet_wrap(~rho_label, ncol = 3, scales = "free") +
   
-  xlab("Time (days)") + ylab("Infection prevalence") +
+  xlab("Time (days)") + ylab("Prevalence") +
   
   coord_cartesian(xlim = c(0, 3400),
                   ylim = c(0, 0.08)) +
@@ -279,11 +280,9 @@ p_examples <- data_I_sol %>%
         panel.grid.major.x = element_gridline)
 
 
-p_period / p_mean_inc / p_attack_rate
-
 p_top <- (
   (p_bifurcation / p_bifurcation_min) |
-  (p_period / p_mean_inc)
+  (p_period / p_attack_rate)
 ) +
   plot_layout(tag_level = "new")
 
@@ -293,6 +292,7 @@ p_top
   plot_layout(heights = c(2, 1)) + 
   plot_annotation(tag_levels = list("A", c("i.", "ii.", "iii.", "iv.")), tag_sep = " ") &
   theme(plot.tag = element_text(face = "bold", size = 15))
+
 
 
 

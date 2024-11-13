@@ -88,6 +88,7 @@ p_example_mean_antibodies <- ggplot() +
 x_rho <- h5read("data/paper/bifurcations_w_boost.jld2", "x_rho")
 y_I_sol <- h5read("data/paper/bifurcations_w_boost.jld2", "y_I_sol")
 y_fixed_I <- h5read("data/paper/bifurcations_w_boost.jld2", "y_fixed_I")
+y_inc_sol <- h5read("data/paper/bifurcations_w_boost.jld2", "y_inc_sol")
 
 
 data_I_sol <- y_I_sol %>%
@@ -107,6 +108,17 @@ data_fixed <- y_fixed_I %>%
          scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
          rho = x_rho[rho])
 
+
+data_inc_sol <- y_inc_sol %>%
+  reshape2::melt(varnames = c("rho", "scenario", "t"), value.name = "inc") %>% 
+  mutate(scenario = c("none", "linear", "loglinear")[scenario],
+         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
+         rho = x_rho[rho])
+
+data_mean_incidence <- data_inc_sol %>%
+  filter(t > 10000) %>% 
+  group_by(scenario, rho) %>%
+  summarise(mean_inc = mean(inc))
 
 rho_to_halflife <- function(x) {1 / (8 * x)}
 
@@ -143,7 +155,7 @@ p_bifurcation <- ggplot() +
   scale_linewidth_manual(values = c("Log-linear boosting" = 0.7, "Linear boosting" = 0.7, "No boosting" = 1.0)) +
   
   xlab("Waning constant <i>ρ</i>") +
-  ylab("Infection prevalence") +
+  ylab("Prevalence") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
                   ylim = c(-0.005, 0.06),
@@ -194,7 +206,7 @@ data_attack_rate <- attack_rate %>%
 p_period <- ggplot() +
   geom_vline(xintercept = 0.0025,
              colour = "grey80", linewidth = 1.0, alpha = 0.5) +
-  geom_line(aes(x = rho, y = period, colour = scenario, linewidth = scenario),
+  geom_line(aes(x = rho, y = 365 / period, colour = scenario, linewidth = scenario),
             data_period) +
   
   ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
@@ -202,42 +214,42 @@ p_period <- ggplot() +
   scale_linewidth_manual(values = c("Log-linear boosting" = 0.7, "Linear boosting" = 0.7, "No boosting" = 1.0)) +
   
   xlab("Waning constant <i>ρ</i>") +
-  ylab("Period (days)") +
+  ylab("Frequency (years<sup>-1</sup>)") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(-0.05, NA),
+                  ylim = c(-0.1, 2.5),
                   expand = FALSE) +
   
   plot_theme_paper +
   theme(legend.position = "none",
         panel.grid.major = element_gridline) +
   
-  ggtitle(NULL,"Periodic solution period")
+  ggtitle(NULL,"Periodic solution frequency")
 
 
 p_attack_rate <- ggplot() +
   geom_vline(xintercept = 0.0025,
              colour = "grey80", linewidth = 1.0, alpha = 0.5) +
-  geom_line(aes(x = rho, y = attack_rate, colour = scenario, linewidth = scenario),
-            data_attack_rate) +
-  
-  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
-  
-  scale_linewidth_manual(values = c("Log-linear boosting" = 0.7, "Linear boosting" = 0.7, "No boosting" = 1.0)) +
+  geom_line(aes(x = rho, y = mean_inc * 365, colour = scenario, linewidth = scenario),
+            data_mean_incidence) +
   
   xlab("Waning constant <i>ρ</i>") +
   ylab("Attack rate") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(0.0, 0.7),
+                  ylim = c(-0.3, 0.007 * 365),
                   expand = FALSE) +
+  
+  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
+  
+  scale_linewidth_manual(values = c("Log-linear boosting" = 0.7, "Linear boosting" = 0.7, "No boosting" = 1.0)) +
+  
   
   plot_theme_paper +
   theme(legend.position = "none",
         panel.grid.major = element_gridline) +
   
-  ggtitle(NULL, "Periodic solution attack rate")
-
+  ggtitle(NULL, "Yearly infection attack rate")
 p_attack_rate
 
 p_left <- (p_bifurcation / p_period / p_attack_rate) +
