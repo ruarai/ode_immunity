@@ -4,7 +4,7 @@ include("dependencies.jl")
 
 model_params_0 = make_model_parameters(
     k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-    C = baseline_C, r = 0.05,
+    C = baseline_C, r = baseline_r,
     b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist
 )
 
@@ -57,6 +57,7 @@ attack_rate = zeros(length(x_r), 3)
 end
 
 
+y_inc_sol = diff(y_inc_sol, dims = 3)
 
 jldsave(
     "data/paper/bifurcations_w_boost.jld2";

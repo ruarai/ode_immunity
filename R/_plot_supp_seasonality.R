@@ -1,7 +1,7 @@
 
 library(tidyverse)
-
 library(rhdf5)
+library(patchwork)
 
 
 source("R/plot_theme.R")
@@ -13,7 +13,7 @@ y_period <- h5read("data/paper/period_over_grid.jld2", "y_period")
 y_attack_rate <- h5read("data/paper/period_over_grid.jld2", "y_attack_rate")
 
 plot_data <- tibble(
-  eta = x_vals[1, ], rho = x_vals[2, ],
+  eta = x_vals[1, ], r = x_vals[2, ],
   inf_min = y_inf_summary[, 1], inf_max = y_inf_summary[, 2],  inf_mean = y_inf_summary[, 3],
   inc_min = y_inf_summary[, 4], inc_max = y_inf_summary[, 5],  inc_mean = y_inf_summary[, 6],
   period = y_period[,1], period_sd = y_period[,2], period_n = y_period[,3],
@@ -36,35 +36,37 @@ plot_data_periodic <- plot_data %>%
 plot_data_quasiperiodic <- plot_data %>% filter(quasiperiodic)
 
 plot_data_eta_zero <- plot_data %>% filter(eta == 0)
+plot_data_eta_zero_periodic <- plot_data %>% filter(eta == 0, r < 0.065)
 
-bifur_zero <- plot_data_eta_zero %>% filter(inf_diff < 1e-3) %>% pull(rho) %>% head(1)
+bifur_zero <- plot_data_eta_zero %>% filter(inf_diff < 1e-3) %>% pull(r) %>% head(1)
 
-year_stops <- c(1/2, 2/3, 1, 3/2, 2, 3, 4)
-year_marks <- approxfun(plot_data_eta_zero$period, plot_data_eta_zero$rho)(365 * year_stops)
-plot_data_year_marks <- tibble(rho_0 = year_marks, year = year_stops) %>%
+year_stops <- c(1/2, 2/3, 1, 3/2, 2, 3)
+year_marks <- approxfun(plot_data_eta_zero_periodic$period, plot_data_eta_zero_periodic$r)(365 * year_stops)
+plot_data_year_marks <- tibble(r_0 = year_marks, year = year_stops) %>%
   mutate(year_label = str_c(scales::label_comma()(year), " yr"))
 
 plot_annotations <- list(
-  geom_point(aes(x = -0.01, y = rho_0), plot_data_year_marks, pch = "-", size = 6),
+  geom_segment(
+    # aes(x = r_0, y = 0.0, xend = r_0 + 0.001, yend = -0.01),
+    aes(x = -0.003, y = r_0, xend = -0.01, yend = r_0),
+    plot_data_year_marks
+  ),
   
-  annotate("linerange", x = -0.01, ymin = bifur_zero, ymax = 0.005),
-  annotate("point", x = -0.01, y = bifur_zero, pch = "-", size = 6),
-  geom_text(aes(x = -0.07, y = rho_0, label = year_label), hjust = 0, plot_data_year_marks),
-  annotate("text", x = -0.07, y = 0.00465, label = "Fixed\npoint", hjust = 0),
-  geom_linerange(aes(ymin = 0, ymax = 0.005, x = eta), tibble(eta = seq(0, 0.5, by = 0.1)), colour = "black", alpha = 0.25, linetype = "88"),
-  geom_linerange(aes(xmin = 0, xmax = 0.5, y = rho), tibble(rho = seq(0, 0.005, by = 0.001)), colour = "black", alpha = 0.25, linetype = "88")
+  annotate("linerange", x = -0.0065, ymin = bifur_zero, ymax = 0.1),
+  annotate("segment", x = -0.003, y = bifur_zero, xend = -0.01, yend = bifur_zero),
+  geom_text(aes(x = -0.07, y = r_0 + 0.0002, label = year_label), hjust = 0, plot_data_year_marks),
+  annotate("text", x = -0.07, y = 0.085, label = "Fixed\npoint", hjust = 0)
 )
 
 
 period_cols <- viridis::inferno(n = 8, direction = -1, begin = 0.1)
 p_period <- ggplot() +
-  annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white") +
-  geom_tile(aes(x = eta, y = rho, fill = period),
+  geom_tile(aes(x = eta, y = r, fill = period),
             plot_data_periodic) +
-  # geom_tile(aes(x = eta, y = rho, fill = factor(9)),
+  # geom_tile(aes(x = eta, y = r, fill = factor(9)),
   #           alpha = 0,
   #           plot_data_quasiperiodic) +
-  geom_tile(aes(x = eta, y = rho, fill = factor(4.5),
+  geom_tile(aes(x = eta, y = r, fill = factor(4.5)),
             plot_data_quasiperiodic) +
   
   plot_annotations +
@@ -78,18 +80,18 @@ p_period <- ggplot() +
                     ) +
 
   
-  coord_fixed(ratio = 100) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Waning constant <i>ρ</i>") +
+  coord_fixed(ratio = 5) +
+  xlab("Seasonality constant <i>η</i>") + ylab("Mean antibody decay rate <i>r</i>") +
   guides(fill = guide_legend(nrow = 2, ncol = 5)) +
   
   plot_theme_paper +
   theme(legend.position = "bottom", legend.byrow = TRUE)
 
-# p_period
+p_period
 
 p_attack_rate <- ggplot()  +
   annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
-  geom_tile(aes(x = eta, y = rho, fill = inc_mean * 365),
+  geom_tile(aes(x = eta, y = r, fill = inc_mean * 365),
             plot_data) +
   
   plot_annotations + 
@@ -102,8 +104,8 @@ p_attack_rate <- ggplot()  +
     labels = c("0", "", "0.1", "", "0.2", "", "0.3", "", "0.4", "", "0.5")
   ) +
   
-  coord_fixed(ratio = 100) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Waning constant <i>ρ</i>")  +
+  coord_fixed(ratio = 5) +
+  xlab("Seasonality constant <i>η</i>") + ylab("Mean antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +
   guides(fill = guide_colourbar(barwidth = 15)) +
@@ -111,7 +113,7 @@ p_attack_rate <- ggplot()  +
 
 p_max <- ggplot()  +
   annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
-  geom_tile(aes(x = eta, y = rho, fill = inf_max),
+  geom_tile(aes(x = eta, y = r, fill = inf_max),
             plot_data) +
   
   plot_annotations + 
@@ -122,8 +124,8 @@ p_max <- ggplot()  +
     breaks = seq(0, 0.25, 0.025),
     labels = c("0", "", "0.05", "", "0.1", "", "0.15", "", "0.2", "", "0.25")
   ) +
-  coord_fixed(ratio = 100) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Waning constant <i>ρ</i>")  +
+  coord_fixed(ratio = 5) +
+  xlab("Seasonality constant <i>η</i>") + ylab("Mean antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +
   guides(fill = guide_colourbar(barwidth = 15)) +
@@ -134,7 +136,7 @@ p_max <- ggplot()  +
 
 p_min <- ggplot()  +
   annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
-  geom_tile(aes(x = eta, y = rho, fill = pmax(-14, log10(inf_min))),
+  geom_tile(aes(x = eta, y = r, fill = pmax(-14, log10(inf_min))),
             plot_data) +
   
   plot_annotations + 
@@ -149,8 +151,8 @@ p_min <- ggplot()  +
                "", "-1")
   ) +
   
-  coord_fixed(ratio = 100) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Waning constant <i>ρ</i>")  +
+  coord_fixed(ratio = 5) +
+  xlab("Seasonality constant <i>η</i>") + ylab("Mean antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +
   guides(fill = guide_colourbar(barwidth = 15)) +
@@ -177,3 +179,4 @@ ggsave(
   width = 14, height = 14,
   bg = "white"
 )
+

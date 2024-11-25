@@ -60,9 +60,9 @@ bifur_points <- maxmins %>%
 
 
 p_bifurcation <- ggplot() +
-  geom_vline(aes(xintercept = r),
-             tibble(r = rs),
-             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+  # geom_vline(aes(xintercept = r),
+  #            tibble(r = rs),
+  #            colour = "grey80", linewidth = 1.0, alpha = 0.3) +
   
   geom_line(aes(x = r, y = max, colour = "Stable periodic"),
             linewidth = 1.0,
@@ -116,9 +116,9 @@ p_bifurcation <- ggplot() +
 p_bifurcation
 
 p_bifurcation_min <- ggplot() +
-  geom_vline(aes(xintercept = r),
-             tibble(r = rs),
-             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+  # geom_vline(aes(xintercept = r),
+  #            tibble(r = rs),
+  #            colour = "grey80", linewidth = 1.0, alpha = 0.3) +
   geom_line(aes(x = r, y = min),
             colour = colour_A,
             linewidth = 1.0,
@@ -187,9 +187,9 @@ min_periods <- data_period %>% group_by(scenario) %>% slice(1) %>%
 
 
 p_period <- ggplot() +
-  geom_vline(aes(xintercept = r),
-             tibble(r = rs),
-             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+  # geom_vline(aes(xintercept = r),
+  #            tibble(r = rs),
+  #            colour = "grey80", linewidth = 1.0, alpha = 0.3) +
   geom_line(aes(x = r, y = 365 / period),
             linewidth = 1.0,
             data_period) +
@@ -223,9 +223,9 @@ p_period <- ggplot() +
 p_period
 
 p_attack_rate <- ggplot() +
-  geom_vline(aes(xintercept = r),
-             tibble(r = rs),
-             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+  # geom_vline(aes(xintercept = r),
+  #            tibble(r = rs),
+  #            colour = "grey80", linewidth = 1.0, alpha = 0.3) +
   geom_line(aes(x = r, y = mean_inc * 365),
             linewidth = 1.0,
             data_mean_incidence) +
@@ -266,7 +266,7 @@ p_examples <- data_I_sol %>%
   
   scale_y_continuous(breaks = c(0.0, 0.05, 0.1)) +
   
-  scale_linetype_manual(values = c("TRUE" = "solid", "FALSE" = "22")) +
+  scale_linetype_manual(values = c("TRUE" = "solid", "FALSE" = "44")) +
   
   facet_wrap(~r_label, ncol = 3, scales = "free") +
   
