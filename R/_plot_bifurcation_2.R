@@ -78,17 +78,24 @@ p_bifurcation <- ggplot() +
              tibble(rho = rhos),
              colour = "grey80", linewidth = 1.0, alpha = 0.3) +
   
-  geom_line(aes(x = rho, y = max),
+  geom_line(aes(x = rho, y = max, colour = "Stable periodic"),
             linewidth = 1.0,
-            colour = colour_A,
             maxmins %>% filter(rho <= bifur_points$rho[1])) +
-  geom_line(aes(x = rho, y = prev),
+  geom_line(aes(x = rho, y = prev, colour = "Stable fixed point"),
             linewidth = 1.0,
             data_fixed %>% filter(rho >= bifur_points$rho[1])) +
-  geom_line(aes(x = rho, y = prev),
+  geom_line(aes(x = rho, y = prev, colour = "Unstable fixed point"),
             linewidth = 1.0, linetype = "44",
-            data_fixed) +
+            data_fixed %>% filter(rho <= bifur_points$rho[1])) +
   
+  scale_colour_manual(
+    name = NULL,
+    values = c(
+    "Stable periodic" = colour_A,
+    "Stable fixed point" = "black",
+    "Unstable fixed point" = "black"
+  ),
+  breaks = c("Stable periodic", "Stable fixed point", "Unstable fixed point")) +
   
   geom_point(aes(x = rho, y = prev), 
              colour = "black",
@@ -110,7 +117,10 @@ p_bifurcation <- ggplot() +
   
   plot_theme_paper +
   
-  theme(legend.position = "none",
+  guides(colour = guide_legend(nrow = 3)) +
+  
+  theme(legend.position = "inside", legend.position.inside = c(0.8, 0.8), legend.key.width = unit(3, "cm"),
+        legend.background = element_rect(fill = "white", colour = "white", linewidth = 0),
         axis.text.x.top = element_text(margin = margin(b = 0.3, unit = "cm")),
         panel.grid.major = element_gridline,
         plot.subtitle = element_markdown()) +
@@ -124,8 +134,8 @@ p_bifurcation_min <- ggplot() +
              tibble(rho = rhos),
              colour = "grey80", linewidth = 1.0, alpha = 0.3) +
   geom_line(aes(x = rho, y = min),
+            colour = colour_A,
             linewidth = 1.0,
-            colour = colour_C,
             maxmins %>% filter(rho <= bifur_points$rho[1])) +
   geom_line(aes(x = rho, y = prev),
             linewidth = 1.0,
@@ -200,11 +210,21 @@ p_period <- ggplot() +
             linewidth = 1.0,
             data_period) +
   
+  
+  geom_point(aes(x = rho, y = 365 / period), 
+             colour = "black",
+             data_period %>% filter(rho == max(rho)),
+             size = 3) +
+  
+  geom_point(aes(x = rho, y = 365 / period), 
+             data_period %>% filter(rho == max(rho)),
+             size = 1.5, colour = "white") +
+  
   xlab(NULL) +
   ylab("Frequency (years<sup>-1</sup>)") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(-0.1, 2.5),
+                  ylim = c(-0.1, 4),
                   expand = FALSE) +
   
   scale_y_continuous(labels = scales::label_comma()) +
@@ -240,7 +260,7 @@ p_attack_rate <- ggplot() +
   theme(legend.position = "none",
         panel.grid.major = element_gridline) +
   
-  ggtitle(NULL, "Yearly infection attack rate")
+  ggtitle(NULL, "Yearly infection attack rate at solution")
 
 plot_data_ex_fixed_points <- data_fixed %>%
   filter(rho %in% rhos) %>%
@@ -305,8 +325,10 @@ ggsave(
 
 
 
+fit_data <- data_period %>%
+  filter(rho < 0.0035) %>%
+  mutate(f = 365 / period)
 
-data_I_sol %>%
-  filter(t > 20000, rho > 0.0003) %>% 
-  group_by(rho, scenario) %>%
-  mutate(inc = prev)
+fit <- lm(f ~ rho, data = fit_data)
+
+summary(fit)

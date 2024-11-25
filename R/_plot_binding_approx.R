@@ -10,8 +10,8 @@ x_c1 <- h5read("data/paper/binding_approx.jld2", "x_c1")
 x_c2 <- h5read("data/paper/binding_approx.jld2", "x_c2")
 
 label_c2 <- function(c2) {
-  str_c("*c<sub>y'</sub>* = 10<sup>", log10(c2), "</sup>") %>%
-    factor(levels = str_c("*c<sub>y'</sub>* = 10<sup>", seq(-5,5, by = 0.5), "</sup>"))
+  str_c("[*y*] = 10<sup>", log10(c2), "</sup>") %>%
+    factor(levels = str_c("[*y*] = 10<sup>", seq(-5,5, by = 0.5), "</sup>"))
 }
 
 plot_data <- y_prop %>%
@@ -46,7 +46,7 @@ ggplot() +
   # geom_rug(aes(x = c2), plot_data_c2, 
   #          length = unit(0.15, "npc")) +
   
-  xlab("*c<sub>x</sub>*") +
+  xlab("[*x*]") +
   ylab("*p*<sub>bound</sub>") +
   
   scale_x_log10(labels = scales::label_log()) +

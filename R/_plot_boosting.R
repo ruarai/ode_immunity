@@ -12,13 +12,12 @@ source("../ode_immunity_multi/R/plot_theme.R")
 sol_t <- h5read("data/paper/basic_boosting.jld2", "sol_t")
 c_levels <- h5read("data/paper/basic_boosting.jld2", "c_levels")
 
-k <- 16
 
 plot_data <- sol_t %>%
   reshape2::melt(varnames = c("scenario", "t", "class", "strata"), value.name = "prevalence") %>% 
   mutate(class = c("S", "I")[class],
          scenario = c("none", "linear", "loglinear")[scenario],
-         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
+         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Multiplicative boosting", "Additive boosting", "No boosting")),
          c = c_levels[strata])
 
 
@@ -47,7 +46,7 @@ p_example_prevalence <- ggplot() +
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
   
-  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
+  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 6, 9)) +
   guides(colour = guide_legend(reverse = TRUE)) +
   
   xlab("Time *t* (days)") + ylab("Prevalence") +
@@ -70,7 +69,7 @@ p_example_mean_antibodies <- ggplot() +
   
   xlab("Time *t* (days)") + ylab("Concentration") +
                                    
-  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
+  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 6, 9)) +
   guides(colour = guide_legend(reverse = TRUE)) +
   
   scale_y_continuous(trans = "log2", labels = scales::label_log(base = 2), breaks = c(2^0, 2^2, 2^4, 2^6)) +
@@ -94,7 +93,7 @@ y_inc_sol <- h5read("data/paper/bifurcations_w_boost.jld2", "y_inc_sol")
 data_I_sol <- y_I_sol %>%
   reshape2::melt(varnames = c("rho", "scenario", "t"), value.name = "prev") %>% 
   mutate(scenario = c("none", "linear", "loglinear")[scenario],
-         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
+         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Multiplicative boosting", "Additive boosting", "No boosting")),
          rho = x_rho[rho])
 
 maxmins <- data_I_sol %>%
@@ -105,14 +104,14 @@ maxmins <- data_I_sol %>%
 data_fixed <- y_fixed_I %>%
   reshape2::melt(varnames = c("rho", "scenario"), value.name = "prev") %>% 
   mutate(scenario = c("none", "linear", "loglinear")[scenario],
-         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
+         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Multiplicative boosting", "Additive boosting", "No boosting")),
          rho = x_rho[rho])
 
 
 data_inc_sol <- y_inc_sol %>%
   reshape2::melt(varnames = c("rho", "scenario", "t"), value.name = "inc") %>% 
   mutate(scenario = c("none", "linear", "loglinear")[scenario],
-         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
+         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Multiplicative boosting", "Additive boosting", "No boosting")),
          rho = x_rho[rho])
 
 data_mean_incidence <- data_inc_sol %>%
@@ -150,9 +149,9 @@ p_bifurcation <- ggplot() +
              bifur_points,
              size = 1.5, colour = "white") +
   
-  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
+  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 6, 9)) +
   
-  scale_linewidth_manual(values = c("Log-linear boosting" = 0.7, "Linear boosting" = 0.7, "No boosting" = 1.0)) +
+  scale_linewidth_manual(values = c("Multiplicative boosting" = 0.7, "Additive boosting" = 0.7, "No boosting" = 1.0)) +
   
   xlab("Waning constant <i>ρ</i>") +
   ylab("Prevalence") +
@@ -179,7 +178,7 @@ data_period <- period %>%
   reshape2::melt(varnames = c("rho", "scenario", "name"), value.name = "value") %>% 
   mutate(scenario = c("none", "linear", "loglinear")[scenario],
          name = c("period", "period_sd", "period_n")[name],
-         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
+         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Multiplicative boosting", "Additive boosting", "No boosting")),
          rho = x_rho[rho]) %>%
   
   pivot_wider() %>% 
@@ -193,7 +192,7 @@ min_periods <- data_period %>% group_by(scenario) %>% slice(1) %>%
 data_attack_rate <- attack_rate %>%
   reshape2::melt(varnames = c("rho", "scenario"), value.name = "attack_rate") %>% 
   mutate(scenario = c("none", "linear", "loglinear")[scenario],
-         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Log-linear boosting", "Linear boosting", "No boosting")),
+         scenario = factor(scenario, c("loglinear", "linear", "none"), labels = c("Multiplicative boosting", "Additive boosting", "No boosting")),
          rho = x_rho[rho]) %>%
   
   left_join(bifur_points %>% select(rho_bifur = rho, scenario)) %>%
@@ -209,15 +208,23 @@ p_period <- ggplot() +
   geom_line(aes(x = rho, y = 365 / period, colour = scenario, linewidth = scenario),
             data_period) +
   
-  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
+  geom_point(aes(x = rho, y = 365 / period, colour = scenario), 
+             data_period %>% group_by(scenario) %>% filter(rho == max(rho)),
+             size = 3) +
   
-  scale_linewidth_manual(values = c("Log-linear boosting" = 0.7, "Linear boosting" = 0.7, "No boosting" = 1.0)) +
+  geom_point(aes(x = rho, y = 365 / period), 
+             data_period %>% group_by(scenario) %>% filter(rho == max(rho)),
+             size = 1.5, colour = "white") +
+  
+  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 6, 9)) +
+  
+  scale_linewidth_manual(values = c("Multiplicative boosting" = 0.7, "Additive boosting" = 0.7, "No boosting" = 1.0)) +
   
   xlab("Waning constant <i>ρ</i>") +
   ylab("Frequency (years<sup>-1</sup>)") +
   
   coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(-0.1, 2.5),
+                  ylim = c(-0.1, 4),
                   expand = FALSE) +
   
   plot_theme_paper +
@@ -240,16 +247,16 @@ p_attack_rate <- ggplot() +
                   ylim = c(-0.3, 0.007 * 365),
                   expand = FALSE) +
   
-  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 3, 9)) +
+  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 6, 9)) +
   
-  scale_linewidth_manual(values = c("Log-linear boosting" = 0.7, "Linear boosting" = 0.7, "No boosting" = 1.0)) +
+  scale_linewidth_manual(values = c("Multiplicative boosting" = 0.7, "Additive boosting" = 0.7, "No boosting" = 1.0)) +
   
   
   plot_theme_paper +
   theme(legend.position = "none",
         panel.grid.major = element_gridline) +
   
-  ggtitle(NULL, "Yearly infection attack rate")
+  ggtitle(NULL, "Yearly infection attack rate at solution")
 p_attack_rate
 
 p_left <- (p_bifurcation / p_period / p_attack_rate) +

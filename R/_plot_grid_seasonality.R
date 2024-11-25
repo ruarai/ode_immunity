@@ -34,7 +34,6 @@ plot_data_periodic <- plot_data %>%
          period = factor(round(period)))
 
 plot_data_quasiperiodic <- plot_data %>% filter(quasiperiodic)
-plot_data_quasiperiodic <- plot_data %>% filter(!quasiperiodic, !periodic)
 
 plot_data_eta_zero <- plot_data %>% filter(eta == 0)
 
@@ -66,7 +65,7 @@ p_period <- ggplot() +
   annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white") +
   geom_tile(aes(x = eta, y = rho, fill = period),
             plot_data_periodic) +
-  geom_tile(aes(x = eta, y = rho, fill = factor(9)),
+  geom_tile(aes(x = eta, y = rho, fill = factor(4.5)),
             plot_data_quasiperiodic) +
   
   plot_annotations +
@@ -79,39 +78,22 @@ p_period <- ggplot() +
   annotate("text", x = -0.07, y = 0.00465, label = "Fixed\npoint", hjust = 0) +
   
   scale_fill_manual(name = "Period",
-                    values = c(viridis::inferno(n = 8, direction = -1, begin = 0.1), "#2260BE"),
-                    labels = c(1:7, "≥8", "Quasiperiodic")) +
+                    values = c(period_cols[1:4], "#2260BE", period_cols[5:8]) %>% `names<-`(c(1:4, "4.5", 5:8)),
+                    
+                    labels = c("1 yr", str_c(2:4, "yrs"), "Quasiperiodic", str_c(5:7, "yrs"), "≥8 yrs") %>% `names<-`(c(1:4, "4.5", 5:8)),
+                    breaks = c(1:4, 4.5, 5:8)) +
 
   # scale_fill_viridis_b(option = "inferno", direction = -1, breaks = 1:8, labels = c(1:7, "8")) +
 
   
   coord_fixed(ratio = 100) +
   xlab("Seasonality constant <i>η</i>") + ylab("Waning constant <i>ρ</i>") +
-  guides(fill = guide_legend(nrow = 1)) +
+  guides(fill = guide_legend(nrow = 2)) +
   
   plot_theme_paper +
   theme(legend.position = "bottom", legend.byrow = TRUE)
 
 p_period
-
-p_max <- ggplot()  +
-  annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
-  geom_tile(aes(x = eta, y = rho, fill = inf_max),
-            plot_data) +
-  
-  plot_annotations + 
-  
-  scale_fill_viridis_c(name = "Peak\ninfection\nprevalence", option = "mako") +
-  coord_fixed(ratio = 100) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Waning constant <i>ρ</i>")  +
-  
-  plot_theme_paper +
-  guides(fill = guide_colourbar(barwidth = 15)) +
-  theme(legend.position = "bottom")
-
-p_period | p_max
-
-
 
 x_eta <- h5read("data/paper/period_over_grid_examples.jld2", "x_eta")
 x_rho <- h5read("data/paper/period_over_grid_examples.jld2", "x_rho")
@@ -218,42 +200,52 @@ plot_data_attack_rate <- plot_data %>%
          inc_mean_diff = inc_mean / inc_mean_eta_zero,
          log_diff = pmax(log2(inc_mean_diff), -0.4),
          period_year = approxfun(plot_data_eta_zero$rho, plot_data_eta_zero$period)(rho) / 365 ) %>% 
-  filter(eta %in% c(0, 0.1, 0.3, 0.5), rho < bifur_zero) %>% 
+  filter(eta %in% c(0, 0.1, 0.3, 0.5)) %>% 
   mutate(eta_label = str_c("<i>η</i> = ", eta))
 
-plot_data_year_marks_ar <- plot_data_year_marks %>% filter(year %in% c(0.5, 1, 1.5, 2, 3, 4))
+
+freq_breaks <- seq(0, 2.5, by = 0.5)
+freq_breaks_rho <- approxfun(365 / plot_data_eta_zero$period, plot_data_eta_zero$rho)(freq_breaks)
 
 
 p_attack_rate <- ggplot() +
+  geom_vline(aes(xintercept = rho), tibble(rho = c(0, freq_breaks_rho)),
+             linetype = "44", colour = "grey70") +
   
-  geom_line(aes(x = 1 / period_year, y = inc_mean * 365),
+  annotate("rect", xmin = bifur_zero, xmax = Inf, ymin = -Inf, ymax = Inf,
+           fill = "grey70", alpha = 0.2) +
+  
+  geom_line(aes(x = rho, y = inc_mean * 365),
             colour = colour_C, linetype = "82",
             plot_data_attack_rate %>% filter(eta == 0) %>% ungroup() %>% select(-eta_label)) +
   
-  geom_line(aes(x = 1 / period_year, y = inc_mean * 365),
+  geom_line(aes(x = rho, y = inc_mean * 365),
             linewidth = 0.7,
             plot_data_attack_rate %>% filter(eta > 0)) +
   
   facet_wrap(~eta_label, ncol = 1) +
   
-  coord_cartesian(xlim = c(0, 2.5), ylim = c(0, 0.4)) +
+  coord_cartesian(xlim = c(0, 0.005), ylim = c(0, 0.4)) +
   
-  xlab("Natural frequency (years<sup>-1</sup>)") + ylab("Attack rate") +
+  xlab("Waning constant <i>ρ</i>") + ylab("Attack rate") +
   
   plot_theme_paper +
   theme(strip.text = element_markdown(),
-        axis.text.x.top = element_text(margin = margin(b = 0.25, unit = "cm")),
-        panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5)) +
+        axis.text.x.top = element_text(margin = margin(b = 0.25, unit = "cm"))) +
   
   ggtitle(NULL, "Yearly infection attack rate")
 
-p_attack_rate
-
 
 p_attack_rate_diff <- ggplot() +
+  geom_vline(aes(xintercept = rho), tibble(rho = c(0, freq_breaks_rho)),
+             linetype = "44", colour = "grey70") +
+  
+  annotate("rect", xmin = bifur_zero, xmax = Inf, ymin = -Inf, ymax = Inf,
+           fill = "grey70", alpha = 0.2) +
+  
   geom_hline(yintercept = 0, colour = colour_C, linetype = "82") +
   
-  geom_line(aes(x = 1 / period_year, y = log_diff),
+  geom_line(aes(x = rho, y = log_diff),
             linewidth = 0.7,
             plot_data_attack_rate %>% filter(eta > 0)) +
   
@@ -262,34 +254,44 @@ p_attack_rate_diff <- ggplot() +
   scale_y_continuous(breaks = log2(c(0.7, 0.8, 1, 1.25)),  labels = function(x) {scales::label_comma(accuracy = 0.01)(2^x)}) +
   
   coord_cartesian(ylim = c(-0.4, 0.4),
-                  xlim = c(0, 2.5)) +
+                  xlim = c(0, 0.005)) +
   
-  xlab("Natural frequency (years<sup>-1</sup>)") + ylab("Proportional change") +
+  xlab("Waning constant <i>ρ</i>") + ylab("Proportional difference") +
   
   plot_theme_paper +
   theme(strip.text = element_markdown(colour = "white"),
-        axis.text.x.top = element_text(margin = margin(b = 0.25, unit = "cm")),
-        panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5)) +
+        axis.text.x.top = element_text(margin = margin(b = 0.25, unit = "cm"))) +
   
-  ggtitle(NULL, "Proportional change in\nyearly infection attack rate")
+  ggtitle(NULL, "Proportional difference in\nyearly infection attack rate")
 
-
-rho_breaks <- c(0.001, 0.002, 0.003)
-
-rho_breaks_freq <- approxfun(plot_data_eta_zero$rho, 365 / plot_data_eta_zero$period)(rho_breaks)
-
-p_axes_rho <- ggplot() +
+p_axes_freq <- ggplot() +
   geom_blank(aes(x = 0)) +
+  annotate("linerange", xmin = -Inf, xmax = bifur_zero, y = 0.0, linewidth = 0.7)  +
+  annotate("linerange", xmin = bifur_zero, xmax = Inf, y = 0.0, linewidth = 0.7, linetype = "44") +
   plot_theme_paper +
   
-  scale_x_continuous(limits = c(0, 2.5),
-                     breaks = c(0, rho_breaks_freq, 2.456),
-                     labels = c(0, rho_breaks, 0.004)) +
+  geom_linerange(aes(ymin = 0, ymax = 0.02, x = x), tibble(x = c(0.0, freq_breaks_rho)),
+                 linewidth = 0.7) +
   
-  xlab("Waning constant <i>ρ</i>")
+  annotate("point", x = bifur_zero, y = 0, size = 2.5) +
+  annotate("point", x = bifur_zero, y = 0, size = 1.25, colour = "white") +
+  
+  
+  scale_x_continuous(limits = c(0, 0.005),
+                     breaks = c(0.0, freq_breaks_rho, bifur_zero),
+                     labels = c(0.0, freq_breaks, "")) +
+  
+  coord_cartesian(ylim = c(0,0)) +
+  
+  xlab("Natural frequency (years<sup>-1</sup>)") + ylab(NULL) +
+  theme(axis.line.x = element_blank(), axis.ticks.x = element_blank(),
+        axis.text.y = element_blank(), axis.ticks.y = element_blank(), axis.line.y = element_blank())
 
-(p_attack_rate / p_axes_rho + plot_layout(heights = c(20, 1))) |
-  (p_attack_rate_diff / p_axes_rho + plot_layout(heights = c(20, 1)))
+
+p_attack_rate / p_axes_freq + plot_layout(heights = c(20, 1))
+
+(p_attack_rate / p_axes_freq + plot_layout(heights = c(20, 1))) |
+  (p_attack_rate_diff / p_axes_freq + plot_layout(heights = c(20, 1)))
 
 
 ggsave(

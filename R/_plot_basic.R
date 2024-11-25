@@ -27,10 +27,10 @@ plot_data_summ_inf <- plot_data %>%
   filter(class == "I")
 
 plot_data_means <- plot_data %>%
-  group_by(t, class) %>%
-  mutate(p = prevalence / sum(prevalence)) %>% 
-  summarise(c = sum(p * c), .groups = "drop") %>%
-  filter(class == "S")
+  group_by(t) %>%
+  mutate(prevalence = prevalence / sum(prevalence)) %>% 
+  summarise(c = sum(prevalence * c),
+            p = sum(prevalence * p), .groups = "drop")
 
 
 
@@ -52,24 +52,15 @@ p_summ <- plot_data_summ_inf %>%
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank()) +
   
-  # scale_y_log10() +
-  
   ggtitle(NULL, "Infection prevalence")
 
-p_heatmap <- plot_data %>%
-  filter(class == "S") %>% 
+p_heatmap <- plot_data %>% 
   
   summarise(prevalence = sum(prevalence), .by = c("c", "t")) %>% 
   mutate(prevalence = pmin(prevalence, 0.05)) %>% 
   
   ggplot() +
   geom_tile(aes(x = t, y = c, fill = prevalence)) +
-  
-  geom_hline(yintercept = c_05, colour = "white", linewidth = 0.6, linetype = "84") +
-  geom_hline(yintercept = c_95, colour = "white", linewidth = 0.6, linetype = "84") +
-  
-  # geom_line(aes(x = t, y = c), plot_data_means, colour = "black", linewidth = 1.0) +
-  # geom_line(aes(x = t, y = c), plot_data_means, colour = "white", linewidth = 0.3) +
   
   scale_fill_viridis_c(option = "B", name = "Proportion",
                        breaks = c(0.001, 0.025, 0.05), labels = c("0.00", "0.025", "≥0.05"))  +
@@ -78,6 +69,7 @@ p_heatmap <- plot_data %>%
                      labels = scales::label_comma()) +
   
   scale_y_continuous(trans = "log2", breaks = 2^c(0, 2, 5, 8),
+                     labels = scales::label_log(base = 2),
                      sec.axis = sec_axis(
                        transform = "identity", 
                        labels = function(x) log2(x) + 1,
@@ -87,45 +79,61 @@ p_heatmap <- plot_data %>%
   
   coord_cartesian(xlim = c(0, 1500), ylim = c(2^0, 2^8)) +
   
-  xlab(NULL) + ylab("Antibody<br>concentration *c~i~*") +
+  # guides(fill = guide_colourbar(barwidth = 15)) +
+  
+  xlab(NULL) + ylab("Antibody<br>concentration") +
   
   plot_theme_paper + 
   theme(legend.position = "right",
+        legend.title = element_text(margin = margin(b = 0.6, unit = "cm")),
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank()) +
   
   ggtitle(NULL, "Population distribution of antibodies")
 
 
+p_heatmap
 
-p_protect <- plot_data %>%
-  filter(class == "S") %>%
-  group_by(t) %>%
-  summarise(p_protected = sum(prevalence * (p > 0.95)),
-            p_unprotected = sum(prevalence * (p < 0.05))) %>%
+p_mean_antibody <- ggplot() +
+  geom_line(aes(x = t, y = c),
+            plot_data_means,
+            linewidth = 0.7) +
   
-  ggplot() +
-  geom_ribbon(aes(x = t, ymin = 0, ymax = p_protected),
-              fill = colour_A, alpha = 0.6, colour = colour_A,
-              linewidth = 0.3) +
-  geom_ribbon(aes(x = t, ymin = p_protected, ymax = 1 - p_unprotected),
-              fill = colour_B, alpha = 0.6, colour = colour_B,
-              linewidth = 0.3) +
-  geom_ribbon(aes(x = t, ymin = 1 - p_unprotected, ymax = 1),
-              fill = colour_C, alpha = 0.6, colour = colour_C,
-              linewidth = 0.3)  +
+  scale_y_continuous(trans = "log2",
+                     breaks = 2^c(0, 2, 5, 8),
+                     labels = scales::label_log(base = 2))  +
   
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
   
-  xlab("Time *t* (days)") + ylab("Proportion<br>of population") +
+  coord_cartesian(ylim = c(2^0, 2^8)) +
   
-  coord_cartesian(xlim = c(0, 1500), ylim = c(0, 1.0)) +
+  xlab("Time *t* (days)") + ylab("Antibody<br>concentration") +
   
   plot_theme_paper +
+  
+  ggtitle(NULL, "Population mean antibody concentration") +
+  
   theme(panel.grid.major = element_gridline)
 
-(p_summ / p_heatmap / p_protect) +
+# p_mean_protection <- ggplot() +
+#   geom_line(aes(x = t, y = p),
+#             plot_data_means,
+#             linewidth = 0.7) +
+#   
+#   coord_cartesian(ylim = c(0, 1)) +
+#   
+#   xlab("Time *t* (days)") + ylab("Protection") +
+#   
+#   plot_theme_paper +
+#   
+#   ggtitle(NULL, "Population mean protection against infection") +
+#   
+#   theme(panel.grid.major = element_gridline)
+
+
+
+(p_summ / p_heatmap / p_mean_antibody) +
   plot_annotation(tag_levels = "A") &
   theme(plot.tag = element_text(face = "bold", size = 15))
 
@@ -133,8 +141,48 @@ p_protect <- plot_data %>%
 
 ggsave(
   "results/results_basic.png",
+  device = png,
   width = 10, height = 7,
   bg = "white"
 )
+
+
+# 
+# protect_colours <- colorspace::sequential_hcl(
+#   n = 3, h = c(135, 100), c = c(35, 70, 5), l = c(25, 98), power = c(1, 1.5)
+# )
+# 
+# p_protect <- plot_data %>%
+#   filter(class == "S") %>%
+#   group_by(t) %>%
+#   summarise(p_protected = sum(prevalence * (p > 0.95)),
+#             p_unprotected = sum(prevalence * (p < 0.05))) %>%
+#   
+#   ggplot() +
+#   geom_ribbon(aes(x = t, ymin = 0, ymax = p_protected,
+#                   fill = ">95%", colour = ">95%"),
+#               linewidth = 0.3) +
+#   geom_ribbon(aes(x = t, ymin = p_protected, ymax = 1 - p_unprotected,
+#                   fill = "5-95%", colour = "5-95%"),
+#               linewidth = 0.3) +
+#   geom_ribbon(aes(x = t, ymin = 1 - p_unprotected, ymax = 1,
+#                   fill = "<5%", colour = "<5%"),
+#               linewidth = 0.3)  +
+#   
+#   scale_x_continuous(breaks = scales::breaks_extended(),
+#                      labels = scales::label_comma()) +
+#   
+#   scale_fill_manual(values = protect_colours, breaks = c(">95%", "5-95%", "<5%"), name = "Protection<br>against<br>infection <i>ω</i>") +
+#   scale_colour_manual(values = protect_colours, breaks = c(">95%", "5-95%", "<5%"), name = "Protection<br>against<br>infection <i>ω</i>") +
+#   
+#   xlab("Time *t* (days)") + ylab("Proportion<br>of population") +
+#   
+#   coord_cartesian(xlim = c(0, 1500), ylim = c(0, 1.0)) +
+#   
+#   plot_theme_paper +
+#   theme(panel.grid.major = element_gridline,
+#         legend.title = element_markdown()) +
+#   
+#   ggtitle(NULL, "Population protection")
 
 
