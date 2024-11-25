@@ -58,7 +58,7 @@ function make_model_parameters(;
     end
 
     rho = -r / (k * (10^(-C/k) - 1))
-    # r = - 0.007 * k * (10^(-C/k) - 1)
+    # r = - rho * k * (10^(-C/k) - 1)
 
     wane_transition_rate = rho * k
 

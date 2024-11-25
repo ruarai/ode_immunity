@@ -57,6 +57,7 @@ attack_rate = zeros(length(x_r), 3)
 end
 
 
+
 jldsave(
     "data/paper/bifurcations_w_boost.jld2";
     x_r, y_fixed_I, y_I_sol, y_inc_sol, period, attack_rate

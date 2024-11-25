@@ -7,25 +7,11 @@ library(patchwork)
 
 source("R/plot_theme.R")
 
-rhos <- c(0.001, 0.003, 0.005)
+rs <- c(0.025, 0.05, 0.075)
 
+xlim <- c(-0.01, 0.11)
 
-
-rho_to_halflife <- function(x) {1 / (8 * x)}
-
-sec_x_axis <- list(
-  scale_x_continuous(
-    labels = NULL,
-    sec.axis = sec_axis(
-      identity,
-      name = "Antibody half-life (days)",
-      labels = rho_to_halflife,
-      breaks = rho_to_halflife(c(5, 10, 15, 20, 30, 50, 100, 400))
-  ))
-)
-
-
-x_rho <- h5read("data/paper/bifurcations_w_boost.jld2", "x_rho")
+x_r <- h5read("data/paper/bifurcations_w_boost.jld2", "x_r")
 y_I_sol <- h5read("data/paper/bifurcations_w_boost.jld2", "y_I_sol")
 y_inc_sol <- h5read("data/paper/bifurcations_w_boost.jld2", "y_inc_sol")
 y_fixed_I <- h5read("data/paper/bifurcations_w_boost.jld2", "y_fixed_I")
@@ -34,33 +20,33 @@ hide_x_axis <- list(
   theme(axis.text.x = element_blank(), axis.title.x = element_blank())
 )
 
-days_burn_in <- 20000
+days_burn_in <- 30000
 
 
 data_I_sol <- y_I_sol %>%
-  reshape2::melt(varnames = c("rho", "scenario", "t"), value.name = "prev") %>% 
-  mutate(rho = x_rho[rho]) %>%
+  reshape2::melt(varnames = c("r", "scenario", "t"), value.name = "prev") %>% 
+  mutate(r = x_r[r]) %>%
   filter(scenario == 1)
 
 
 data_inc_sol <- y_inc_sol %>%
-  reshape2::melt(varnames = c("rho", "scenario", "t"), value.name = "inc") %>% 
-  mutate(rho = x_rho[rho]) %>%
+  reshape2::melt(varnames = c("r", "scenario", "t"), value.name = "inc") %>% 
+  mutate(r = x_r[r]) %>%
   filter(scenario == 1)
 
 data_mean_incidence <- data_inc_sol %>%
   filter(t > 10000) %>% 
-  group_by(rho) %>%
+  group_by(r) %>%
   summarise(mean_inc = mean(inc))
 
 maxmins <- data_I_sol %>%
-  filter(t > days_burn_in, rho > 0.0003) %>% 
-  group_by(rho, scenario) %>%
+  filter(t > days_burn_in, r > 0.0003) %>% 
+  group_by(r, scenario) %>%
   summarise(max = max(prev), min = min(prev))
 
 data_fixed <- y_fixed_I %>%
-  reshape2::melt(varnames = c("rho", "scenario"), value.name = "prev") %>% 
-  mutate(rho = x_rho[rho]) %>%
+  reshape2::melt(varnames = c("r", "scenario"), value.name = "prev") %>% 
+  mutate(r = x_r[r]) %>%
   filter(scenario == 1)
 
 bifur_points <- maxmins %>% 
@@ -70,23 +56,23 @@ bifur_points <- maxmins %>%
   group_by(scenario) %>% 
   filter(diff > 1e-4) %>%
   slice(n()) %>%
-  select(rho, scenario, prev = prev)
+  select(r, scenario, prev = prev)
 
 
 p_bifurcation <- ggplot() +
-  geom_vline(aes(xintercept = rho),
-             tibble(rho = rhos),
+  geom_vline(aes(xintercept = r),
+             tibble(r = rs),
              colour = "grey80", linewidth = 1.0, alpha = 0.3) +
   
-  geom_line(aes(x = rho, y = max, colour = "Stable periodic"),
+  geom_line(aes(x = r, y = max, colour = "Stable periodic"),
             linewidth = 1.0,
-            maxmins %>% filter(rho <= bifur_points$rho[1])) +
-  geom_line(aes(x = rho, y = prev, colour = "Stable fixed point"),
+            maxmins %>% filter(r <= bifur_points$r[1])) +
+  geom_line(aes(x = r, y = prev, colour = "Stable fixed point"),
             linewidth = 1.0,
-            data_fixed %>% filter(rho >= bifur_points$rho[1])) +
-  geom_line(aes(x = rho, y = prev, colour = "Unstable fixed point"),
+            data_fixed %>% filter(r >= bifur_points$r[1])) +
+  geom_line(aes(x = r, y = prev, colour = "Unstable fixed point"),
             linewidth = 1.0, linetype = "44",
-            data_fixed %>% filter(rho <= bifur_points$rho[1])) +
+            data_fixed %>% filter(r <= bifur_points$r[1])) +
   
   scale_colour_manual(
     name = NULL,
@@ -97,21 +83,21 @@ p_bifurcation <- ggplot() +
   ),
   breaks = c("Stable periodic", "Stable fixed point", "Unstable fixed point")) +
   
-  geom_point(aes(x = rho, y = prev), 
+  geom_point(aes(x = r, y = prev), 
              colour = "black",
              bifur_points,
              size = 3) +
   
-  geom_point(aes(x = rho, y = prev), 
+  geom_point(aes(x = r, y = prev), 
              bifur_points,
              size = 1.5, colour = "white") +
   
   xlab(NULL) +
   ylab("Prevalence") +
   
-  coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(-0.005, 0.06),
-                  expand = FALSE) +
+  # coord_cartesian(xlim = xlim,
+  #                 ylim = c(-0.01, 0.06),
+  #                 expand = FALSE) +
   
   # sec_x_axis +
   
@@ -119,7 +105,7 @@ p_bifurcation <- ggplot() +
   
   guides(colour = guide_legend(nrow = 3)) +
   
-  theme(legend.position = "inside", legend.position.inside = c(0.8, 0.8), legend.key.width = unit(3, "cm"),
+  theme(legend.position = "inside", legend.position.inside = c(0.8, 0.9), legend.key.width = unit(3, "cm"),
         legend.background = element_rect(fill = "white", colour = "white", linewidth = 0),
         axis.text.x.top = element_text(margin = margin(b = 0.3, unit = "cm")),
         panel.grid.major = element_gridline,
@@ -130,36 +116,34 @@ p_bifurcation <- ggplot() +
 p_bifurcation
 
 p_bifurcation_min <- ggplot() +
-  geom_vline(aes(xintercept = rho),
-             tibble(rho = rhos),
+  geom_vline(aes(xintercept = r),
+             tibble(r = rs),
              colour = "grey80", linewidth = 1.0, alpha = 0.3) +
-  geom_line(aes(x = rho, y = min),
+  geom_line(aes(x = r, y = min),
             colour = colour_A,
             linewidth = 1.0,
-            maxmins %>% filter(rho <= bifur_points$rho[1])) +
-  geom_line(aes(x = rho, y = prev),
+            maxmins %>% filter(r <= bifur_points$r[1])) +
+  geom_line(aes(x = r, y = prev),
             linewidth = 1.0,
-            data_fixed %>% filter(rho >= bifur_points$rho[1])) +
-  geom_line(aes(x = rho, y = prev),
+            data_fixed %>% filter(r >= bifur_points$r[1])) +
+  geom_line(aes(x = r, y = prev),
             linewidth = 1.0, linetype = "44",
             data_fixed) +
   
   
-  geom_point(aes(x = rho, y = prev), 
+  geom_point(aes(x = r, y = prev), 
              colour = "black",
              bifur_points,
              size = 3) +
   
-  geom_point(aes(x = rho, y = prev), 
+  geom_point(aes(x = r, y = prev), 
              bifur_points,
              size = 1.5, colour = "white") +
   
-  xlab("Waning constant <i>ρ</i>") +
+  xlab("Mean antibody decay rate <i>r</i>") +
   ylab("Prevalence") +
   
-  coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(1e-10, 1.0),
-                  expand = FALSE) +
+  coord_cartesian(ylim = c(1e-10, 1.0)) +
   
   scale_y_log10(labels = scales::label_log(),
                 breaks = scales::breaks_log(n = 5)) +
@@ -175,57 +159,55 @@ p_bifurcation_min
 
 
 period <- h5read("data/paper/bifurcations_w_boost.jld2", "period")
-attack_rate <- h5read("data/paper/bifurcations_w_boost.jld2", "attack_rate")
+# attack_rate <- h5read("data/paper/bifurcations_w_boost.jld2", "attack_rate")
 
 data_period <- period %>%
-  reshape2::melt(varnames = c("rho", "scenario", "name"), value.name = "value") %>% 
+  reshape2::melt(varnames = c("r", "scenario", "name"), value.name = "value") %>% 
   mutate(name = c("period", "period_sd", "period_n")[name],
-         rho = x_rho[rho]) %>%
+         r = x_r[r]) %>%
   filter(scenario == 1) %>%
   
   pivot_wider() %>% 
   
-  left_join(bifur_points %>% select(rho_bifur = rho, scenario)) %>%
-  filter(rho < rho_bifur, period_sd < 1, period_n > 1)
+  left_join(bifur_points %>% select(r_bifur = r, scenario)) %>%
+  filter(r < r_bifur, period_sd < 1, period_n > 1)
 
 min_periods <- data_period %>% group_by(scenario) %>% slice(1) %>%
-  select(rho_min = rho, scenario)
+  select(r_min = r, scenario)
 
-data_attack_rate <- attack_rate %>%
-  reshape2::melt(varnames = c("rho", "scenario"), value.name = "attack_rate") %>% 
-  mutate(rho = x_rho[rho]) %>%
-  filter(scenario == 1) %>%
-  
-  left_join(bifur_points %>% select(rho_bifur = rho, scenario)) %>%
-  left_join(min_periods) %>% 
-  filter(rho < rho_bifur, rho >= rho_min) %>%
-  left_join(data_period)
+# data_attack_rate <- attack_rate %>%
+#   reshape2::melt(varnames = c("r", "scenario"), value.name = "attack_rate") %>% 
+#   mutate(r = x_r[r]) %>%
+#   filter(scenario == 1) %>%
+#   
+#   left_join(bifur_points %>% select(r_bifur = r, scenario)) %>%
+#   left_join(min_periods) %>% 
+#   filter(r < r_bifur, r >= r_min) %>%
+#   left_join(data_period)
 
 
 p_period <- ggplot() +
-  geom_vline(aes(xintercept = rho),
-             tibble(rho = rhos),
+  geom_vline(aes(xintercept = r),
+             tibble(r = rs),
              colour = "grey80", linewidth = 1.0, alpha = 0.3) +
-  geom_line(aes(x = rho, y = 365 / period),
+  geom_line(aes(x = r, y = 365 / period),
             linewidth = 1.0,
             data_period) +
   
   
-  geom_point(aes(x = rho, y = 365 / period), 
+  geom_point(aes(x = r, y = 365 / period), 
              colour = "black",
-             data_period %>% filter(rho == max(rho)),
+             data_period %>% filter(r == max(r)),
              size = 3) +
   
-  geom_point(aes(x = rho, y = 365 / period), 
-             data_period %>% filter(rho == max(rho)),
+  geom_point(aes(x = r, y = 365 / period), 
+             data_period %>% filter(r == max(r)),
              size = 1.5, colour = "white") +
   
   xlab(NULL) +
   ylab("Frequency (years<sup>-1</sup>)") +
   
-  coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(-0.1, 4),
-                  expand = FALSE) +
+  coord_cartesian(xlim = c(0, 0.1), ylim = c(0, 4)) +
   
   scale_y_continuous(labels = scales::label_comma()) +
   # sec_x_axis +
@@ -241,19 +223,18 @@ p_period <- ggplot() +
 p_period
 
 p_attack_rate <- ggplot() +
-  geom_vline(aes(xintercept = rho),
-             tibble(rho = rhos),
+  geom_vline(aes(xintercept = r),
+             tibble(r = rs),
              colour = "grey80", linewidth = 1.0, alpha = 0.3) +
-  geom_line(aes(x = rho, y = mean_inc * 365),
+  geom_line(aes(x = r, y = mean_inc * 365),
             linewidth = 1.0,
             data_mean_incidence) +
   
-  xlab("Waning constant <i>ρ</i>") +
+  xlab("Mean antibody decay rate <i>r</i>") +
   ylab("Attack rate") +
   
-  coord_cartesian(xlim = c(-0.0002, 0.0075),
-                  ylim = c(-0.3, 0.007 * 365),
-                  expand = FALSE) +
+  # coord_cartesian(xlim = c(0, 0.1),
+  #                 ylim = c(-0.3, 0.007 * 365)) +
   
   
   plot_theme_paper +
@@ -263,14 +244,14 @@ p_attack_rate <- ggplot() +
   ggtitle(NULL, "Yearly infection attack rate at solution")
 
 plot_data_ex_fixed_points <- data_fixed %>%
-  filter(rho %in% rhos) %>%
-  mutate(stable = rho >= bifur_points$rho[[1]]) %>% 
-  mutate(rho_label = str_c("<i>ρ </i>  = ", rho))
+  filter(r %in% rs) %>%
+  mutate(stable = r >= bifur_points$r[[1]]) %>% 
+  mutate(r_label = str_c("<i>r </i>  = ", r))
 
 
 p_examples <- data_I_sol %>%
-  filter(rho %in% rhos, t < 4000) %>% 
-  mutate(rho_label = str_c("<i>ρ </i>  = ", rho)) %>% 
+  filter(r %in% rs, t < 4000) %>% 
+  mutate(r_label = str_c("<i>r </i>  = ", r)) %>% 
   ggplot() +
   
   geom_line(aes(x = t, y = prev),
@@ -287,7 +268,7 @@ p_examples <- data_I_sol %>%
   
   scale_linetype_manual(values = c("TRUE" = "solid", "FALSE" = "22")) +
   
-  facet_wrap(~rho_label, ncol = 3, scales = "free") +
+  facet_wrap(~r_label, ncol = 3, scales = "free") +
   
   xlab("Time (days)") + ylab("Prevalence") +
   
@@ -319,16 +300,6 @@ p_top
 ggsave(
   "results/results_bifurcation.pdf",
   device = cairo_pdf,
-  width = 14, height = 9,
+  width = 14, height = 10,
   bg = "white"
 )
-
-
-
-fit_data <- data_period %>%
-  filter(rho < 0.0035) %>%
-  mutate(f = 365 / period)
-
-fit <- lm(f ~ rho, data = fit_data)
-
-summary(fit)
