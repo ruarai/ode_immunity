@@ -16,11 +16,12 @@ y_tbl <- y %>%
 
 plot_data <- y_tbl %>%
   
-  filter(t > 365 * 35.5) %>% 
+  filter(t > 365 * 35.5, t < 365 * 45) %>% 
   
   group_by(ix) %>%
   mutate(prev_norm = prevalence - prevalence[1],
-         dist = prev_norm ^ 2)
+         dist = prev_norm ^ 2,
+         class = if_else(ix > 33, "I", "S"))
 
 
 plot_data_dist <- plot_data %>%
@@ -28,13 +29,31 @@ plot_data_dist <- plot_data %>%
   summarise(dist = sum(dist))
 
 
-
-p_diff <- ggplot() +
-  geom_line(aes(x = t, y = prev_norm, group = ix),
+p_usual <- ggplot() +
+  geom_line(aes(x = t, y = prevalence, group = ix, colour = class),
             plot_data) +
   
   scale_x_continuous(labels = scales::label_comma()) +
   scale_y_continuous() +
+  
+  ggokabeito::scale_colour_okabe_ito(order = c(5, 6)) +
+  
+  xlab("Time *t*") +
+  ylab("__x__(*t*~0~) - __x__(*t*~i~)") +
+  
+  plot_theme_paper
+
+
+p_usual
+
+p_diff <- ggplot() +
+  geom_line(aes(x = t, y = prev_norm, group = ix, colour = class),
+            plot_data) +
+  
+  scale_x_continuous(labels = scales::label_comma()) +
+  scale_y_continuous() +
+  
+  ggokabeito::scale_colour_okabe_ito(order = c(5, 6)) +
   
   xlab("Time *t*") +
   ylab("__x__(*t*~0~) - __x__(*t*~i~)") +
@@ -56,14 +75,13 @@ p_diff_norm <- ggplot() +
   
   plot_theme_paper
 
-p_diff / p_diff_norm
+p_usual / p_diff / p_diff_norm
 
 
 ggsave(
   "results/results_ex_period_alg.png",
-  # device = ragg::agg_png(),
   device = png,
-  width = 10, height = 7,
+  width = 12, height = 12,
   bg = "white"
 )
 
@@ -85,47 +103,4 @@ p_heatmap <- plot_sub %>%
   
   plot_theme_paper +
   theme(legend.position = "none")
-
-
-eta <- 0.2
-plot_seasonality <- tibble(
-  t = unique(plot_sub$t)
-) %>%
-  mutate(beta_modifier = (1 + eta * sin(2 * pi * t / 365.0 + 0.5 * pi)),
-         t_year = (t - min(t)) / 365)
-
-
-p_modifier <- ggplot() +
-  geom_line(aes(x = t_year, y = beta_modifier),
-            plot_seasonality) +
-  
-  geom_hline(yintercept = 1.0, linetype = "44") +
-  
-  ylab("Seasonality") +
-  
-  plot_theme_paper +
-  scale_x_continuous(breaks = 0:5) + xlab(NULL) +
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        panel.grid.major.x = element_gridline)
-
-
-
-p_inf <- plot_sub %>%
-  filter(ix > 33) %>% 
-  group_by(t_year) %>% 
-  summarise(prevalence = sum(prevalence)) %>% 
-  ggplot() +
-  geom_line(aes(x = t_year, y = prevalence)) +
-  
-  scale_x_continuous(breaks = 0:5) + xlab(NULL) +
-  
-  plot_theme_paper +
-  theme(axis.text.x = element_blank(),
-        axis.ticks.x = element_blank(),
-        panel.grid.major.x = element_gridline)
-
-
-(p_modifier / p_inf / p_heatmap) +
-  plot_layout(heights = c(1, 3, 3))
 

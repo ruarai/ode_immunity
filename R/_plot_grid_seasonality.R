@@ -106,7 +106,7 @@ x_labels <- str_c(
   c("chaotic?", "quasiperiodic", "periodic (1 year)", "periodic (2 years)")
 )
 
-c_levels <- 2^seq(0, 8, by = 8 / 32)
+c_levels <- 10 ^ seq(0, 8, by = 8 / 32)
 
 plot_data_ex <- y_sol %>%
   reshape2::melt(c("i", "t", "class", "ix"), value.name = "prevalence") %>%
@@ -167,8 +167,8 @@ p_ex_yearly_antibody <- ggplot() +
   
   scale_x_continuous(breaks = c(0, 90, 180, 270, 365)) +
   
-  scale_y_continuous(trans = "log2", labels = scales::label_log(base = 2),
-                     breaks = 2^c(1, 3, 5)) +
+  scale_y_continuous(trans = "log10", labels = scales::label_log(base = 10),
+                     breaks = 10^c(1, 3, 5)) +
   
   plot_theme_paper +
   theme(panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5),

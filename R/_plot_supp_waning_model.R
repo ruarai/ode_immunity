@@ -50,7 +50,7 @@ p_heatmap <- ggplot() +
   scale_y_continuous(trans = "log10", breaks = 10^c(0, 2, 4, 6, 8),
                      labels = scales::label_log(base = 10),
                      sec.axis = sec_axis(
-                       trans = "identity", 
+                       transform = "identity", 
                        labels = function(x) log10(x) * 4 + 0,
                        breaks = 10^c(0, 2, 4, 6, 8),
                        name = "Strata"
@@ -130,14 +130,6 @@ plot_data_closed_k <- expand_grid(t = 0:150, k = c(8, 32, 128, 512, 2048)) %>%
     var = exp(lambda * k * t * (10^(-2 * C / k) - 1)) - exp(2 * lambda * k * t * (10^(-C / k) - 1))
   )
 
-# 
-# ggplot() +
-#   geom_line(aes(x = k, y = sqrt(var)),
-#             plot_data_closed_k) +
-#   
-#   plot_theme_paper
-
-
 p_sd <- ggplot() +
   geom_line(aes(x = t, y = sqrt(var), colour = factor(k), group = k ),
             linewidth = 1.0,
@@ -175,8 +167,6 @@ p_sd_ratio <- ggplot() +
 (p_sd / p_sd_ratio) +
   plot_annotation(tag_levels = "A") &
   theme(plot.tag = element_text(face = "bold", size = 15))
-
-
 
 
 ggsave(

@@ -37,17 +37,16 @@ include("model_globals.jl")
 include("steady_state_functions.jl")
 include("model_parameters.jl")
 include("solver.jl")
-include("solve_stochastic.jl")
-include("agent_based.jl")
 include("periodic.jl")
 
 
 function get_jobs(arg_ix, n_array, n_jobs)
-    jobs_per_array = ceil(Int, n_jobs / n_array)
-    
-    return ((arg_ix - 1) * jobs_per_array + 1):min(n_jobs, arg_ix * jobs_per_array)
-end
+    N = n_jobs
+    M = n_array
+    n = ceil(Int, convert(Float64, N) / M)
 
+    return [((i - 1) * n + 1):(min(i * n, N)) for i in 1:M][arg_ix]
+end
 
 function expand_grid(; kws...)
     names, vals = keys(kws), values(kws)

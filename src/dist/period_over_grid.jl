@@ -7,21 +7,10 @@ println("Job at array index $arg_ix of $n_array, with n_cpu = $(Threads.nthreads
 include("../dependencies.jl")
 
 
-k = 32
-C = 8.0
-R = 1.5
-gamma = 0.25
-beta = R * gamma
-rho = 0.003
-eta_0 = 0.0
-b = 2^3
-h = 8
-c_jump_dist = Normal(2^6, 2^5)
-
-
 model_params_0 = make_model_parameters(
-    k = k, beta = beta, gamma = gamma, C = C, rho = rho,
-    b = b, h = h, c_jump_dist = c_jump_dist; boosting = "none", eta = eta_0
+    k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+    C = baseline_C, r = baseline_r,
+    b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist
 )
 
 ode_sparsity = ode_get_sparsity(model_params_0)
@@ -40,10 +29,10 @@ length(x_eta)
 
 # Waning
 rho_step = 0.00001
-x_rho = rho_step:rho_step:0.005
+x_rho = rho_step:rho_step:0.005 ## TODO
 length(x_rho)
 
-x_vals = vec([(x1, x2) for x1 in x_eta, x2 in x_rho])
+x_vals = vec([(eta = x1, rho = x2) for x1 in x_eta, x2 in x_rho])
 
 ix_jobs = get_jobs(arg_ix, n_array, length(x_vals))
 x_vals_job = x_vals[ix_jobs]
@@ -60,8 +49,11 @@ Threads.@threads for i in eachindex(x_vals_job)
     println("Running job $(ix_jobs[i])")
 
     model_params = make_model_parameters(
-        k = k, beta = beta, gamma = gamma, C = C, rho = x_vals_job[i][2],
-        b = b, h = h, c_jump_dist = c_jump_dist; boosting = "none", eta = x_vals_job[i][1]
+
+        k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+        C = baseline_C, rho = x_vals_job[i].rho,
+        b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
+        boosting = "none", eta = x_vals_job[i].eta
     )
 
     ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat = Δt)

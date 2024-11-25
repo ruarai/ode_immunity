@@ -61,14 +61,19 @@ function get_steady_state(model_params, verbose = false)
     )
     
     probN = NonlinearProblem(fn_solve, u0)
-    inf_vec = solve(
-        probN, NewtonRaphson();
-        abstol = 1e-30, maxiters = 4000,
-        show_trace = Val(verbose), trace_level = NonlinearSolve.TraceAll(10)
-    )
+    try
+        inf_vec = solve(
+            probN, NewtonRaphson();
+            abstol = 1e-30, maxiters = 4000,
+            show_trace = Val(verbose), trace_level = NonlinearSolve.TraceAll(10)
+        )
 
-    sus_vec = (model_params.gamma / (model_params.beta * sum(inf_vec))) * (inf_vec .* omega_inv)
+        sus_vec = (model_params.gamma / (model_params.beta * sum(inf_vec))) * (inf_vec .* omega_inv)
+    
+        return (sus_vec, inf_vec)
+    catch e
+        println("Failed to find steady state with exception $e")
 
-
-    return (sus_vec, inf_vec)
+        return (zeros(model_params.S), zeros(model_params.S))
+    end
 end

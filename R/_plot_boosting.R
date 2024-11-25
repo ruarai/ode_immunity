@@ -65,14 +65,14 @@ p_example_mean_antibodies <- ggplot() +
             linewidth = 1.0,
             plot_data_means %>% filter(scenario == "None")) +
   
-  coord_cartesian(xlim = c(0, 2000), ylim = c(2^-0.5, 2^6)) +
+  coord_cartesian(xlim = c(0, 2000), ylim = c(10^-0.5, 10^6)) +
   
   xlab("Time *t* (days)") + ylab("Concentration") +
                                    
   ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 6, 9)) +
   guides(colour = guide_legend(reverse = TRUE)) +
   
-  scale_y_continuous(trans = "log2", labels = scales::label_log(base = 2), breaks = c(2^0, 2^2, 2^4, 2^6)) +
+  scale_y_continuous(trans = "log10", labels = scales::label_log(base = 10), breaks = 10^c(0, 2, 4, 6)) +
   
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +

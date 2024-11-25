@@ -7,17 +7,18 @@ library(rhdf5)
 source("../ode_immunity_multi/R/plot_theme.R")
 
 sol_t <- h5read("data/paper/basic_boosting.jld2", "sol_t")
+seq_t <- h5read("data/paper/basic_boosting.jld2", "seq_t")
 c_levels <- h5read("data/paper/basic_boosting.jld2", "c_levels")
 p_acq <- h5read("data/paper/basic_boosting.jld2", "p_acq")
 
-fn_p_acq <- function(c, b = 2^3, h = 8) { (c ^ h) / (b ^ h + c ^ h)}
+fn_p_acq <- function(c, b = 10^3, h = 3) { (c ^ h) / (b ^ h + c ^ h)}
 
 c_05 <- uniroot(rlang::as_function(~ fn_p_acq(.x) - 0.05), c(0, max(c_levels)))$root
 c_95 <- uniroot(rlang::as_function(~ fn_p_acq(.x) - 0.95), c(0, max(c_levels)))$root
 
 plot_data <- sol_t %>%
   reshape2::melt(varnames = c("scenario", "t", "class", "strata"), value.name = "prevalence") %>% 
-  mutate(class = c("S", "I")[class], c = c_levels[strata], p = p_acq[strata]) %>%
+  mutate(class = c("S", "I")[class], c = c_levels[strata], p = p_acq[strata], t = seq_t[t]) %>%
   filter(scenario == 1, t < 1500)
 
 
@@ -64,20 +65,20 @@ p_heatmap <- plot_data %>%
   
   scale_fill_viridis_c(option = "B", name = "Proportion",
                        breaks = c(0.001, 0.025, 0.05), labels = c("0.00", "0.025", "≥0.05"))  +
-  
+
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
   
-  scale_y_continuous(trans = "log2", breaks = 2^c(0, 2, 5, 8),
-                     labels = scales::label_log(base = 2),
+  scale_y_continuous(trans = "log10", breaks = 10^c(0, 2, 4, 6, 8),
+                     labels = scales::label_log(base = 10),
                      sec.axis = sec_axis(
-                       transform = "identity", 
-                       labels = function(x) log2(x) + 1,
-                       breaks = 2^c(0, 2, 5, 8),
+                       transform = "identity",
+                       labels = function(x) log10(x) * (32 / 8),
+                       breaks = 10^c(0, 2, 4, 6, 8),
                        name = "Strata *i*"
                      )) +
   
-  coord_cartesian(xlim = c(0, 1500), ylim = c(2^0, 2^8)) +
+  coord_cartesian(xlim = c(0, 1500), ylim = c(10^0, 10^8)) +
   
   # guides(fill = guide_colourbar(barwidth = 15)) +
   
@@ -99,14 +100,14 @@ p_mean_antibody <- ggplot() +
             plot_data_means,
             linewidth = 0.7) +
   
-  scale_y_continuous(trans = "log2",
-                     breaks = 2^c(0, 2, 5, 8),
-                     labels = scales::label_log(base = 2))  +
+  scale_y_continuous(trans = "log10",
+                     breaks = 10^c(0, 2, 4, 6, 8),
+                     labels = scales::label_log(base = 10))  +
   
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
   
-  coord_cartesian(ylim = c(2^0, 2^8)) +
+  coord_cartesian(ylim = c(10^0, 10^7)) +
   
   xlab("Time *t* (days)") + ylab("Antibody<br>concentration") +
   
@@ -115,22 +116,6 @@ p_mean_antibody <- ggplot() +
   ggtitle(NULL, "Population mean antibody concentration") +
   
   theme(panel.grid.major = element_gridline)
-
-# p_mean_protection <- ggplot() +
-#   geom_line(aes(x = t, y = p),
-#             plot_data_means,
-#             linewidth = 0.7) +
-#   
-#   coord_cartesian(ylim = c(0, 1)) +
-#   
-#   xlab("Time *t* (days)") + ylab("Protection") +
-#   
-#   plot_theme_paper +
-#   
-#   ggtitle(NULL, "Population mean protection against infection") +
-#   
-#   theme(panel.grid.major = element_gridline)
-
 
 
 (p_summ / p_heatmap / p_mean_antibody) +
