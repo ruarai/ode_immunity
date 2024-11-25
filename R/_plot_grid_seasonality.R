@@ -4,7 +4,7 @@ library(tidyverse)
 library(rhdf5)
 
 
-source("../ode_immunity_multi/R/plot_theme.R")
+source("R/plot_theme.R")
 
 
 x_vals <- h5read("data/paper/period_over_grid.jld2", "x_vals")

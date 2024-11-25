@@ -3,7 +3,7 @@
 library(tidyverse)
 library(rhdf5)
 
-source("../ode_immunity_multi/R/plot_theme.R")
+source("R/plot_theme.R")
 
 y_prop <- h5read("data/paper/binding_approx.jld2", "y_prop")
 x_c1 <- h5read("data/paper/binding_approx.jld2", "x_c1")

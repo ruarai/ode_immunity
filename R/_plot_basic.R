@@ -4,7 +4,7 @@ library(tidyverse)
 library(rhdf5)
 
 
-source("../ode_immunity_multi/R/plot_theme.R")
+source("R/plot_theme.R")
 
 sol_t <- h5read("data/paper/basic_boosting.jld2", "sol_t")
 seq_t <- h5read("data/paper/basic_boosting.jld2", "seq_t")

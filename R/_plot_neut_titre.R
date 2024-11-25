@@ -5,7 +5,7 @@ library(rhdf5)
 
 library(patchwork)
 
-source("../ode_immunity_multi/R/plot_theme.R")
+source("R/plot_theme.R")
 
 trans <- function(p, log_a, b) {
   return(plogis(b * qlogis(p) - b * log_a))

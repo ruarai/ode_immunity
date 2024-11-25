@@ -2,7 +2,7 @@
 library(tidyverse)
 library(rhdf5)
 
-source("../ode_immunity_multi/R/plot_theme.R")
+source("R/plot_theme.R")
 
 
 

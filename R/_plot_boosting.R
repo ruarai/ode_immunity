@@ -5,7 +5,7 @@ library(rhdf5)
 library(patchwork)
 
 
-source("../ode_immunity_multi/R/plot_theme.R")
+source("R/plot_theme.R")
 
 
 

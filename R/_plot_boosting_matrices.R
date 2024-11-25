@@ -3,7 +3,7 @@ library(rhdf5)
 library(patchwork)
 
 
-source("../ode_immunity_multi/R/plot_theme.R")
+source("R/plot_theme.R")
 
 boosting_matrices <- h5read("data/paper/basic_boosting.jld2", "boosting_matrices")
 

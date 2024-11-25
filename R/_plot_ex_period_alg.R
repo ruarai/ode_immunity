@@ -5,7 +5,7 @@ library(rhdf5)
 library(patchwork)
 
 
-source("../ode_immunity_multi/R/plot_theme.R")
+source("R/plot_theme.R")
 
 t_steps <- h5read("data/paper/ex_period.jld2", "t")
 y <- h5read("data/paper/ex_period.jld2", "y")
@@ -16,7 +16,7 @@ y_tbl <- y %>%
 
 plot_data <- y_tbl %>%
   
-  filter(t > 365 * 35.5, t < 365 * 45) %>% 
+  filter(t > 365 * 35.5, t < 365 * 35.5 + 365 * 4.5) %>% 
   
   group_by(ix) %>%
   mutate(prev_norm = prevalence - prevalence[1],
@@ -36,13 +36,12 @@ p_usual <- ggplot() +
   scale_x_continuous(labels = scales::label_comma()) +
   scale_y_continuous() +
   
-  ggokabeito::scale_colour_okabe_ito(order = c(5, 6)) +
+  ggokabeito::scale_colour_okabe_ito(name = "Class", order = c(9, 8)) +
   
   xlab("Time *t*") +
-  ylab("__x__(*t*~0~) - __x__(*t*~i~)") +
+  ylab("__x__(*t*~i~)") +
   
   plot_theme_paper
-
 
 p_usual
 
@@ -53,10 +52,10 @@ p_diff <- ggplot() +
   scale_x_continuous(labels = scales::label_comma()) +
   scale_y_continuous() +
   
-  ggokabeito::scale_colour_okabe_ito(order = c(5, 6)) +
+  ggokabeito::scale_colour_okabe_ito(name = "Class", order = c(9, 8)) +
   
   xlab("Time *t*") +
-  ylab("__x__(*t*~0~) - __x__(*t*~i~)") +
+  ylab("__x__(*t*~i~) - __x__(*t*~0~)") +
   
   plot_theme_paper
 
@@ -71,7 +70,7 @@ p_diff_norm <- ggplot() +
   scale_y_log10(labels = scales::label_log()) +
   
   xlab("Time *t*") +
-  ylab("||__x__(*t*~0~) - __x__(*t*~i~)||") +
+  ylab("||__x__(*t*~i~) - __x__(*t*~0~)||") +
   
   plot_theme_paper
 
