@@ -1,8 +1,6 @@
 
 include("dependencies.jl")
 
-using JLD2
-
 k = 32
 C = 8.0
 R = 1.5
@@ -21,7 +19,6 @@ model_params = make_model_parameters(
 ode_sparsity = ode_get_sparsity(model_params)
 
 n_inf_0 = 0.0001
-n_days = 365*40
 
 
 Δt = 0.25

@@ -1,8 +1,6 @@
 
 include("dependencies.jl")
 
-using JLD2
-
 function ode_ab!(du, u, p, t)
     k1 = p[1]
     k2 = p[2]

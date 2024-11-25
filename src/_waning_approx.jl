@@ -1,7 +1,5 @@
 include("dependencies.jl")
 
-using JLD2
-
 function decay_step!(du, u, p, t)
     du[1] = -p.r * u[1]
 end

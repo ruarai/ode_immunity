@@ -28,8 +28,6 @@ ode_sparsity = ode_get_sparsity(model_params_0)
 
 
 n_inf_0 = 0.0001
-n_days_burn_in = 30000
-n_days = (n_days_burn_in + 365 * 100 * 2)
 
 ϵ = 1e-6
 Δt = 0.25

@@ -43,7 +43,7 @@ function make_model_parameters(;
     boosting = "none"
 )
     S = k + 1
-    c_levels = collect(2 .^ (C .* (0:k) / k))
+    c_levels = collect(10 .^ (C .* (0:k) / k))
     
     p_acq = (c_levels .^ h) ./ (b ^ h .+ c_levels .^ h)
 

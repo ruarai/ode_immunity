@@ -1,21 +1,10 @@
 
 include("dependencies.jl")
 
-using JLD2
-
-k = 32
-C = 8.0
-R = 1.5
-gamma = 0.25
-beta = R * gamma
-rho = 0.003
-b = 2^3
-h = 8
-c_jump_dist = Normal(2^6, 2^5)
-
-model_params = make_model_parameters(
-    k = k, beta = beta, gamma = gamma, C = C, rho = rho,
-    b = b, h = h, c_jump_dist = c_jump_dist; boosting = "none"
+model_params_0 = make_model_parameters(
+    k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+    C = baseline_C, rho = baseline_rho,
+    b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist
 )
 
 plot(model_params.c_levels)
@@ -36,16 +25,14 @@ sol_t = zeros(3, n_days, 2, model_params.S)
 
 ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat = 0.25)
 
+
 for d in 1:n_days, i in 1:model_params.S
     sol_t[1, d, 1, :] = ode_solution(d)[ode_ix(c_sus, 1:model_params.S, model_params.S)]
     sol_t[1, d, 2, :] = ode_solution(d)[ode_ix(c_inf, 1:model_params.S, model_params.S)]
 end
 
-period_mean, period_sd, period_n = get_period(ode_solution, model_params, 365*10, n_days, 0.25, 10^-6)
+plot(vec(sum(sol_t[1, :, 2, :], dims = 2)), legend = false)
 
-get_periodic_attack_rate(ode_solution, model_params, 365 * 10, n_days, period_mean)
-
-get_steady_state(model_params, true)
 
 model_params_boosting = make_model_parameters(
     k = k, beta = beta, gamma = gamma, C = C, rho = rho,
@@ -53,7 +40,7 @@ model_params_boosting = make_model_parameters(
 )
 
 
-heatmap(model_params_boosting.M)
+heatmap(min.(model_params_boosting.M, 0.05))
 
 ode_solution = @time ode_solve(model_params_boosting, n_days, n_inf_0, ode_sparsity)
 
@@ -67,10 +54,9 @@ end
 
 model_params_boosting_loglinear = make_model_parameters(
     k = k, beta = beta, gamma = gamma, C = C, rho = rho,
-    b = b, h = h, c_jump_dist = Normal(6, 5/8); boosting = "loglinear"
+    b = b, h = h, c_jump_dist = Normal(6, 7/8); boosting = "loglinear"
 )
-heatmap(model_params_boosting_loglinear.M)
-heatmap(model_params.M)
+heatmap(min.(model_params_boosting_loglinear.M, 0.05))
 
 
 ode_solution = @time ode_solve(model_params_boosting_loglinear, n_days, n_inf_0, ode_sparsity)

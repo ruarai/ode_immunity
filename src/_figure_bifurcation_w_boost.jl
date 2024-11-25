@@ -2,20 +2,18 @@
 println("Bifurcation (with boost) plots")
 include("dependencies.jl")
 
-using JLD2
-
 k = 32
 C = 8.0
 R = 1.5
 gamma = 0.25
 beta = R * gamma
 rho_0 = 0.003
-b = 2^3
-h = 8
-c_jump_dist = Normal(2^6, 2^5)
+b = 10^3
+h = 3
+c_jump_dist = Normal(10^6, 10^7)
 
 boost_scenarios = ["none" "linear" "loglinear"]
-jump_dist_scenarios = [Normal(2^6, 2^5) Normal(2^6, 2^5) Normal(6, 5/8)]
+jump_dist_scenarios = [Normal(10^6, 10^7) Normal(10^6, 10^7) Normal(10, 7/8)]
 
 model_params_0 = make_model_parameters(
     k = k, beta = beta, gamma = gamma, C = C, rho = rho_0,
@@ -28,8 +26,6 @@ ode_sparsity = ode_get_sparsity(model_params_0)
 
 Δt = 0.25
 n_inf_0 = 0.01
-burn_in_days = 20000
-n_days = 40000
 
 x_rho = collect(0.0:0.00005:0.007)
 

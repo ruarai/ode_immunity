@@ -1,16 +1,14 @@
 include("dependencies.jl")
 
-using JLD2
-
 k = 32
 C = 8.0
 R = 1.5
 gamma = 0.25
 beta = R * gamma
 rho_0 = 0.003
-b = 2^3
-h = 8
-c_jump_dist = Normal(2^6, 2^5)
+b = 10^3
+h = 3
+c_jump_dist = Normal(10^6, 10^7)
 
 model_params_0 = make_model_parameters(
     k = k, beta = beta, gamma = gamma, C = C, rho = rho_0,
@@ -20,7 +18,6 @@ model_params_0 = make_model_parameters(
 ode_sparsity = ode_get_sparsity(model_params_0)
 
 n_inf_0 = 0.01
-n_days = 128000
 
 t_seq = collect(1:n_days)
 
