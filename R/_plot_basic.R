@@ -18,7 +18,8 @@ c_95 <- uniroot(rlang::as_function(~ fn_p_acq(.x) - 0.95), c(0, max(c_levels)))$
 
 plot_data <- sol_t %>%
   reshape2::melt(varnames = c("scenario", "t", "class", "strata"), value.name = "prevalence") %>% 
-  mutate(class = c("S", "I")[class], c = c_levels[strata], p = p_acq[strata], t = seq_t[t]) %>%
+  mutate(class = c("S", "I")[class], c = c_levels[strata], p = p_acq[strata], t = seq_t[t],
+         strata = strata - 1) %>%
   filter(scenario == 1, t < 1500)
 
 
@@ -28,11 +29,42 @@ plot_data_summ_inf <- plot_data %>%
   filter(class == "I")
 
 plot_data_means <- plot_data %>%
+  filter(class == "S") %>% 
   group_by(t) %>%
   mutate(prevalence = prevalence / sum(prevalence)) %>% 
   summarise(c = sum(prevalence * c),
             p = sum(prevalence * p), .groups = "drop")
 
+
+plot_data %>%
+  filter(class == "S") %>%
+  mutate(strata_group = case_when(
+    strata == 0 ~ 0,
+    strata < 8 ~ 1,
+    strata < 16 ~ 2,
+    strata < 24 ~ 3,
+    TRUE ~ 4
+  )) %>% 
+  group_by(t, strata_group) %>% 
+  summarise(prevalence = sum(prevalence)) %>% 
+  ggplot() +
+  geom_line(aes(x = t, y= prevalence, group = strata_group)) +
+  
+  facet_wrap(~strata_group, ncol = 1) +
+  
+  scale_y_log10(limits = c(0.001, 1))
+
+
+
+plot_data %>%
+  filter(class == "S") %>% 
+  group_by(t) %>%
+  mutate(prevalence_cum = cumsum(prevalence),
+         lagged = lag(prevalence_cum, default = 0)) %>%
+  
+  ggplot() +
+  geom_ribbon(aes(x = t, ymin = lagged, ymax = prevalence_cum, fill = strata, group = strata),
+              colour = "white", linewidth = 0.2)
 
 
 
@@ -55,7 +87,10 @@ p_summ <- plot_data_summ_inf %>%
   
   ggtitle(NULL, "Infection prevalence")
 
+col_heatmap <- colorspace::sequential_hcl(n = 128, h = c(262, 136), c = c(39, 72, 0), l = c(13, 98), power = c(1.65, 1.1))
+
 p_heatmap <- plot_data %>% 
+  filter(class == "S") %>% 
   
   summarise(prevalence = sum(prevalence), .by = c("c", "t")) %>% 
   mutate(prevalence = pmin(prevalence, 0.05)) %>% 
@@ -63,9 +98,9 @@ p_heatmap <- plot_data %>%
   ggplot() +
   geom_tile(aes(x = t, y = c, fill = prevalence)) +
   
-  scale_fill_viridis_c(option = "B", name = "Proportion",
-                       breaks = c(0.001, 0.025, 0.05), labels = c("0.00", "0.025", "≥0.05"))  +
-
+  geom_hline(aes(yintercept = 10^6),
+             colour = "white", linetype = "44") +
+  
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
   
@@ -77,7 +112,10 @@ p_heatmap <- plot_data %>%
                        breaks = 10^c(0, 2, 4, 6, 8),
                        name = "Strata *i*"
                      )) +
-  
+
+  scale_fill_viridis_c(option = "B", name = "Proportion",
+                       breaks = c(0.001, 0.025, 0.05), labels = c("0.00", "0.025", "≥0.05"))  +
+
   coord_cartesian(xlim = c(0, 1500), ylim = c(10^0, 10^8)) +
   
   # guides(fill = guide_colourbar(barwidth = 15)) +
@@ -91,7 +129,6 @@ p_heatmap <- plot_data %>%
         axis.ticks.x = element_blank()) +
   
   ggtitle(NULL, "Population distribution of antibodies")
-
 
 p_heatmap
 
@@ -116,6 +153,8 @@ p_mean_antibody <- ggplot() +
   ggtitle(NULL, "Population mean antibody concentration") +
   
   theme(panel.grid.major = element_gridline)
+
+p_mean_antibody
 
 
 (p_summ / p_heatmap / p_mean_antibody) +

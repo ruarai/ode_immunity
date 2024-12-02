@@ -7,7 +7,7 @@ library(patchwork)
 
 source("R/plot_theme.R")
 
-rs <- c(0.025, 0.05, 0.075)
+rs <- c(0.05, 0.1)
 
 xlim <- c(-0.01, 0.11)
 

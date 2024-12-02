@@ -16,7 +16,7 @@ ode_sparsity = ode_get_sparsity(model_params_0)
 
 Δt = 0.25
 n_inf_0 = 0.01
-x_r = collect(0:0.001:0.1)
+x_r = collect(0:0.001:0.15)
 
 y_fixed_I = zeros(length(x_r), length(boost_scenarios))
 y_I_sol = zeros(length(x_r), length(boost_scenarios), n_days)

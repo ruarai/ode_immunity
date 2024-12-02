@@ -10,14 +10,12 @@ source("R/plot_theme.R")
 x_vals <- h5read("data/paper/period_over_grid.jld2", "x_vals")
 y_inf_summary <- h5read("data/paper/period_over_grid.jld2", "y_inf_summary")
 y_period <- h5read("data/paper/period_over_grid.jld2", "y_period")
-y_attack_rate <- h5read("data/paper/period_over_grid.jld2", "y_attack_rate")
 
 plot_data <- tibble(
   eta = x_vals[1, ], r = x_vals[2, ],
   inf_min = y_inf_summary[, 1], inf_max = y_inf_summary[, 2],  inf_mean = y_inf_summary[, 3],
   inc_min = y_inf_summary[, 4], inc_max = y_inf_summary[, 5],  inc_mean = y_inf_summary[, 6],
-  period = y_period[,1], period_sd = y_period[,2], period_n = y_period[,3],
-  attack_rate = y_attack_rate
+  period = y_period[,1], period_sd = y_period[,2], period_n = y_period[,3]
 ) %>%
   mutate(inf_diff = inf_max - inf_min,
          periodic = (period_sd < 1) & (period_n >= 5),
@@ -87,8 +85,6 @@ p_period <- ggplot() +
   plot_theme_paper +
   theme(legend.position = "bottom", legend.byrow = TRUE)
 
-p_period
-
 p_attack_rate <- ggplot()  +
   annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
   geom_tile(aes(x = eta, y = r, fill = inc_mean * 365),
@@ -146,7 +142,7 @@ p_min <- ggplot()  +
     name = "Minimum\ninfection\nprevalence (log10)",
     limits = c(-15, -1),
     breaks = seq(-15, -1, 0.5),
-    labels = c("-15", "", "", "", "-13", "", "", "", "-11", "", "", "", "-9", 
+    labels = c("<-15", "", "", "", "-13", "", "", "", "-11", "", "", "", "-9", 
                "", "", "", "-7", "", "", "", "-5", "", "", "", "-3", "", "", 
                "", "-1")
   ) +
@@ -165,9 +161,6 @@ p_min <- ggplot()  +
 p_full <- (p_period | p_attack_rate) / (p_max | p_min) +
   plot_annotation(tag_levels = "A") &
   theme(plot.tag = element_text(face = "bold", size = 15))
-
-
-
 
 
 

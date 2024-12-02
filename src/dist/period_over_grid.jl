@@ -53,7 +53,7 @@ Threads.@threads for i in eachindex(x_vals_job)
         k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
         C = baseline_C, rho = x_vals_job[i].rho,
         b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
-        boosting = "none", eta = x_vals_job[i].eta
+        eta = x_vals_job[i].eta
     )
 
     ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat = Δt)

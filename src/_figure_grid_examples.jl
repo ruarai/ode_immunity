@@ -28,7 +28,7 @@ sol_t = zeros(length(x_eta), n_days, 2, model_params_0.S)
         k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
         C = baseline_C, r = x_r[i],
         b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
-        boosting = "none", eta = x_eta[i]
+        eta = x_eta[i]
     )
 
     # Calculate a (not-necessarily-stable) solution of the ODE over time

@@ -41,7 +41,7 @@ function make_model_parameters(;
     c_jump_dist,
 
     eta = 0.0,
-    boosting = "none"
+    boosting = "independent"
 )
     S = k + 1
     c_levels = collect(10 .^ (C .* (0:k) / k))
@@ -53,12 +53,14 @@ function make_model_parameters(;
         M = build_immunity_matrix_boost_loglinear(S, c_levels, c_jump_dist)
     elseif boosting == "none"
         M = build_immunity_matrix_no_boost(S, c_levels, c_jump_dist)
+    elseif boosting == "independent"
+        M = build_immunity_matrix_independent(S, c_levels, c_jump_dist)
     else
         throw(ArgumentError("Unknown boosting method specified"))
     end
 
-    rho = -r / (k * (10^(-C/k) - 1))
-    # r = - rho * k * (10^(-C/k) - 1)
+    # rho = -r / (k * (10^(-C/k) - 1))
+    rho = r / (C * log(10))
 
     wane_transition_rate = rho * k
 
@@ -133,6 +135,25 @@ function build_immunity_matrix_no_boost(N, c_levels, c_jump_dist)
             mat_immunity[i, j] = cdf(c_jump_dist, log_c_levels[i + 1])
         elseif i == N
             mat_immunity[i, j] = 1 - cdf(c_jump_dist, log_c_levels[i])
+        else
+            mat_immunity[i, j] = cdf(c_jump_dist, log_c_levels[i + 1]) - cdf(c_jump_dist, log_c_levels[i])
+        end
+    end
+
+    return mat_immunity
+end
+
+
+function build_immunity_matrix_independent(N, c_levels, c_jump_dist)
+    mat_immunity = zeros(N, N)
+
+    log_c_levels = log10.(c_levels)
+
+    for j in 1:N, i in 1:N
+        if i == N
+            mat_immunity[i, j] = 1 - cdf(c_jump_dist, log_c_levels[i])
+        elseif i == 1
+            mat_immunity[i, j] = cdf(c_jump_dist, log_c_levels[i + 1])
         else
             mat_immunity[i, j] = cdf(c_jump_dist, log_c_levels[i + 1]) - cdf(c_jump_dist, log_c_levels[i])
         end
