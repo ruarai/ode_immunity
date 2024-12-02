@@ -28,9 +28,10 @@ x_eta = 0.00:0.001:0.5
 length(x_eta)
 
 # Waning
-r_step = 0.0002
-x_r = r_step:r_step:0.1
+r_step = 0.0003
+x_r = r_step:r_step:0.15
 length(x_r)
+
 
 x_vals = vec([(eta = x1, r = x2) for x1 in x_eta, x2 in x_r])
 
