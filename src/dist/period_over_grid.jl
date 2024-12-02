@@ -28,11 +28,11 @@ x_eta = 0.00:0.001:0.5
 length(x_eta)
 
 # Waning
-rho_step = 0.00001
-x_rho = rho_step:rho_step:0.005 ## TODO
-length(x_rho)
+r_step = 0.0002
+x_r = r_step:r_step:0.1
+length(x_r)
 
-x_vals = vec([(eta = x1, rho = x2) for x1 in x_eta, x2 in x_rho])
+x_vals = vec([(eta = x1, r = x2) for x1 in x_eta, x2 in x_r])
 
 ix_jobs = get_jobs(arg_ix, n_array, length(x_vals))
 x_vals_job = x_vals[ix_jobs]
@@ -51,9 +51,9 @@ Threads.@threads for i in eachindex(x_vals_job)
     model_params = make_model_parameters(
 
         k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-        C = baseline_C, rho = x_vals_job[i].rho,
+        C = baseline_C, r = x_vals_job[i].r,
         b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
-        eta = x_vals_job[i].eta
+        boosting = "none", eta = x_vals_job[i].eta
     )
 
     ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat = Δt)
