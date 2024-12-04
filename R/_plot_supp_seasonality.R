@@ -79,7 +79,7 @@ p_period <- ggplot() +
 
   
   coord_fixed(ratio = 5) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Mean antibody decay rate <i>r</i>") +
+  xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
   guides(fill = guide_legend(nrow = 2, ncol = 5)) +
   
   plot_theme_paper +
@@ -101,7 +101,7 @@ p_attack_rate <- ggplot()  +
   ) +
   
   coord_fixed(ratio = 5) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Mean antibody decay rate <i>r</i>")  +
+  xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +
   guides(fill = guide_colourbar(barwidth = 15)) +
@@ -121,7 +121,7 @@ p_max <- ggplot()  +
     labels = c("0", "", "0.05", "", "0.1", "", "0.15", "", "0.2", "", "0.25")
   ) +
   coord_fixed(ratio = 5) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Mean antibody decay rate <i>r</i>")  +
+  xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +
   guides(fill = guide_colourbar(barwidth = 15)) +
@@ -148,7 +148,7 @@ p_min <- ggplot()  +
   ) +
   
   coord_fixed(ratio = 5) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Mean antibody decay rate <i>r</i>")  +
+  xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +
   guides(fill = guide_colourbar(barwidth = 15)) +

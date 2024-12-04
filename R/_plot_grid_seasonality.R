@@ -44,11 +44,12 @@ plot_data_year_marks <- tibble(r_0 = year_marks, year = year_stops) %>%
 
 
 plot_data_example_points <- tribble(
-  ~eta, ~r, ~label,
-  0.3, 0.06, "i",
-  0.3, 0.05, "ii",
-  0.02, 0.06, "iii",
-  0.3, 0.04, "iv",
+  ~eta, ~r, ~label, ~colour,
+  0.0, 0.06, "i", factor(0),
+  0.03, 0.06, "ii", factor(4.5),
+  0.2, 0.06, "iii", factor(1),
+  0.27, 0.06, "iv", factor(2),
+  0.37, 0.06, "v", factor(9)
 )
 plot_annotations <- list(
   geom_segment(
@@ -61,14 +62,14 @@ plot_annotations <- list(
   annotate("segment", x = -0.003, y = bifur_zero, xend = -0.01, yend = bifur_zero),
   geom_text(aes(x = -0.07, y = r_0 + 0.0002, label = year_label), hjust = 0, plot_data_year_marks),
   annotate("text", x = -0.07, y = 0.085, label = "Fixed\npoint", hjust = 0),
+  # geom_hline(yintercept = 0.06, colour = "white", alpha = 0.5, linetype = "44"),
   geom_point(aes(x = eta, y = r), plot_data_example_points, colour = "black", size = 1.4, stroke = 1),
-  geom_point(aes(x = eta, y = r), plot_data_example_points, colour = "white", size = 0.7, stroke = 0.5),
-  geom_label(aes(x = eta + 0.02, y = r - 0.0015, label = label), plot_data_example_points,
+  geom_point(aes(x = eta, y = r, colour = colour), plot_data_example_points, size = 0.7, stroke = 0.5),
+  geom_label(aes(x = eta + 0.01, y = r - 0.005, label = label), plot_data_example_points,
              label.r = unit(0.1, "cm"), label.size = 0, fill = shades::opacity("white", 0.8))
 )
 
-
-period_cols <- viridis::inferno(n = 8, direction = -1, begin = 0.1)
+period_cols <- viridis::magma(n = 8, direction = -1, begin = 0.0, end = 1.0)
 p_period <- ggplot() +
   geom_tile(aes(x = eta, y = r, fill = period),
             plot_data_periodic) +
@@ -79,34 +80,73 @@ p_period <- ggplot() +
             plot_data %>% filter(!periodic, !quasiperiodic)) +
   
   plot_annotations +
-  
-  
-  scale_fill_manual(name = "Period",
-                    values = c(period_cols[1:4], "#2260BE", period_cols[5:8], "lightblue") %>% `names<-`(c(1:4, "4.5", 5:9)),
-                    
-                    labels = c("1 yr", str_c(2:4, "yrs"), "Quasiperiodic", str_c(5:7, "yrs"), "≥8 yrs", "?") %>% `names<-`(c(1:4, "4.5", 5:9)),
-                    breaks = c(1:4, 4.5, 5:9)
+  scale_colour_manual(
+    values = c("white", period_cols[1:4], "#2260BE", period_cols[5:8], "#BDE6F4") %>% `names<-`(c(0:4, "4.5", 5:9)),
+    breaks = c(0:4, 4.5, 5:9)
   ) +
   
   
-  coord_fixed(ratio = 5) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Mean antibody decay rate <i>r</i>") +
-  guides(fill = guide_legend(nrow = 2, ncol = 5)) +
+  scale_fill_manual(
+    name = "Period",
+    values = c(period_cols[1:4], "#2260BE", period_cols[5:8], "#BDE6F4") %>% `names<-`(c(1:4, "4.5", 5:9)),
+    
+    labels = c("1 yr", str_c(2:4, "yrs"), "Quasiperiodic", str_c(5:7, "yrs"), "≥8 yrs", "?") %>% `names<-`(c(1:4, "4.5", 5:9)),
+    breaks = c(1:4, 4.5, 5:9)
+  ) +
+  
+  
+  coord_fixed(ratio = 5, ylim = c(0, 0.1)) +
+  xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
+  guides(fill = guide_legend(nrow = 2, ncol = 5),
+         colour = guide_none()) +
   
   plot_theme_paper +
   theme(legend.position = "bottom", legend.byrow = TRUE)
 
 p_period
 
+
+p_min <- ggplot()  +
+  annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
+  geom_tile(aes(x = eta, y = r, fill = pmax(-14, log10(inf_min))),
+            plot_data) +
+  
+  plot_annotations +
+  scale_colour_manual(
+    values = rep("white", 11),
+    breaks = c(0:4, 4.5, 5:9)
+  ) + 
+  
+  scale_fill_stepsn(
+    colours = rev(colorspace::diverging_hcl(n = 20, h = c(240, 15), c = c(60, 80), l = c(75, 5), power = c(1.2, 1.5))),
+    name = "Minimum\ninfection\nprevalence (log10)",
+    limits = c(-15, -1),
+    breaks = seq(-15, -1, 0.5),
+    labels = c("<-15", "", "", "", "-13", "", "", "", "-11", "", "", "", "-9", 
+               "", "", "", "-7", "", "", "", "-5", "", "", "", "-3", "", "", 
+               "", "-1")
+  ) +
+  
+  coord_fixed(ratio = 5, ylim = c(0, 0.1)) +
+  xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
+  
+  plot_theme_paper +
+  guides(fill = guide_colourbar(barwidth = 15),
+         colour = guide_none()) +
+  theme(legend.position = "bottom",
+        legend.title = element_text(margin = margin(r = 0.7, unit = "cm")))
+
+p_period | p_min
+
 x_eta <- h5read("data/paper/period_over_grid_examples.jld2", "x_eta")
 x_r <- h5read("data/paper/period_over_grid_examples.jld2", "x_r")
 y_sol <- h5read("data/paper/period_over_grid_examples.jld2", "sol_t")
 
 x_labels <- str_c(
-  "<b>", c("i", "ii", "iiii", "iv"), ".</b>",
+  "<b>", c("0", "i", "ii", "iiii", "iv"), ".</b>",
   " <i>η</i> = ", scales::label_comma(accuracy = 0.01)(x_eta),
   ", <i>r</i> = ", scales::label_comma(accuracy = 0.01)(x_r), " — ",
-  c("periodic (1 year)", "periodic (2 years)", "quasiperiodic", "chaotic [?]")
+  c("no seasonality", "quasiperiodic", "periodic (1 year)", "periodic (2 years)", "chaotic [?]")
 )
 
 c_levels <- 10 ^ seq(0, 8, by = 8 / 32)
@@ -116,11 +156,15 @@ plot_data_ex <- y_sol %>%
   mutate(eta = x_eta[i], r = x_r[i], label = x_labels[i]) %>%
   as_tibble()
 
+t_ex_start <- 365 * 166
+t_ex_end <- 365 * (166 + 8)
+t_ex_yearly_end <- 365 * (166 + 20)
 
 plot_data_ex_inf <- plot_data_ex %>%
-  filter(class == 2, t >= 365 * 166, t < 365 * (166 + 8)) %>% 
+  filter(class == 2, t >= t_ex_start, t < t_ex_end) %>% 
   group_by(label, eta, r, t) %>%
   summarise(prevalence = sum(prevalence))
+
 
 p_ex_inf <- ggplot() +
   geom_line(aes(x = t, y = prevalence),
@@ -141,17 +185,65 @@ p_ex_inf <- ggplot() +
   theme(panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5),
         strip.text = element_markdown(size = 12))
 
+p_ex_inf
+
+
+plot_data_ex_inf_year <- plot_data_ex %>%
+  filter(class == 2, t >= t_ex_start, t < t_ex_yearly_end) %>% 
+  group_by(label, eta, r, t) %>%
+  summarise(prevalence = sum(prevalence)) %>%
+  
+  mutate(year = floor(t / 365),
+         t_year = t %% 365)
+
+p_ex_yearly_inf <- ggplot() +
+  geom_line(aes(x = t_year, y = prevalence, group = year),
+            linewidth = 0.3, alpha = 0.5,
+            plot_data_ex_inf_year) +
+  
+  facet_wrap(~label, ncol = 1, scales = "free_x") +
+  
+  xlab("Time of year (days)") + ylab("Infection prevalence") +
+  
+  scale_x_continuous(breaks = c(0, 90, 180, 270, 365)) +
+  
+  scale_y_continuous(breaks = c(0, 0.05, 0.1)) +
+  
+  coord_cartesian(ylim = c(0, 0.1)) +
+  
+  plot_theme_paper +
+  theme(panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5),
+        strip.text = element_markdown(colour = "white"))
 
 
 plot_data_ex_mean <- plot_data_ex %>%
   mutate(c = c_levels[ix]) %>%
-  filter(class == 1, t >= 365 * 166, t < 365 * (166 + 8)) %>% 
+  filter(class == 1, t >= t_ex_start, t < t_ex_end) %>% 
   group_by(label, eta, r, t) %>% 
   summarise(mean = sum(prevalence * c))
 
+p_ex_antibody <- ggplot() +
+  geom_line(aes(x = t, y = mean),
+            plot_data_ex_mean) +
+  
+  facet_wrap(~label, ncol = 1, scales = "free_x") +
+  
+  xlab("Time (years)") + ylab("Infection prevalence") +
+  
+  scale_x_continuous(breaks = scales::breaks_width(365),
+                     labels = function(x) { (x - min(x, na.rm = TRUE)) / 365 }) +
+  
+  scale_y_continuous(trans = "log10", labels = scales::label_log(base = 10),
+                     breaks = 10^c(1, 3, 5)) +
+  
+  plot_theme_paper +
+  theme(panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5),
+        strip.text = element_markdown(size = 12))
+
+
 plot_data_ex_mean_year <- plot_data_ex %>%
   mutate(c = c_levels[ix]) %>%
-  filter(class == 1, t >= 365 * 200, t < 365 * 220) %>% 
+  filter(class == 1, t >= t_ex_start, t < t_ex_yearly_end) %>% 
   group_by(label, eta, r, t) %>% 
   summarise(mean = sum(prevalence * c)) %>%
   
@@ -161,7 +253,7 @@ plot_data_ex_mean_year <- plot_data_ex %>%
 
 p_ex_yearly_antibody <- ggplot() +
   geom_line(aes(x = t_year, y = mean, group = year),
-            linewidth = 0.3, alpha = 0.3,
+            linewidth = 0.3, alpha = 0.5,
             plot_data_ex_mean_year) +
   
   facet_wrap(~label, ncol = 1, scales = "free_x") +
@@ -178,18 +270,18 @@ p_ex_yearly_antibody <- ggplot() +
         strip.text = element_markdown(colour = "white"))
 
 
-# p_ex_yearly_antibody
+p_examples <- (p_ex_inf | p_ex_yearly_antibody) +
+  plot_layout(widths = c(2, 1))
 
-(p_period | p_ex_inf | p_ex_yearly_antibody) +
-  plot_layout(widths = c(3, 2, 1)) +
-  plot_annotation(tag_levels = list(c("A", "B", ""))) &
+
+((p_period | p_min) / p_examples) +
+  plot_annotation(tag_levels = list(c("A", "B", "C"))) &
   theme(plot.tag = element_text(face = "bold", size = 15))
-
 
 ggsave(
   "results/results_grid_seasonality.png",
   device = png,
-  width = 14, height = 6.75,
+  width = 13, height = 12,
   bg = "white"
 )
 

@@ -29,6 +29,7 @@ using StaticArrays
 using DifferentialEquations
 using Symbolics
 using Plots
+using ChaosTools
 
 # Stochastics/agent-based dependencies
 using Random

@@ -1,45 +1,63 @@
 
 include("dependencies.jl")
 
+
+using ChaosTools
+function get_max_lyapunov(model_params, n_days, n_days_burn_in)
+    u0 = zeros(Float64, n_compartments * model_params.S + 2)
+    u0[ode_ix(c_sus, 1, model_params.S)] = 1.0 - 0.01
+    u0[ode_ix(c_inf, 1, model_params.S)] = 0.01
+
+    u0[end - 1] = model_params.eta
+    u0[end] = 0
+    
+    
+    dyn_system = CoupledODEs(ode_step_no_count!, u0, model_params)
+    return lyapunov(dyn_system, n_days - n_days_burn_in, Ttr = n_days_burn_in, Δt = 100.0, d0 = 1e-9)
+end
+
+x_eta = 0:0.01:0.5
+y_lyapunov = zeros(length(x_eta))
+
+@showprogress Threads.@threads for i_eta in eachindex(x_eta)
+    model_params = make_model_parameters(
+        k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+        C = baseline_C, r = 0.05,
+        b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
+        eta = x_eta[i_eta] 
+    )
+
+    y_lyapunov[i_eta] = get_max_lyapunov(model_params, n_days, n_days_burn_in)
+end
+
+
+plot(x_eta, y_lyapunov)
+x_eta[y_lyapunov .> 0.0002]
+
+
+
 model_params = make_model_parameters(
     k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-    C = baseline_C, r = 0.02,
+    C = baseline_C, r = 0.05,
     b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
     eta = 0.5
 )
 
-ode_sparsity = ode_get_sparsity(model_params)
-
-n_days_short = 80000
-n_inf_0 = 0.0001
-t = 0:n_days_short
-
-sol_t = zeros(2, n_days_short + 1, 2, model_params.S)
-
-ode_solution = @time ode_solve(model_params, n_days_short, n_inf_0, ode_sparsity, saveat = 0.25)
 
 
+u0 = zeros(Float64, n_compartments * model_params.S + 2)
+u0[ode_ix(c_sus, 1, model_params.S)] = 1.0 - 0.01
+u0[ode_ix(c_inf, 1, model_params.S)] = 0.01
 
-inf_t = ode_solution(t)[ode_ix(c_inf, 1:model_params.S, model_params.S), :]
-inf_t = vec(sum(inf_t, dims = 1))
-
-x_t = ode_solution(t)[ode_ix(c_sus, 1, model_params.S), :]
-
-plot(inf_t)
-
-# x_t = log10.(x_t)
+u0[end - 1] = model_params.eta
+u0[end] = 0
 
 
-pq = zeros(2, n_days_short)
+dyn_system = CoupledODEs(ode_step_no_count!, u0, model_params)
 
-c = pi * 0.15
-for i in 2:n_days_short
-    pq[1, i] = pq[1, i - 1] + x_t[i] * cos(i * c)
-    pq[2, i] = pq[1, i - 1] + x_t[i] * sin(i * c)
-end
-plot(pq[1, 5000:end], pq[2, 5000:end], linetype = :path)
+s = gali(dyn_system, 40000, 3; u0 = u0)[2][end]
+
+predictability(dyn_system)
 
 
-plot(pq')
-
-
+return lyapunov(dyn_system, n_days - n_days_burn_in, Ttr = n_days_burn_in, Δt = 100.0, d0 = 1e-9)

@@ -37,7 +37,7 @@ end
 function ode_step_no_count!(du, u, model_params, t)
     k = model_params.S
 
-    for i in 1:(k * 3)
+    for i in 1:(k * 2)
         du[i] = 0
     end
 
@@ -46,12 +46,50 @@ function ode_step_no_count!(du, u, model_params, t)
     du[ode_ix(1, 2:k, k)] = -flow_decay
     du[ode_ix(1, 1:(k - 1), k)] .+= flow_decay
 
-    flow_sus_to_inf = u[ode_ix(c_sus, 1:k, k)] .*
+    beta_t = model_params.beta * (1 + model_params.eta * sin(2 * pi * t / 365.0 + 0.5 * pi))
+
+    flow_sus_to_inf = @views u[ode_ix(c_sus, 1:k, k)] .*
         sum(u[ode_ix(c_inf, 1:k, k)]) .*
-        model_params.beta .* 
+        beta_t .* 
         (1 .- model_params.p_acq)
+
+    flow_inf_to_sus = @views u[ode_ix(c_inf, 1:k, k)] .* model_params.gamma
+
+
+    du[ode_ix(c_sus, 1:k, k)] .+= model_params.M * flow_inf_to_sus - flow_sus_to_inf
+    du[ode_ix(c_inf, 1:k, k)] .+= flow_sus_to_inf - flow_inf_to_sus
     
-    flow_inf_to_sus = u[ode_ix(c_inf, 1:k, k)] .* model_params.gamma
+end
+
+
+function ode_step_auto!(du, u, model_params, t)
+    k = model_params.S
+
+    for i in 1:(k * 2 + 2)
+        du[i] = 0
+    end
+
+    c = 1000.0
+    omega = 2 * π / 365.0
+    x = u[end - 1]
+    y = u[end]
+
+    du[end - 1] = -omega * y + c * x * (model_params.eta ^ 2 - (x^2 + y^2))
+    du[end] = omega * x + c * y * (model_params.eta ^ 2 - (x^2 + y^2))
+
+    flow_decay = u[ode_ix(1, 2:k, k)] .* model_params.wane_transition_rate
+
+    du[ode_ix(1, 2:k, k)] = -flow_decay
+    du[ode_ix(1, 1:(k - 1), k)] .+= flow_decay
+
+    beta_t = model_params.beta * (1 + x)
+
+    flow_sus_to_inf = @views u[ode_ix(c_sus, 1:k, k)] .*
+        sum(u[ode_ix(c_inf, 1:k, k)]) .*
+        beta_t .* 
+        (1 .- model_params.p_acq)
+
+    flow_inf_to_sus = @views u[ode_ix(c_inf, 1:k, k)] .* model_params.gamma
 
 
     du[ode_ix(c_sus, 1:k, k)] .+= model_params.M * flow_inf_to_sus - flow_sus_to_inf

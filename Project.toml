@@ -1,9 +1,11 @@
 [deps]
+ChaosTools = "608a59af-f2a3-5ad4-90b4-758bdf3122a7"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
 Distributions = "31c24e10-a181-5473-b8eb-7969acd0382f"
 DoubleFloats = "497a8b3b-efae-58df-a0af-a86822472b78"
 FFTW = "7a1cc6ca-52ef-59f5-83cd-3a7055c09341"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 IntervalArithmetic = "d1acc4aa-44c8-5952-acd4-ba5d80a2a253"
 IntervalRootFinding = "d2bf35a9-74e0-55ec-b149-d360ff49b807"
 JLD2 = "033835bb-8acc-5ee8-8aae-3f567f8a3819"

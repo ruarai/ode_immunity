@@ -59,70 +59,18 @@ bifur_points <- maxmins %>%
   select(r, scenario, prev = prev)
 
 
-p_bifurcation <- ggplot() +
-  # geom_vline(aes(xintercept = r),
-  #            tibble(r = rs),
-  #            colour = "grey80", linewidth = 1.0, alpha = 0.3) +
-  
-  geom_line(aes(x = r, y = max, colour = "Stable periodic"),
-            linewidth = 1.0,
-            maxmins %>% filter(r <= bifur_points$r[1])) +
-  geom_line(aes(x = r, y = prev, colour = "Stable fixed point"),
-            linewidth = 1.0,
-            data_fixed %>% filter(r >= bifur_points$r[1])) +
-  geom_line(aes(x = r, y = prev, colour = "Unstable fixed point"),
-            linewidth = 1.0, linetype = "44",
-            data_fixed %>% filter(r <= bifur_points$r[1])) +
-  
-  scale_colour_manual(
-    name = NULL,
-    values = c(
-    "Stable periodic" = colour_A,
-    "Stable fixed point" = "black",
-    "Unstable fixed point" = "black"
-  ),
-  breaks = c("Stable periodic", "Stable fixed point", "Unstable fixed point")) +
-  
-  geom_point(aes(x = r, y = prev), 
-             colour = "black",
-             bifur_points,
-             size = 3) +
-  
-  geom_point(aes(x = r, y = prev), 
-             bifur_points,
-             size = 1.5, colour = "white") +
-  
-  xlab(NULL) +
-  ylab("Prevalence") +
-  
-  # coord_cartesian(xlim = xlim,
-  #                 ylim = c(-0.01, 0.06),
-  #                 expand = FALSE) +
-  
-  # sec_x_axis +
-  
-  plot_theme_paper +
-  
-  guides(colour = guide_legend(nrow = 3)) +
-  
-  theme(legend.position = "inside", legend.position.inside = c(0.8, 0.9), legend.key.width = unit(3, "cm"),
-        legend.background = element_rect(fill = "white", colour = "white", linewidth = 0),
-        axis.text.x.top = element_text(margin = margin(b = 0.3, unit = "cm")),
-        panel.grid.major = element_gridline,
-        plot.subtitle = element_markdown()) +
-  
-  ggtitle(NULL, "Bifurcation over <i>ρ</i>")
-
-p_bifurcation
-
 p_bifurcation_min <- ggplot() +
-  # geom_vline(aes(xintercept = r),
-  #            tibble(r = rs),
-  #            colour = "grey80", linewidth = 1.0, alpha = 0.3) +
-  geom_line(aes(x = r, y = min),
+  geom_vline(aes(xintercept = r),
+             tibble(r = rs),
+             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+  geom_line(aes(x = r, y = max),
             colour = colour_A,
             linewidth = 1.0,
             maxmins %>% filter(r <= bifur_points$r[1])) +
+  geom_line(aes(x = r, y = min),
+            colour = colour_A,
+            linewidth = 1.0,
+            maxmins %>% filter(r <= bifur_points$r[1], min > 0)) +
   geom_line(aes(x = r, y = prev),
             linewidth = 1.0,
             data_fixed %>% filter(r >= bifur_points$r[1])) +
@@ -140,20 +88,20 @@ p_bifurcation_min <- ggplot() +
              bifur_points,
              size = 1.5, colour = "white") +
   
-  xlab("Mean antibody decay rate <i>r</i>") +
-  ylab("Prevalence") +
+  xlab("Antibody decay rate <i>r</i>") +
+  ylab("Infection prevalence") +
   
-  coord_cartesian(ylim = c(1e-10, 1.0)) +
+  coord_cartesian(ylim = c(1e-10, 2.0)) +
   
   scale_y_log10(labels = scales::label_log(),
-                breaks = scales::breaks_log(n = 5)) +
+                breaks = 10^c(-10, -8, -6, -4, -2, 0)) +
   
   plot_theme_paper +
   theme(legend.position = "none",
         panel.grid.major = element_gridline,
         plot.subtitle = element_markdown()) +
   
-  ggtitle(NULL, "Minimum infection prevalence across solution")
+  ggtitle(NULL, "<b>A i.</b> Bifurcation over antibody<br> decay rate <i>r</i>")
 
 p_bifurcation_min
 
@@ -175,21 +123,11 @@ data_period <- period %>%
 min_periods <- data_period %>% group_by(scenario) %>% slice(1) %>%
   select(r_min = r, scenario)
 
-# data_attack_rate <- attack_rate %>%
-#   reshape2::melt(varnames = c("r", "scenario"), value.name = "attack_rate") %>% 
-#   mutate(r = x_r[r]) %>%
-#   filter(scenario == 1) %>%
-#   
-#   left_join(bifur_points %>% select(r_bifur = r, scenario)) %>%
-#   left_join(min_periods) %>% 
-#   filter(r < r_bifur, r >= r_min) %>%
-#   left_join(data_period)
-
 
 p_period <- ggplot() +
-  # geom_vline(aes(xintercept = r),
-  #            tibble(r = rs),
-  #            colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+  geom_vline(aes(xintercept = r),
+             tibble(r = rs),
+             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
   geom_line(aes(x = r, y = 365 / period),
             linewidth = 1.0,
             data_period) +
@@ -204,10 +142,10 @@ p_period <- ggplot() +
              data_period %>% filter(r == max(r)),
              size = 1.5, colour = "white") +
   
-  xlab(NULL) +
+  xlab("Antibody decay rate <i>r</i>") +
   ylab("Frequency (years<sup>-1</sup>)") +
   
-  coord_cartesian(xlim = c(0, 0.1), ylim = c(0, 4)) +
+  coord_cartesian(xlim = c(0, 0.15), ylim = c(0, 4)) +
   
   scale_y_continuous(labels = scales::label_comma()) +
   # sec_x_axis +
@@ -216,42 +154,43 @@ p_period <- ggplot() +
   
   theme(legend.position = "none",
         axis.text.x.top = element_text(margin = margin(b = 0.3, unit = "cm")),
-        panel.grid.major = element_gridline) +
+        panel.grid.major = element_gridline,
+        plot.subtitle = element_markdown()) +
   
-  ggtitle(NULL,"Periodic solution frequency")
+  ggtitle(NULL,"<b>A ii.</b> Periodic solution frequency")
 
 p_period
 
 p_attack_rate <- ggplot() +
-  # geom_vline(aes(xintercept = r),
-  #            tibble(r = rs),
-  #            colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+  geom_vline(aes(xintercept = r),
+             tibble(r = rs),
+             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
   geom_line(aes(x = r, y = mean_inc * 365),
             linewidth = 1.0,
             data_mean_incidence) +
   
-  xlab("Mean antibody decay rate <i>r</i>") +
-  ylab("Attack rate") +
+  xlab("Antibody decay rate <i>r</i>") +
+  ylab("Infection incidence") +
   
-  # coord_cartesian(xlim = c(0, 0.1),
-  #                 ylim = c(-0.3, 0.007 * 365)) +
+  coord_cartesian(ylim = c(NA, 3.0)) +
   
   
   plot_theme_paper +
   theme(legend.position = "none",
-        panel.grid.major = element_gridline) +
+        panel.grid.major = element_gridline,
+        plot.subtitle = element_markdown()) +
   
-  ggtitle(NULL, "Yearly infection attack rate at solution")
+  ggtitle(NULL, "<b>A iii.</b> Yearly infection incidence<br> at solution")
 
 plot_data_ex_fixed_points <- data_fixed %>%
   filter(r %in% rs) %>%
   mutate(stable = r >= bifur_points$r[[1]]) %>% 
-  mutate(r_label = str_c("<i>r </i>  = ", r))
+  mutate(r_label = str_c("<b>B ", c("i", "ii")[r * 20],".</b> Antibody decay rate <i>r </i>  = ", r))
 
 
 p_examples <- data_I_sol %>%
   filter(r %in% rs, t < 4000) %>% 
-  mutate(r_label = str_c("<i>r </i>  = ", r)) %>% 
+  mutate(r_label = str_c("<b>B ", c("i", "ii")[r * 20],".</b> Antibody decay rate <i>r </i>  = ", r)) %>% 
   ggplot() +
   
   geom_line(aes(x = t, y = prev),
@@ -270,7 +209,7 @@ p_examples <- data_I_sol %>%
   
   facet_wrap(~r_label, ncol = 3, scales = "free") +
   
-  xlab("Time (days)") + ylab("Prevalence") +
+  xlab("Time (days)") + ylab("Infection prevalence") +
   
   coord_cartesian(xlim = c(0, 3400),
                   ylim = c(0, 0.08)) +
@@ -280,18 +219,27 @@ p_examples <- data_I_sol %>%
         legend.position = "none",
         panel.grid.major.x = element_gridline)
 
+p_examples
 
-p_top <- (
-  (p_bifurcation / p_bifurcation_min) |
-  (p_period / p_attack_rate)
-) +
+
+# p_top <- (
+#   (p_bifurcation / p_bifurcation_min) |
+#   (p_period / p_attack_rate)
+# ) +
+#   plot_layout(tag_level = "new")
+
+
+p_top <- (p_bifurcation_min | p_period | p_attack_rate) +
   plot_layout(tag_level = "new")
 
-p_top
+
+
+
+# p_top
 
 (p_top / p_examples) +
-  plot_layout(heights = c(2, 1)) + 
-  plot_annotation(tag_levels = list("A", c("i.", "ii.", "iii.", "iv.")), tag_sep = " ") &
+  plot_layout(heights = c(1.5, 1)) + 
+  # plot_annotation(tag_levels = list("A", c("1", "2", "3")), tag_sep = " ") &
   theme(plot.tag = element_text(face = "bold", size = 15))
 
 
@@ -300,6 +248,6 @@ p_top
 ggsave(
   "results/results_bifurcation.pdf",
   device = cairo_pdf,
-  width = 14, height = 10,
+  width = 14, height = 8,
   bg = "white"
 )

@@ -12,12 +12,13 @@ ode_sparsity = ode_get_sparsity(model_params_0)
 n_inf_0 = 0.01
 t_seq = collect(1:n_days)
 
-# 0.3, 0.06, "i",
-# 0.3, 0.05, "ii",
-# 0.02, 0.06, "iii",
-# 0.3, 0.04, "iv",
-x_eta = [0.3 0.3 0.02 0.3]
-x_r = [0.06 0.05 0.06 0.04]
+# 0.0, 0.06, "i", factor(0),
+# 0.03, 0.06, "ii", factor(4.5),
+# 0.2, 0.06, "iii", factor(1),
+# 0.27, 0.06, "iv", factor(2),
+# 0.37, 0.06, "v", factor(9)
+x_eta = [0 0.03 0.2 0.27 0.37]
+x_r = [0.06 0.06 0.06 0.06 0.06]
 
 y_inf = zeros(length(x_eta), n_days)
 sol_t = zeros(length(x_eta), n_days, 2, model_params_0.S)
