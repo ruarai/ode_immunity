@@ -24,6 +24,7 @@ struct model_parameters
 
     B::Matrix{Float64}
     M::Matrix{Float64}
+    p_trans::Vector{Float64}
 end
 
 
@@ -48,6 +49,8 @@ function make_model_parameters(;
     
     p_acq = (c_levels .^ h) ./ (b ^ h .+ c_levels .^ h)
 
+    p_trans = zeros(S)
+
     B = build_waning_matrix(S)
     if boosting == "loglinear"
         M = build_immunity_matrix_boost_loglinear(S, c_levels, c_jump_dist)
@@ -55,9 +58,11 @@ function make_model_parameters(;
         M = build_immunity_matrix_no_boost(S, c_levels, c_jump_dist)
     elseif boosting == "independent"
         M = build_immunity_matrix_independent(S, c_levels, c_jump_dist)
+        p_trans = M[:, 1] # lazy!
     else
         throw(ArgumentError("Unknown boosting method specified"))
     end
+
 
     # rho = -r / (k * (10^(-C/k) - 1))
     rho = r / (C * log(10))
@@ -80,7 +85,7 @@ function make_model_parameters(;
 
         c_levels, p_acq,
 
-        B, M
+        B, M, p_trans
     )    
 end
 

@@ -1,3 +1,26 @@
+
+
+function get_sus(ode_solution, t, model_params)
+    return ode_solution(t)[ode_ix_sus(1:model_params.S), :]'
+end
+
+function get_inf(ode_solution, t, model_params)
+    return ode_solution(t)[ode_ix_inf(model_params.S)]
+end
+
+function get_inc(ode_solution, t, model_params)
+    vcat([0], diff(ode_solution(t)[ode_ix_count(model_params.S)]))
+end
+
+function get_results(ode_solution, t, model_params)
+    return (
+        sus = get_sus(ode_solution, t, model_params),
+        inf = get_inf(ode_solution, t, model_params),
+        inc = get_inc(ode_solution, t, model_params)
+    )
+end
+
+
 function get_period(ode_sol, model_params, burn_in_days, n_days, Δt, ϵ)
     t = burn_in_days:Δt:n_days
     y = ode_sol(t)[1:(model_params.S * 2), :]'

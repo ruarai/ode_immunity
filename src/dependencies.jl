@@ -38,7 +38,10 @@ include("model_globals.jl")
 include("steady_state_functions.jl")
 include("model_parameters.jl")
 include("solver.jl")
-include("periodic.jl")
+
+include("model_no_boosting.jl")
+
+include("helpers.jl")
 
 
 function get_jobs(arg_ix, n_array, n_jobs)

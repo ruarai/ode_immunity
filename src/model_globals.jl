@@ -6,6 +6,8 @@ global const c_sus = 1
 global const c_inf = 2
 global const c_count = 3
 
+global const n_inf_0 = 0.001
+
 
 global const n_days_burn_in = 30000
 global const n_days = 100000
@@ -23,3 +25,6 @@ global const baseline_b = 10^3
 global const baseline_h = 3
 
 global const baseline_c_jump_dist = Normal(6, 0.5)
+
+
+global const periodic_ϵ = 10^-6

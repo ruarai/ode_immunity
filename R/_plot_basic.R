@@ -89,14 +89,18 @@ p_summ <- plot_data_summ_inf %>%
 
 col_heatmap <- colorspace::sequential_hcl(n = 128, h = c(262, 136), c = c(39, 72, 0), l = c(13, 98), power = c(1.65, 1.1))
 
+rescale_density <- function(x, range) {
+  plogis(0.6 * qlogis(x) + 2)
+}
+
 p_heatmap <- plot_data %>% 
   filter(class == "S") %>% 
   
   summarise(prevalence = sum(prevalence), .by = c("c", "t")) %>% 
-  mutate(prevalence = pmin(prevalence, 0.05)) %>% 
+  mutate(density = rescale_density(prevalence)) %>%
   
   ggplot() +
-  geom_tile(aes(x = t, y = c, fill = prevalence)) +
+  geom_tile(aes(x = t, y = c, fill = density)) +
   
   geom_hline(aes(yintercept = 10^6),
              colour = "white", linetype = "44") +
@@ -113,8 +117,13 @@ p_heatmap <- plot_data %>%
                        name = "Strata *i*"
                      )) +
 
-  scale_fill_viridis_c(option = "B", name = "Proportion",
-                       breaks = c(0.001, 0.025, 0.05), labels = c("0.00", "0.025", "≥0.05"))  +
+  scale_fill_viridis_c(option = 8, name = "Proportion",
+                       breaks = rescale_density(c(1e-8, 0.01, 0.05, 0.2, 1 - 1e-3)),
+                       labels = c(0, 0.01, 0.05, 0.2, 1.0))  +
+  
+  # scale_fill_continuous_divergingx(palette = "PuOr", mid = rescale_density(0.1),
+  #                                  breaks = rescale_density(c(1e-8, 0.01, 0.05, 0.2, 1 - 1e-3)),
+  #                                  labels = c(0, 0.01, 0.05, 0.2, 1.0)) +
 
   coord_cartesian(xlim = c(0, 1500), ylim = c(10^0, 10^8)) +
   
@@ -123,14 +132,15 @@ p_heatmap <- plot_data %>%
   xlab(NULL) + ylab("Antibody<br>concentration") +
   
   plot_theme_paper + 
-  theme(legend.position = "right",
+  theme(legend.position = "none",
         legend.title = element_text(margin = margin(b = 0.6, unit = "cm")),
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank()) +
   
   ggtitle(NULL, "Population distribution of antibodies")
 
-p_heatmap
+(p_heatmap | p_legend) +
+  plot_layout(widths = c(15, 1))
 
 p_mean_antibody <- ggplot() +
   geom_line(aes(x = t, y = c),
