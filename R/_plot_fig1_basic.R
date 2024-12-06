@@ -6,71 +6,30 @@ library(rhdf5)
 
 source("R/plot_theme.R")
 
-sol_t <- h5read("data/paper/basic_boosting.jld2", "sol_t")
+sus <- h5read("data/paper/basic_boosting.jld2", "sus")
+inf <- h5read("data/paper/basic_boosting.jld2", "inf")
 seq_t <- h5read("data/paper/basic_boosting.jld2", "seq_t")
 c_levels <- h5read("data/paper/basic_boosting.jld2", "c_levels")
 p_acq <- h5read("data/paper/basic_boosting.jld2", "p_acq")
 
-fn_p_acq <- function(c, b = 10^3, h = 3) { (c ^ h) / (b ^ h + c ^ h)}
+plot_data_sus <- sus %>%
+  reshape2::melt(varnames = c("t", "strata"), value.name = "prevalence") %>%
+  mutate(c = c_levels[strata], p = p_acq[strata], t = seq_t[t],
+         strata = strata - 1) %>% 
+  filter(t < 1500)
 
-c_05 <- uniroot(rlang::as_function(~ fn_p_acq(.x) - 0.05), c(0, max(c_levels)))$root
-c_95 <- uniroot(rlang::as_function(~ fn_p_acq(.x) - 0.95), c(0, max(c_levels)))$root
-
-plot_data <- sol_t %>%
-  reshape2::melt(varnames = c("scenario", "t", "class", "strata"), value.name = "prevalence") %>% 
-  mutate(class = c("S", "I")[class], c = c_levels[strata], p = p_acq[strata], t = seq_t[t],
-         strata = strata - 1) %>%
-  filter(scenario == 1, t < 1500)
+plot_data_inf <- tibble(t = seq_t, prevalence = inf)
 
 
-plot_data_summ_inf <- plot_data %>%
-  group_by(t, class) %>%
-  summarise(prevalence = sum(prevalence), .groups = "drop") %>%
-  filter(class == "I")
-
-plot_data_means <- plot_data %>%
-  filter(class == "S") %>% 
+plot_data_means <- plot_data_sus %>%
   group_by(t) %>%
   mutate(prevalence = prevalence / sum(prevalence)) %>% 
   summarise(c = sum(prevalence * c),
             p = sum(prevalence * p), .groups = "drop")
 
-
-plot_data %>%
-  filter(class == "S") %>%
-  mutate(strata_group = case_when(
-    strata == 0 ~ 0,
-    strata < 8 ~ 1,
-    strata < 16 ~ 2,
-    strata < 24 ~ 3,
-    TRUE ~ 4
-  )) %>% 
-  group_by(t, strata_group) %>% 
-  summarise(prevalence = sum(prevalence)) %>% 
-  ggplot() +
-  geom_line(aes(x = t, y= prevalence, group = strata_group)) +
-  
-  facet_wrap(~strata_group, ncol = 1) +
-  
-  scale_y_log10(limits = c(0.001, 1))
-
-
-
-plot_data %>%
-  filter(class == "S") %>% 
-  group_by(t) %>%
-  mutate(prevalence_cum = cumsum(prevalence),
-         lagged = lag(prevalence_cum, default = 0)) %>%
-  
-  ggplot() +
-  geom_ribbon(aes(x = t, ymin = lagged, ymax = prevalence_cum, fill = strata, group = strata),
-              colour = "white", linewidth = 0.2)
-
-
-
-p_summ <- plot_data_summ_inf %>% 
-  ggplot() +
+p_summ <- ggplot() +
   geom_line(aes(x = t, y = prevalence),
+            plot_data_inf,
             linewidth = 0.7) +
   
   coord_cartesian(xlim = c(0, 1500)) +
@@ -85,7 +44,8 @@ p_summ <- plot_data_summ_inf %>%
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank()) +
   
-  ggtitle(NULL, "Infection prevalence")
+  ggtitle(NULL, "<b>A</b> — Infection prevalence")
+p_summ
 
 col_heatmap <- colorspace::sequential_hcl(n = 128, h = c(262, 136), c = c(39, 72, 0), l = c(13, 98), power = c(1.65, 1.1))
 
@@ -93,8 +53,7 @@ rescale_density <- function(x, range) {
   plogis(0.6 * qlogis(x) + 2)
 }
 
-p_heatmap <- plot_data %>% 
-  filter(class == "S") %>% 
+p_heatmap <- plot_data_sus %>% 
   
   summarise(prevalence = sum(prevalence), .by = c("c", "t")) %>% 
   mutate(density = rescale_density(prevalence)) %>%
@@ -137,10 +96,32 @@ p_heatmap <- plot_data %>%
         axis.text.x = element_blank(),
         axis.ticks.x = element_blank()) +
   
-  ggtitle(NULL, "Population distribution of antibodies")
+  ggtitle(NULL, "<b>B</b> — Population distribution of antibodies")
 
-(p_heatmap | p_legend) +
-  plot_layout(widths = c(15, 1))
+p_legend <- tibble(
+  x = seq(-0.1, 1.1, by = 0.001)
+) %>%
+  mutate(density = rescale_density(x)) %>% 
+  fill(density, .direction = "updown") %>% 
+  ggplot() +
+  geom_tile(aes(x = 1, y = x, fill = density)) +
+  
+  geom_hline(aes(yintercept = y), tibble(y = seq(0, 1, by = 0.25)),
+             colour = "white") +
+  
+  scale_fill_viridis_c(option = 8,
+                       breaks = rescale_density(c(1e-8, 0.01, 0.05, 0.2, 1 - 1e-3)),
+                       labels = c(0, 0.01, 0.05, 0.2, 1.0)) +
+  
+  scale_y_continuous(breaks = seq(0, 1, by = 0.25)) +
+  
+  plot_theme_paper + xlab(NULL) + ylab("Proportion") +
+  
+  theme(legend.position = "none",
+        axis.text.x = element_blank(), axis.ticks.x = element_blank(),
+        axis.line.x = element_blank(), axis.line.y = element_blank(),
+        axis.ticks.y = element_blank())
+
 
 p_mean_antibody <- ggplot() +
   geom_line(aes(x = t, y = c),
@@ -160,16 +141,23 @@ p_mean_antibody <- ggplot() +
   
   plot_theme_paper +
   
-  ggtitle(NULL, "Population mean antibody concentration") +
+  ggtitle(NULL, "<b>C</b> — Population mean antibody concentration") +
   
   theme(panel.grid.major = element_gridline)
 
 p_mean_antibody
 
 
-(p_summ / p_heatmap / p_mean_antibody) +
-  plot_annotation(tag_levels = "A") &
-  theme(plot.tag = element_text(face = "bold", size = 15))
+p_legend_space <- (plot_spacer() / p_legend / plot_spacer()) +
+  plot_layout(heights = c(1, 5, 1))
+
+p_heatmap_with_legend <- (p_heatmap | p_legend_space) +
+  plot_layout(widths = c(15, 1))
+
+((p_summ / p_heatmap) | (plot_spacer() / p_legend_space)) +
+  plot_layout(widths = c(15, 1))
+
+(p_summ / p_heatmap_with_legend)
 
 
 

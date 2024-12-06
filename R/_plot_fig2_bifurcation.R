@@ -24,15 +24,13 @@ days_burn_in <- 30000
 
 
 data_I_sol <- y_I_sol %>%
-  reshape2::melt(varnames = c("r", "scenario", "t"), value.name = "prev") %>% 
-  mutate(r = x_r[r]) %>%
-  filter(scenario == 1)
+  reshape2::melt(varnames = c("r", "t"), value.name = "prev") %>% 
+  mutate(r = x_r[r])
 
 
 data_inc_sol <- y_inc_sol %>%
-  reshape2::melt(varnames = c("r", "scenario", "t"), value.name = "inc") %>% 
-  mutate(r = x_r[r]) %>%
-  filter(scenario == 1)
+  reshape2::melt(varnames = c("r", "t"), value.name = "inc") %>% 
+  mutate(r = x_r[r])
 
 data_mean_incidence <- data_inc_sol %>%
   filter(t > 10000) %>% 
@@ -41,22 +39,20 @@ data_mean_incidence <- data_inc_sol %>%
 
 maxmins <- data_I_sol %>%
   filter(t > days_burn_in, r > 0.0003) %>% 
-  group_by(r, scenario) %>%
+  group_by(r) %>%
   summarise(max = max(prev), min = min(prev))
 
 data_fixed <- y_fixed_I %>%
-  reshape2::melt(varnames = c("r", "scenario"), value.name = "prev") %>% 
-  mutate(r = x_r[r]) %>%
-  filter(scenario == 1)
+  reshape2::melt(varnames = c("r"), value.name = "prev") %>% 
+  mutate(r = x_r[r])
 
 bifur_points <- maxmins %>% 
   left_join(data_fixed) %>%
   mutate(diff = max - prev) %>%
   ungroup() %>% 
-  group_by(scenario) %>% 
   filter(diff > 1e-4) %>%
   slice(n()) %>%
-  select(r, scenario, prev = prev)
+  select(r, prev = prev)
 
 
 p_bifurcation_min <- ggplot() +
@@ -101,7 +97,7 @@ p_bifurcation_min <- ggplot() +
         panel.grid.major = element_gridline,
         plot.subtitle = element_markdown()) +
   
-  ggtitle(NULL, "<b>A i.</b> Bifurcation over antibody<br> decay rate <i>r</i>")
+  ggtitle(NULL, "<b>A</b> — Bifurcation over antibody<br> decay rate <i>r</i>")
 
 p_bifurcation_min
 
@@ -110,18 +106,16 @@ period <- h5read("data/paper/bifurcations_w_boost.jld2", "period")
 # attack_rate <- h5read("data/paper/bifurcations_w_boost.jld2", "attack_rate")
 
 data_period <- period %>%
-  reshape2::melt(varnames = c("r", "scenario", "name"), value.name = "value") %>% 
+  reshape2::melt(varnames = c("r", "name"), value.name = "value") %>% 
   mutate(name = c("period", "period_sd", "period_n")[name],
          r = x_r[r]) %>%
-  filter(scenario == 1) %>%
   
   pivot_wider() %>% 
   
-  left_join(bifur_points %>% select(r_bifur = r, scenario)) %>%
-  filter(r < r_bifur, period_sd < 1, period_n > 1)
+  filter(r < bifur_points$r[1], period_sd < 1, period_n > 1)
 
-min_periods <- data_period %>% group_by(scenario) %>% slice(1) %>%
-  select(r_min = r, scenario)
+min_periods <- data_period %>% slice(1) %>%
+  select(r_min = r)
 
 
 p_period <- ggplot() +
@@ -157,7 +151,7 @@ p_period <- ggplot() +
         panel.grid.major = element_gridline,
         plot.subtitle = element_markdown()) +
   
-  ggtitle(NULL,"<b>A ii.</b> Periodic solution frequency")
+  ggtitle(NULL,"<b>B</b> — Periodic solution frequency")
 
 p_period
 
@@ -180,17 +174,17 @@ p_attack_rate <- ggplot() +
         panel.grid.major = element_gridline,
         plot.subtitle = element_markdown()) +
   
-  ggtitle(NULL, "<b>A iii.</b> Yearly infection incidence<br> at solution")
+  ggtitle(NULL, "<b>C</b> — Yearly infection incidence<br> at solution")
 
 plot_data_ex_fixed_points <- data_fixed %>%
   filter(r %in% rs) %>%
   mutate(stable = r >= bifur_points$r[[1]]) %>% 
-  mutate(r_label = str_c("<b>B ", c("i", "ii")[r * 20],".</b> Antibody decay rate <i>r </i>  = ", r))
+  mutate(r_label = str_c("Antibody decay rate <i>r </i>  = ", r))
 
 
 p_examples <- data_I_sol %>%
   filter(r %in% rs, t < 4000) %>% 
-  mutate(r_label = str_c("<b>B ", c("i", "ii")[r * 20],".</b> Antibody decay rate <i>r </i>  = ", r)) %>% 
+  mutate(r_label = str_c("Antibody decay rate <i>r </i>  = ", r)) %>% 
   ggplot() +
   
   geom_line(aes(x = t, y = prev),
@@ -216,8 +210,11 @@ p_examples <- data_I_sol %>%
   
   plot_theme_paper +
   theme(strip.text = element_markdown(),
+        plot.subtitle = element_markdown(),
         legend.position = "none",
-        panel.grid.major.x = element_gridline)
+        panel.grid.major.x = element_gridline) +
+  
+  ggtitle(NULL, "<b>D</b> — Exemplar dynamics")
 
 p_examples
 

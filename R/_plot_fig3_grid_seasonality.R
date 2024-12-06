@@ -12,8 +12,13 @@ y_period <- h5read("data/paper/period_over_grid.jld2", "y_period")
 
 plot_data <- tibble(
   eta = x_vals[1, ], r = x_vals[2, ],
-  inf_min = y_inf_summary[, 1], inf_max = y_inf_summary[, 2],  inf_mean = y_inf_summary[, 3],
-  inc_min = y_inf_summary[, 4], inc_max = y_inf_summary[, 5],  inc_mean = y_inf_summary[, 6],
+  inf_min = y_inf_summary[, 1], inf_max = y_inf_summary[, 2],
+  inf_mean = y_inf_summary[, 3], inf_chaos = y_inf_summary[, 4],
+  
+  inc_min = y_inf_summary[, 5], inc_max = y_inf_summary[, 6],  
+  inc_mean = y_inf_summary[, 7], inc_chaos = y_inf_summary[ , 8],
+  lyapunov = y_inf_summary[, 9],
+  
   period = y_period[,1], period_sd = y_period[,2], period_n = y_period[,3]
 ) %>%
   mutate(inf_diff = inf_max - inf_min,
@@ -31,6 +36,7 @@ plot_data_periodic <- plot_data %>%
          period = factor(round(period)))
 
 plot_data_quasiperiodic <- plot_data %>% filter(quasiperiodic)
+plot_data_chaotic <- plot_data %>% filter(inf_chaos > 0)
 
 plot_data_eta_zero <- plot_data %>% filter(eta == 0)
 plot_data_eta_zero_periodic <- plot_data %>% filter(eta == 0, r < 0.065)
@@ -77,7 +83,7 @@ p_period <- ggplot() +
   geom_tile(aes(x = eta, y = r, fill = factor(4.5)),
             plot_data_quasiperiodic) +
   geom_tile(aes(x = eta, y = r, fill = factor(9)),
-            plot_data %>% filter(!periodic, !quasiperiodic)) +
+            plot_data_chaotic) +
   
   plot_annotations +
   scale_colour_manual(
@@ -90,7 +96,7 @@ p_period <- ggplot() +
     name = "Period",
     values = c(period_cols[1:4], "#2260BE", period_cols[5:8], "#BDE6F4") %>% `names<-`(c(1:4, "4.5", 5:9)),
     
-    labels = c("1 yr", str_c(2:4, "yrs"), "Quasiperiodic", str_c(5:7, "yrs"), "≥8 yrs", "?") %>% `names<-`(c(1:4, "4.5", 5:9)),
+    labels = c("1 yr", str_c(2:4, "yrs"), "Quasiperiodic", str_c(5:7, "yrs"), "≥8 yrs", "Chaotic") %>% `names<-`(c(1:4, "4.5", 5:9)),
     breaks = c(1:4, 4.5, 5:9)
   ) +
   

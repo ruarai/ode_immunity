@@ -1,79 +1,41 @@
 
-
-# Returns a zero vector if inf_vec implies a steady state solution
-function steady_state(
-    inf_vec, I_sum,
-    B, M,
-    omega_inv,
-    wane_transition_rate, beta
-)
-    (wane_transition_rate / (beta * I_sum)) * (B * (inf_vec .* omega_inv)) .- inf_vec .+ M * inf_vec
+# Return a zero vector if u is positive
+function soft_inf_positive(u)
+    return sqrt.(u .^ 2) - u
 end
 
+function steady_state_and_valid(u, model_params)
+    du = zeros(eltype(u), length(u))
+    ode_step_no_count!(du, u, model_params, 0)
 
-# Gets the total population across S and I that is implied by inf_vec
-function population_sum(
-    inf_vec, I_sum,
-    omega_inv,
-    beta, gamma
-)
-    sus_vec = (gamma / (beta * I_sum)) * (inf_vec .* omega_inv)
-    
-    S_sum = sum(sus_vec)
-
-    return S_sum + I_sum
-end
-
-# Returns a zero vector iff inf_vec is positive
-function soft_inf_positive(inf_vec)
-    return sqrt.(inf_vec .^ 2) - inf_vec
-end
-
-function steady_state_and_valid(
-    inf_vec, 
-    B, M,
-    omega_inv,
-    wane_transition_rate, beta, gamma
-)
-    I_sum = sum(inf_vec)
-
-    a = steady_state(inf_vec, I_sum, B, M, omega_inv, wane_transition_rate, beta)
-    b = 1 - population_sum(inf_vec, I_sum, omega_inv, beta, gamma)
-    c = soft_inf_positive(inf_vec)
+    a = du # Is total change zero?
+    b = 1 - sum(u) # Is population total size 1?
+    c = soft_inf_positive(u) # Is each compartment positive valued?
 
     a .^ 2 .+ b ^ 2 .+ c .^ 2
 end
 
 
-
 function get_steady_state(model_params, verbose = false)
-    omega_inv = 1 ./ (1 .- model_params.p_acq)
+    n_compartments = model_params.S + 1
 
-    k = model_params.S
-
-    u0 = SVector{k}(convert.(Double64, [1.0 / k for x in 1:k]))
-
-    fn_solve(inf_vec, p) = steady_state_and_valid(
-        inf_vec, 
-        model_params.B, model_params.M, 
-        omega_inv, 
-        model_params.wane_transition_rate, model_params.beta, model_params.gamma
-    )
+    # 2.0 works for whatever reason.
+    u0 = convert.(Float64, [2.0 / n_compartments for x in 1:n_compartments])
     
-    probN = NonlinearProblem(fn_solve, u0)
+    fn_solve(u, p) = steady_state_and_valid(u, model_params)
+    nonlinear_prob = NonlinearProblem(fn_solve, u0)
+    
     try
-        inf_vec = solve(
-            probN, NewtonRaphson();
-            abstol = 1e-30, maxiters = 4000,
+        u_sol = solve(
+            nonlinear_prob, NewtonRaphson();
+            abstol = 1e-30, maxiters = 8000,
             show_trace = Val(verbose), trace_level = NonlinearSolve.TraceAll(10)
         )
-
-        sus_vec = (model_params.gamma / (model_params.beta * sum(inf_vec))) * (inf_vec .* omega_inv)
-    
-        return (sus_vec, inf_vec)
+        
+        return u_sol
     catch e
         println("Failed to find steady state with exception $e")
 
-        return (zeros(model_params.S), zeros(model_params.S))
+        return zeros(n_compartments)
     end
 end

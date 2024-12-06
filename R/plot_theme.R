@@ -38,7 +38,8 @@ plot_theme_paper <- list(
         axis.title.y = element_markdown(),
         axis.title.x = element_markdown(),
         strip.text.x = element_text(hjust = 0),
-        #plot.title = element_markdown()
+        plot.title = element_markdown(),
+        plot.subtitle = element_markdown()
   )
 )
 
