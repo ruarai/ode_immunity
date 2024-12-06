@@ -5,10 +5,11 @@ library(patchwork)
 
 source("R/plot_theme.R")
 
+file <- "data/paper/period_over_grid.jld2"
 
-x_vals <- h5read("data/paper/period_over_grid.jld2", "x_vals")
-y_inf_summary <- h5read("data/paper/period_over_grid.jld2", "y_inf_summary")
-y_period <- h5read("data/paper/period_over_grid.jld2", "y_period")
+x_vals <- h5read(file, "x_vals")
+y_inf_summary <- h5read(file, "y_inf_summary")
+y_period <- h5read(file, "y_period")
 
 plot_data <- tibble(
   eta = x_vals[1, ], r = x_vals[2, ],
@@ -21,9 +22,16 @@ plot_data <- tibble(
   
   period = y_period[,1], period_sd = y_period[,2], period_n = y_period[,3]
 ) %>%
-  mutate(inf_diff = inf_max - inf_min,
-         periodic = (period_sd < 1) & (period_n >= 5),
-         quasiperiodic = (period_sd >= 1) & (period_n >= 5))
+  mutate(
+    inf_diff = inf_max - inf_min,
+    period_error = pmin(abs(period %% 365 - 365), period %% 365),
+   
+    periodic = (period_error < 1) & (period_n > 5),
+   
+    chaotic = (inf_chaos > 0) & (!periodic),
+   
+    quasiperiodic = (period_n >= 5) & (!chaotic) & (!periodic)
+  )
 
 
 
@@ -36,7 +44,7 @@ plot_data_periodic <- plot_data %>%
          period = factor(round(period)))
 
 plot_data_quasiperiodic <- plot_data %>% filter(quasiperiodic)
-plot_data_chaotic <- plot_data %>% filter(inf_chaos > 0)
+plot_data_chaotic <- plot_data %>% filter(chaotic)
 
 plot_data_eta_zero <- plot_data %>% filter(eta == 0)
 plot_data_eta_zero_periodic <- plot_data %>% filter(eta == 0, r < 0.065)
@@ -68,15 +76,15 @@ plot_annotations <- list(
   annotate("segment", x = -0.003, y = bifur_zero, xend = -0.01, yend = bifur_zero),
   geom_text(aes(x = -0.07, y = r_0 + 0.0002, label = year_label), hjust = 0, plot_data_year_marks),
   annotate("text", x = -0.07, y = 0.085, label = "Fixed\npoint", hjust = 0),
-  # geom_hline(yintercept = 0.06, colour = "white", alpha = 0.5, linetype = "44"),
   geom_point(aes(x = eta, y = r), plot_data_example_points, colour = "black", size = 1.4, stroke = 1),
-  geom_point(aes(x = eta, y = r, colour = colour), plot_data_example_points, size = 0.7, stroke = 0.5),
+  geom_point(aes(x = eta, y = r), plot_data_example_points, colour = "white", size = 0.7, stroke = 0.5),
   geom_label(aes(x = eta + 0.01, y = r - 0.005, label = label), plot_data_example_points,
              label.r = unit(0.1, "cm"), label.size = 0, fill = shades::opacity("white", 0.8))
 )
 
 period_cols <- viridis::magma(n = 8, direction = -1, begin = 0.0, end = 1.0)
 p_period <- ggplot() +
+  
   geom_tile(aes(x = eta, y = r, fill = period),
             plot_data_periodic) +
   
@@ -86,11 +94,6 @@ p_period <- ggplot() +
             plot_data_chaotic) +
   
   plot_annotations +
-  scale_colour_manual(
-    values = c("white", period_cols[1:4], "#2260BE", period_cols[5:8], "#BDE6F4") %>% `names<-`(c(0:4, "4.5", 5:9)),
-    breaks = c(0:4, 4.5, 5:9)
-  ) +
-  
   
   scale_fill_manual(
     name = "Period",
@@ -113,7 +116,6 @@ p_period
 
 
 p_min <- ggplot()  +
-  annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
   geom_tile(aes(x = eta, y = r, fill = pmax(-14, log10(inf_min))),
             plot_data) +
   
