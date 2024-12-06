@@ -24,7 +24,6 @@ end
 
 ode_sparsity = ode_get_sparsity(model_params)
 
-n_inf_0 = 0.0001
 ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
 
 t = 1:n_days

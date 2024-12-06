@@ -16,7 +16,6 @@ u0 = convert.(Double64, copy(u_sol))
 du0 = copy(u0)
 
 n_days_short = 40000
-n_inf_0 = 0.0001
 t = 0:n_days_short
 
 ode_sparsity = ode_get_sparsity(model_params)
