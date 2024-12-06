@@ -69,3 +69,13 @@ function get_periodic_attack_rate(ode_solution, model_params, burn_in_days, n_da
 
     return mean(attack_mat[2, :] .- attack_mat[1, :])
 end
+
+function get_max_lyapunov(model_params, n_days, n_days_burn_in)
+    u0 = zeros(Float64, n_compartments * model_params.S)
+    u0[ode_ix(c_sus, 1, model_params.S)] = 1.0 - 0.01
+    u0[ode_ix(c_inf, 1, model_params.S)] = 0.01
+    
+    
+    dyn_system = CoupledODEs(ode_step_no_count!, u0, model_params)
+    return lyapunov(dyn_system, n_days - n_days_burn_in, Ttr = n_days_burn_in, Δt = 100.0, d0 = 1e-9)
+end

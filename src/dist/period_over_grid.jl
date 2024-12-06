@@ -21,7 +21,6 @@ n_inf_0 = 0.0001
 ϵ = 1e-6
 Δt = 0.25
 t = n_days_burn_in:Δt:n_days
-t_daily = (n_days_burn_in + 1):n_days
 
 # Seasonality
 x_eta = 0.00:0.001:0.5
@@ -41,8 +40,8 @@ x_vals_job = x_vals[ix_jobs]
 
 
 y_period = zeros(length(x_vals_job), 3)
-y_inf_summary = zeros(length(x_vals_job), 6)
-y_attack_rate = zeros(length(x_vals_job))
+y_inf_summary = zeros(length(x_vals_job), 9)
+# y_attack_rate = zeros(length(x_vals_job))
 
 time_start = Base.time()
 
@@ -63,18 +62,23 @@ Threads.@threads for i in eachindex(x_vals_job)
     y_inf_summary[i, 1] = minimum(y_inf)
     y_inf_summary[i, 2] = maximum(y_inf)
     y_inf_summary[i, 3] = mean(y_inf)
+    y_inf_summary[i, 4] = testchaos01(y_inf[1:80:end])
 
     y_count = vec(sum(ode_solution(t)[ode_ix(c_count, 1:model_params.S, model_params.S), :], dims = 1))
     y_inc = diff(y_count)
-    y_inf_summary[i, 4] = minimum(y_inc)
-    y_inf_summary[i, 5] = maximum(y_inc)
-    y_inf_summary[i, 6] = mean(y_inc)
+    y_inf_summary[i, 5] = minimum(y_inc)
+    y_inf_summary[i, 6] = maximum(y_inc)
+    y_inf_summary[i, 7] = mean(y_inc)
+    y_inf_summary[i, 8] = testchaos01(y_inc[1:80:end])
+
+    # y_inf_summary[i, 9] = get_max_lyapunov(model_params, n_days, n_days_burn_in)
+
 
 
     period_mean, period_sd, period_n = get_period(ode_solution, model_params, n_days_burn_in, n_days, Δt, ϵ)
 
     y_period[i, :] = [period_mean period_sd period_n]
-    y_attack_rate[i] = get_periodic_attack_rate(ode_solution, model_params, n_days_burn_in, n_days, period_mean)
+    # y_attack_rate[i] = get_periodic_attack_rate(ode_solution, model_params, n_days_burn_in, n_days, period_mean)
 end
 
 time_elapsed = Base.time() - time_start
@@ -82,6 +86,6 @@ time_elapsed = Base.time() - time_start
 println("Completed $(length(ix_jobs)) jobs in $(round(time_elapsed, digits = 2)), ($(round(time_elapsed/length(ix_jobs), digits = 2)) seconds/job)")
 
 x_vals_job = stack(x_vals_job)
-jldsave("data_dist/period_grid/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_summary, y_attack_rate)
+jldsave("data_dist/period_grid/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_summary)
 
 println("Outputs saved.")
