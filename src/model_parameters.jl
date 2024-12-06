@@ -22,7 +22,6 @@ struct model_parameters
     c_levels::Vector{Float64}
     p_acq::Vector{Float64}
 
-    B::Matrix{Float64}
     M::Matrix{Float64}
     p_trans::Vector{Float64}
 end
@@ -50,19 +49,18 @@ function make_model_parameters(;
     p_acq = (c_levels .^ h) ./ (b ^ h .+ c_levels .^ h)
 
     p_trans = zeros(S)
+    M = zeros(S, S)
+    M[1, :] .= 1 # Null boosting matrix to make unit tests happy
 
-    B = build_waning_matrix(S)
-    if boosting == "loglinear"
+    if boosting == "independent" # i.e., no boosting
+        p_trans = build_immunity_transition_vector(S, c_levels, c_jump_dist)
+    elseif boosting == "loglinear"
         M = build_immunity_matrix_boost_loglinear(S, c_levels, c_jump_dist)
     elseif boosting == "none"
         M = build_immunity_matrix_no_boost(S, c_levels, c_jump_dist)
-    elseif boosting == "independent"
-        M = build_immunity_matrix_independent(S, c_levels, c_jump_dist)
-        p_trans = M[:, 1] # lazy!
     else
         throw(ArgumentError("Unknown boosting method specified"))
     end
-
 
     # rho = -r / (k * (10^(-C/k) - 1))
     rho = r / (C * log(10))
@@ -85,24 +83,8 @@ function make_model_parameters(;
 
         c_levels, p_acq,
 
-        B, M, p_trans
+        M, p_trans
     )    
-end
-
-
-# Create the waning matrix B. Captures (unscaled) waning when multiplied by vector of susceptibles.
-function build_waning_matrix(N)
-    mat_waning = zeros(N, N)
-
-    for i in 1:N, j in 1:N
-        if i == j - 1
-            mat_waning[i, j] = 1
-        elseif i == j && i != 1
-            mat_waning[i, j] = -1
-        end
-    end
-
-    return mat_waning
 end
 
 # Create the post-infection immunity matrix M. Captures the probability of transitioning from
@@ -148,21 +130,20 @@ function build_immunity_matrix_no_boost(N, c_levels, c_jump_dist)
     return mat_immunity
 end
 
-
-function build_immunity_matrix_independent(N, c_levels, c_jump_dist)
-    mat_immunity = zeros(N, N)
-
+# For the case without I stratification, i.e. no boosting
+function build_immunity_transition_vector(N, c_levels, c_jump_dist)
+    p_trans = zeros(N)
     log_c_levels = log10.(c_levels)
 
-    for j in 1:N, i in 1:N
+    for i in 1:N
         if i == N
-            mat_immunity[i, j] = 1 - cdf(c_jump_dist, log_c_levels[i])
+            p_trans[i] = 1 - cdf(c_jump_dist, log_c_levels[i])
         elseif i == 1
-            mat_immunity[i, j] = cdf(c_jump_dist, log_c_levels[i + 1])
+            p_trans[i] = cdf(c_jump_dist, log_c_levels[i + 1])
         else
-            mat_immunity[i, j] = cdf(c_jump_dist, log_c_levels[i + 1]) - cdf(c_jump_dist, log_c_levels[i])
+            p_trans[i] = cdf(c_jump_dist, log_c_levels[i + 1]) - cdf(c_jump_dist, log_c_levels[i])
         end
     end
 
-    return mat_immunity
+    return p_trans
 end

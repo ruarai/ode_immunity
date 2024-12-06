@@ -11,8 +11,11 @@ model_params = make_model_parameters(
 
 @testset "Parameters" begin
     # Boosting matrix
-    @test all(sum(model_params.M, dims = 1) .>= 1-1e-10)
+    @test all(sum(model_params.M, dims = 1) .>= 1 - 1e-10)
     @test all(model_params.M .>= 0)
+    
+    @test all(sum(model_params.p_trans) .>= 1 - 1e-10)
+    @test all(sum(model_params.p_trans) .<= 1 + 1e-10)
 
     # Strata variables
     @test all(model_params.c_levels .>= 0) && all(model_params.p_acq .<= 1)
