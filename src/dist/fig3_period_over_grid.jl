@@ -15,12 +15,8 @@ model_params_0 = make_model_parameters(
 
 ode_sparsity = ode_get_sparsity(model_params_0)
 
-
-n_inf_0 = 0.0001
-
-ϵ = 1e-6
-Δt = 0.25
-t = n_days_burn_in:Δt:n_days
+periodic_Δt = 0.25
+t_post_burn_in = n_days_burn_in:n_days
 
 # Seasonality
 x_eta = 0.00:0.001:0.5
@@ -31,17 +27,13 @@ r_step = 0.0002
 x_r = r_step:r_step:0.1
 length(x_r)
 
-
 x_vals = vec([(eta = x1, r = x2) for x1 in x_eta, x2 in x_r])
 
 ix_jobs = get_jobs(arg_ix, n_array, length(x_vals))
 x_vals_job = x_vals[ix_jobs]
 
-
-
 y_period = zeros(length(x_vals_job), 3)
 y_inf_summary = zeros(length(x_vals_job), 9)
-# y_attack_rate = zeros(length(x_vals_job))
 
 time_start = Base.time()
 
@@ -49,36 +41,29 @@ Threads.@threads for i in eachindex(x_vals_job)
     println("Running job $(ix_jobs[i])")
 
     model_params = make_model_parameters(
-
         k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
         C = baseline_C, r = x_vals_job[i].r,
         b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
-        boosting = "none", eta = x_vals_job[i].eta
+        eta = x_vals_job[i].eta
     )
 
-    ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat = Δt)
+    ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat = periodic_Δt)
 
-    y_inf = vec(sum(ode_solution(t)[ode_ix(c_inf, 1:model_params.S, model_params.S), :], dims = 1))
-    y_inf_summary[i, 1] = minimum(y_inf)
-    y_inf_summary[i, 2] = maximum(y_inf)
-    y_inf_summary[i, 3] = mean(y_inf)
-    y_inf_summary[i, 4] = testchaos01(y_inf[1:80:end])
+    sus, inf, inc = get_results(ode_solution, t_post_burn_in, model_params)
 
-    y_count = vec(sum(ode_solution(t)[ode_ix(c_count, 1:model_params.S, model_params.S), :], dims = 1))
-    y_inc = diff(y_count)
-    y_inf_summary[i, 5] = minimum(y_inc)
-    y_inf_summary[i, 6] = maximum(y_inc)
-    y_inf_summary[i, 7] = mean(y_inc)
-    y_inf_summary[i, 8] = testchaos01(y_inc[1:80:end])
+    y_inf_summary[i, 1] = minimum(inf)
+    y_inf_summary[i, 2] = maximum(inf)
+    y_inf_summary[i, 3] = mean(inf)
+    y_inf_summary[i, 4] = testchaos01(inf[1:20:end])
 
-    # y_inf_summary[i, 9] = get_max_lyapunov(model_params, n_days, n_days_burn_in)
+    y_inf_summary[i, 5] = minimum(inc)
+    y_inf_summary[i, 6] = maximum(inc)
+    y_inf_summary[i, 7] = mean(inc)
+    y_inf_summary[i, 8] = testchaos01(inc[1:20:end])
 
-
-
-    period_mean, period_sd, period_n = get_period(ode_solution, model_params, n_days_burn_in, n_days, Δt, ϵ)
+    period_mean, period_sd, period_n = get_period(ode_solution, model_params, n_days_burn_in, n_days, periodic_Δt, periodic_ϵ)
 
     y_period[i, :] = [period_mean period_sd period_n]
-    # y_attack_rate[i] = get_periodic_attack_rate(ode_solution, model_params, n_days_burn_in, n_days, period_mean)
 end
 
 time_elapsed = Base.time() - time_start
