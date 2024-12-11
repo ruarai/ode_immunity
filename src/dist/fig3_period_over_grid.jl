@@ -15,6 +15,9 @@ model_params_0 = make_model_parameters(
 
 ode_sparsity = ode_get_sparsity(model_params_0)
 
+n_days_burn_in = 400000
+n_days = 500000
+
 periodic_Δt = 0.25
 t_post_burn_in = n_days_burn_in:n_days
 

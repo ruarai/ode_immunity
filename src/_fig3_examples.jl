@@ -9,7 +9,7 @@ model_params_0 = make_model_parameters(
 
 ode_sparsity = ode_get_sparsity(model_params_0)
 
-n_days = 250000
+n_days = 150000
 
 t_seq = collect(1:n_days)
 

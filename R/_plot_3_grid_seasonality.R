@@ -152,7 +152,7 @@ p_min <- ggplot()  +
 p_period | p_min
 
 
-p_period + ggtitle(NULL, "<b>A</b> — Dynamics") | 
+p_period + ggtitle(NULL, "<b>A</b> — Qualitative dynamics") | 
   p_min + ggtitle(NULL, "<b>B</b> — Minimum infection prevalence")
 
 ggsave(

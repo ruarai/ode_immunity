@@ -22,7 +22,7 @@ c_levels <- 10 ^ seq(0, 8, by = 8 / 32)
 
 t_ex_start <- 365 * 100
 t_ex_end <- 365 * (100 + 8)
-t_ex_yearly_end <- 365 * (100 + 60)
+t_ex_yearly_end <- 365 * (100 + 120)
 
 plot_data_ex_inf <- y_inf %>%
   reshape2::melt(c("i", "t"), value.name = "prevalence") %>%
@@ -167,7 +167,7 @@ p_ex_yearly_antibody <- ggplot() +
 
 ggsave(
   "results/results_supp_examples_antibodies.png",
-  device = png,
+  device = png(),
   width = 7, height = 7,
   bg = "white"
 )

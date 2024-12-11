@@ -72,7 +72,7 @@ p_bifurcation_min <- ggplot() +
             data_fixed %>% filter(r >= bifur_points$r[1])) +
   geom_line(aes(x = r, y = prev),
             linewidth = 1.0, linetype = "44",
-            data_fixed) +
+            data_fixed %>% filter(r > 0)) +
   
   
   geom_point(aes(x = r, y = prev), 
