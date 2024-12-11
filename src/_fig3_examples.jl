@@ -9,14 +9,16 @@ model_params_0 = make_model_parameters(
 
 ode_sparsity = ode_get_sparsity(model_params_0)
 
+n_days = 250000
+
 t_seq = collect(1:n_days)
 
 # 0.0, 0.06, "i", factor(0),
-# 0.03, 0.06, "ii", factor(4.5),
+# 0.07, 0.06, "ii", factor(4.5),
 # 0.2, 0.06, "iii", factor(1),
 # 0.27, 0.06, "iv", factor(2),
 # 0.37, 0.06, "v", factor(9)
-x_eta = [0 0.03 0.2 0.27 0.37]
+x_eta = [0 0.07 0.2 0.27 0.37]
 x_r = [0.06 0.06 0.06 0.06 0.06]
 
 y_inf = zeros(length(x_eta), length(t_seq))
@@ -30,7 +32,6 @@ y_sus = zeros(length(x_eta), length(t_seq), model_params_0.S)
         eta = x_eta[i]
     )
 
-    # Calculate a (not-necessarily-stable) solution of the ODE over time
     ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
 
     y_inf[i, :] = get_inf(ode_solution, t_seq, model_params)

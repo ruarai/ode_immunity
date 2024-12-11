@@ -32,9 +32,7 @@ function ode_solve(
     n_inf_0,
     ode_sparsity;
     saveat = 1,
-    dt = 0.01,
-    datatype = Float64,
-    solver = Euler()
+    datatype = Float64
 )
     ode_step_fn = ODEFunction(ode_step!; jac_prototype = float.(ode_sparsity))
 
@@ -45,5 +43,9 @@ function ode_solve(
     tspan = (0.0, 1.0 * n_days)
     prob = ODEProblem{true, SciMLBase.FullSpecialize}(ode_step_fn, u0, tspan, model_params)
 
-    return DifferentialEquations.solve(prob, solver, dt = dt, saveat = saveat);
+    return DifferentialEquations.solve(
+        prob, Rodas4P(), dtmax = 8.0,
+        abstol = 1e-16, reltol = 1e-5,
+        saveat = saveat
+    );
 end

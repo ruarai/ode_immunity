@@ -9,10 +9,13 @@ model_params_0 = make_model_parameters(
 
 ode_sparsity = ode_get_sparsity(model_params_0)
 
+
+n_days_burn_in = 50000
+n_days = 100000
 t_seq = 0:n_days
 
 periodic_Δt = 0.25
-x_r = collect(0:0.001:0.15)
+x_r = collect(0:0.002:0.15)
 
 y_fixed_I = zeros(length(x_r))
 y_I_sol = zeros(length(x_r), length(t_seq))
