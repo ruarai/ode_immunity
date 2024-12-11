@@ -12,7 +12,7 @@ u_sol = get_steady_state(model_params, true)
 using ForwardDiff
 
 
-u0 = convert.(Double64, copy(u_sol))
+u0 = copy(u_sol)
 du0 = copy(u0)
 
 n_days_short = 40000
@@ -24,8 +24,6 @@ ode_solution = @time ode_solve(model_params, n_days_short, n_inf_0, ode_sparsity
 inf = get_inf(ode_solution, t, model_params)
 
 plot(inf[(end-5000):end])
-
-period = get_period(ode_solution, model_params, n_days_burn_in, n_days_short, 0.25, 1e-6)
 
 using ForwardDiff
 J = ForwardDiff.jacobian((du, u) -> ode_step_no_count!(du, u, model_params, 0.0), du0, u0)

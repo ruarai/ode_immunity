@@ -12,16 +12,20 @@ seq_t <- h5read("data/paper/basic_boosting.jld2", "seq_t")
 c_levels <- h5read("data/paper/basic_boosting.jld2", "c_levels")
 p_acq <- h5read("data/paper/basic_boosting.jld2", "p_acq")
 
+t_max <- 1500
+
 plot_data_sus <- sus %>%
   reshape2::melt(varnames = c("t", "strata"), value.name = "prevalence") %>%
   mutate(c = c_levels[strata], p = p_acq[strata], t = seq_t[t],
          strata = strata - 1) %>% 
-  filter(t < 1500)
+  filter(t < t_max)
 
-plot_data_inf <- tibble(t = seq_t, prevalence = inf)
+plot_data_inf <- tibble(t = seq_t, prevalence = inf) %>%
+  filter(t < t_max)
 
 
 plot_data_means <- plot_data_sus %>%
+  filter(t < t_max) %>% 
   group_by(t) %>%
   mutate(prevalence = prevalence / sum(prevalence)) %>% 
   summarise(c = sum(prevalence * c),
@@ -32,7 +36,7 @@ p_summ <- ggplot() +
             plot_data_inf,
             linewidth = 0.7) +
   
-  coord_cartesian(xlim = c(0, 1500)) +
+  coord_cartesian(xlim = c(0, t_max)) +
   
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
@@ -61,9 +65,6 @@ p_heatmap <- plot_data_sus %>%
   ggplot() +
   geom_tile(aes(x = t, y = c, fill = density)) +
   
-  geom_hline(aes(yintercept = 10^6),
-             colour = "white", linetype = "44") +
-  
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
   
@@ -80,10 +81,6 @@ p_heatmap <- plot_data_sus %>%
                        breaks = rescale_density(c(1e-8, 0.01, 0.05, 0.2, 1 - 1e-3)),
                        labels = c(0, 0.01, 0.05, 0.2, 1.0))  +
   
-  # scale_fill_continuous_divergingx(palette = "PuOr", mid = rescale_density(0.1),
-  #                                  breaks = rescale_density(c(1e-8, 0.01, 0.05, 0.2, 1 - 1e-3)),
-  #                                  labels = c(0, 0.01, 0.05, 0.2, 1.0)) +
-
   coord_cartesian(xlim = c(0, 1500), ylim = c(10^0, 10^8)) +
   
   # guides(fill = guide_colourbar(barwidth = 15)) +
@@ -97,6 +94,8 @@ p_heatmap <- plot_data_sus %>%
         axis.ticks.x = element_blank()) +
   
   ggtitle(NULL, "<b>B</b> — Population distribution of antibodies")
+
+p_heatmap
 
 p_legend <- tibble(
   x = seq(-0.1, 1.1, by = 0.001)
@@ -137,7 +136,7 @@ p_mean_antibody <- ggplot() +
   
   coord_cartesian(ylim = c(10^0, 10^7)) +
   
-  xlab("Time *t* (days)") + ylab("Antibody<br>concentration") +
+  xlab("Time (days)") + ylab("Antibody<br>concentration") +
   
   plot_theme_paper +
   
@@ -145,26 +144,22 @@ p_mean_antibody <- ggplot() +
   
   theme(panel.grid.major = element_gridline)
 
-p_mean_antibody
-
-
 p_legend_space <- (plot_spacer() / p_legend / plot_spacer()) +
   plot_layout(heights = c(1, 5, 1))
 
 p_heatmap_with_legend <- (p_heatmap | p_legend_space) +
   plot_layout(widths = c(15, 1))
 
-((p_summ / p_heatmap) | (plot_spacer() / p_legend_space)) +
+((p_summ / p_heatmap / p_mean_antibody) | (plot_spacer() / p_legend_space / plot_spacer())) +
   plot_layout(widths = c(15, 1))
 
-(p_summ / p_heatmap_with_legend)
 
 
 
 ggsave(
-  "results/results_basic.png",
+  "results/results_supp_basic.png",
   device = png,
-  width = 10, height = 7,
+  width = 10, height = 10,
   bg = "white"
 )
 

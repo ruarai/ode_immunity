@@ -11,14 +11,19 @@ y_period <- h5read("data/paper/period_over_grid.jld2", "y_period")
 
 plot_data <- tibble(
   eta = x_vals[1, ], r = x_vals[2, ],
-  inf_min = y_inf_summary[, 1], inf_max = y_inf_summary[, 2],  inf_mean = y_inf_summary[, 3],
-  inc_min = y_inf_summary[, 4], inc_max = y_inf_summary[, 5],  inc_mean = y_inf_summary[, 6],
+  inf_min = y_inf_summary[, 1], inf_max = y_inf_summary[, 2],
+  inf_mean = y_inf_summary[, 3], inf_chaos = y_inf_summary[, 4],
+  
+  inc_min = y_inf_summary[, 5], inc_max = y_inf_summary[, 6],  
+  inc_mean = y_inf_summary[, 7], inc_chaos = y_inf_summary[ , 8],
+  lyapunov = y_inf_summary[, 9],
+  
   period = y_period[,1], period_sd = y_period[,2], period_n = y_period[,3]
 ) %>%
   mutate(eta_label = str_c("Seasonality constant <i>η</i> = ", eta))
 
 
-ggplot() +
+p_min <- ggplot() +
   geom_line(aes(x = r, y = inf_min),
             linewidth = 0.7,
             plot_data %>% filter(eta == 0) %>% rename(eta_label_null = eta_label),
@@ -41,6 +46,32 @@ ggplot() +
   
   theme(strip.text = element_markdown())
 
+
+
+# p_max <- ggplot() +
+#   geom_line(aes(x = r, y = inf_max),
+#             linewidth = 0.7,
+#             plot_data %>% filter(eta == 0) %>% rename(eta_label_null = eta_label),
+#             colour = colour_C) +
+#   geom_line(aes(x = r, y = inf_max),
+#             linewidth = 0.7,
+#             plot_data %>% filter(eta %in% c(0.1, 0.3, 0.5))) +
+#   
+#   facet_wrap(~eta_label, ncol = 1) +
+#   
+#   coord_cartesian(ylim = c(0, NA)) +
+#   
+#   ylab("Maximum infection prevalence") +
+#   xlab("Antibody decay rate <i>r</i>") +
+#   
+#   plot_theme_paper +
+#   
+#   theme(strip.text = element_markdown())
+# 
+# p_min | p_max
+
+
+p_min
 
 ggsave(
   "results/results_supp_seasonality_extinction.pdf",

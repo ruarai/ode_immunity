@@ -7,16 +7,19 @@ library(patchwork)
 
 source("R/plot_theme.R")
 
-t_steps <- h5read("data/paper/ex_period.jld2", "t")
+t_seq <- h5read("data/paper/ex_period.jld2", "t_seq")
 y <- h5read("data/paper/ex_period.jld2", "y")
 
 y_tbl <- y %>%
   reshape2::melt(varnames = c("ix", "t"), value.name = "prevalence") %>%
-  mutate(t = t_steps[t])
+  mutate(t = t_seq[t])
+
+t_start <- 365 * 50
+t_end <- 365 * (50 + 5)
 
 plot_data <- y_tbl %>%
   
-  filter(t > 365 * 35.5, t < 365 * 35.5 + 365 * 4.5) %>% 
+  filter(t > t_start, t < t_end) %>% 
   
   group_by(ix) %>%
   mutate(prev_norm = prevalence - prevalence[1],
@@ -83,23 +86,3 @@ ggsave(
   width = 12, height = 12,
   bg = "white"
 )
-
-
-plot_sub <- y_tbl %>%
-  filter(t > 365*36) %>%
-  mutate(t_year = (t - min(t)) / 365)
-
-
-p_heatmap <- plot_sub %>%
-  filter(ix <= 33) %>% 
-  mutate(prevalence = pmin(prevalence, 0.05)) %>% 
-  ggplot() +
-  geom_tile(aes(x = t_year, y = ix, fill = prevalence)) +
-  
-  scale_x_continuous(breaks = 0:5) +
-  
-  scale_fill_viridis_c(option = "B") +
-  
-  plot_theme_paper +
-  theme(legend.position = "none")
-

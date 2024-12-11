@@ -13,8 +13,13 @@ y_period <- h5read("data/paper/period_over_grid.jld2", "y_period")
 
 plot_data <- tibble(
   eta = x_vals[1, ], r = x_vals[2, ],
-  inf_min = y_inf_summary[, 1], inf_max = y_inf_summary[, 2],  inf_mean = y_inf_summary[, 3],
-  inc_min = y_inf_summary[, 4], inc_max = y_inf_summary[, 5],  inc_mean = y_inf_summary[, 6],
+  inf_min = y_inf_summary[, 1], inf_max = y_inf_summary[, 2],
+  inf_mean = y_inf_summary[, 3], inf_chaos = y_inf_summary[, 4],
+  
+  inc_min = y_inf_summary[, 5], inc_max = y_inf_summary[, 6],  
+  inc_mean = y_inf_summary[, 7], inc_chaos = y_inf_summary[ , 8],
+  lyapunov = y_inf_summary[, 9],
+  
   period = y_period[,1], period_sd = y_period[,2], period_n = y_period[,3]
 ) %>%
   mutate(inf_diff = inf_max - inf_min,
@@ -95,9 +100,9 @@ p_attack_rate <- ggplot()  +
   scale_fill_stepsn(
     colours = colorspace::sequential_hcl(n = 20, h = c(300, 75), c = c(40, NA, 95), l = c(15, 90), power = c(1, 1.1)),
     name = "Yearly infection\nattack rate",
-    limits = c(0, 0.5),
-    breaks = seq(0, 0.5, 0.05),
-    labels = c("0", "", "0.1", "", "0.2", "", "0.3", "", "0.4", "", "0.5")
+    limits = c(0, 2.0),
+    breaks = seq(0, 2.0, 0.2),
+    labels = c("0", "", "0.4", "", "0.8", "", "1.2", "", "1.6", "", "2.0")
   ) +
   
   coord_fixed(ratio = 5) +

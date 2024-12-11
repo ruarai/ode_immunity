@@ -11,6 +11,8 @@ global const n_inf_0 = 0.001
 
 global const n_days_burn_in = 50000
 global const n_days = 250000
+global const n_days_short = 100000
+
 
 
 global const baseline_k = 32
