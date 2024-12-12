@@ -15,8 +15,8 @@ model_params_0 = make_model_parameters(
 
 ode_sparsity = ode_get_sparsity(model_params_0)
 
-n_days_burn_in = 400000
-n_days = 500000
+n_days_burn_in = 400_000
+n_days = n_days_burn_in + 100_000
 
 periodic_Δt = 0.25
 t_post_burn_in = n_days_burn_in:n_days
@@ -50,21 +50,28 @@ Threads.@threads for i in eachindex(x_vals_job)
         eta = x_vals_job[i].eta
     )
 
-    ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat = periodic_Δt)
+    ode_solution = ode_solve(
+        model_params, n_days, n_inf_0, ode_sparsity,
+        saveat_step = periodic_Δt, n_days_burn_in = n_days_burn_in
+    )
 
     sus, inf, inc = get_results(ode_solution, t_post_burn_in, model_params)
 
     y_inf_summary[i, 1] = minimum(inf)
     y_inf_summary[i, 2] = maximum(inf)
     y_inf_summary[i, 3] = mean(inf)
-    y_inf_summary[i, 4] = testchaos01(inf[1:20:end])
+    y_inf_summary[i, 4] = testchaos01(NaNMath.log10.(inf[1:80:end]))
 
     y_inf_summary[i, 5] = minimum(inc)
     y_inf_summary[i, 6] = maximum(inc)
     y_inf_summary[i, 7] = mean(inc)
-    y_inf_summary[i, 8] = testchaos01(inc[1:20:end])
+    y_inf_summary[i, 8] = testchaos01(NaNMath.log10.(inc[1:80:end]))
+    y_inf_summary[i, 9] = Integer(ode_solution.retcode)
 
-    period_mean, period_sd, period_n = get_period(ode_solution, model_params, n_days_burn_in, n_days, periodic_Δt, periodic_ϵ)
+    period_mean, period_sd, period_n = get_period(
+        ode_solution, model_params, n_days_burn_in, n_days, 
+        periodic_Δt, periodic_ϵ
+    )
 
     y_period[i, :] = [period_mean period_sd period_n]
 end

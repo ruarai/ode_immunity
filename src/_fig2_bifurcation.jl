@@ -37,7 +37,7 @@ period = zeros(length(x_r), 3)
 
 
     # Calculate a (not-necessarily-stable) solution of the ODE over time
-    ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat = periodic_Δt)
+    ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat_step = periodic_Δt)
 
     y_I_sol[i, :] = get_inf(ode_solution, t_seq, model_params)
     y_inc_sol[i, :] = get_inc(ode_solution, t_seq, model_params)
