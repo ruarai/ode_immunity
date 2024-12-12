@@ -47,10 +47,7 @@ function ode_solve(
     vec_saveat = n_days_burn_in:saveat_step:n_days
 
     return DifferentialEquations.solve(
-        prob, Rodas4P(), 
-        dtmax = 8.0,
-        abstol = 1e-16,
-        reltol = 1e-5,
+        prob, Euler(), dt = 0.01,
         saveat = vec_saveat
     );
 end
