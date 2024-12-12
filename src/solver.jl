@@ -48,10 +48,9 @@ function ode_solve(
 
     return DifferentialEquations.solve(
         prob, Rodas4P(), 
-        dtmax = 1.0,
+        dtmax = 8.0,
         abstol = 1e-16,
         reltol = 1e-5,
-        maxiters = 1e5,
         saveat = vec_saveat
     );
 end
