@@ -6,13 +6,6 @@ println("Job at array index $arg_ix of $n_array, with n_cpu = $(Threads.nthreads
 
 include("../dependencies.jl")
 
-
-model_params_0 = make_model_parameters(
-    k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-    C = baseline_C, r = baseline_r,
-    b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist
-)
-
 n_days_burn_in = 400_000
 n_days = n_days_burn_in + 100_000
 

@@ -1,12 +1,5 @@
 include("dependencies.jl")
 
-
-model_params_0 = make_model_parameters(
-    k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-    C = baseline_C, r = baseline_r,
-    b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist
-)
-
 n_days = 150000
 
 t_seq = collect(1:n_days)
@@ -20,7 +13,7 @@ x_eta = [0 0.07 0.2 0.27 0.37]
 x_r = [0.06 0.06 0.06 0.06 0.06]
 
 y_inf = zeros(length(x_eta), length(t_seq))
-y_sus = zeros(length(x_eta), length(t_seq), model_params_0.S)
+y_sus = zeros(length(x_eta), length(t_seq), baseline_k + 1)
 
 @showprogress Threads.@threads for i in eachindex(x_eta)
     model_params = make_model_parameters(

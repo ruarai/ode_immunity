@@ -1,13 +1,5 @@
 include("dependencies.jl")
 
-
-model_params_0 = make_model_parameters(
-    k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-    C = baseline_C, r = baseline_r,
-    b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist
-)
-
-
 n_days_burn_in = 50000
 n_days = 100000
 t_seq = 0:n_days
