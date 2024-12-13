@@ -7,8 +7,6 @@ model_params_0 = make_model_parameters(
     b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist
 )
 
-ode_sparsity = ode_get_sparsity(model_params_0)
-
 n_days = 150000
 
 t_seq = collect(1:n_days)
@@ -32,7 +30,7 @@ y_sus = zeros(length(x_eta), length(t_seq), model_params_0.S)
         eta = x_eta[i]
     )
 
-    ode_solution = ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
+    ode_solution = ode_solve(model_params, n_days, n_inf_0)
 
     y_inf[i, :] = get_inf(ode_solution, t_seq, model_params)
     y_sus[i, :, :] = get_sus(ode_solution, t_seq, model_params)

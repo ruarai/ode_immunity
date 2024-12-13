@@ -11,10 +11,8 @@ model_params = make_model_parameters(
 n_days = 50000
 
 
-ode_sparsity = ode_get_sparsity(model_params)
-
 Δt = 0.25
-ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity, saveat_step = Δt)
+ode_solution = @time ode_solve(model_params, n_days, n_inf_0, saveat_step = Δt)
 
 t_seq = collect(0:Δt:n_days)
 

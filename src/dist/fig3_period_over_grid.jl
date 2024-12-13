@@ -13,8 +13,6 @@ model_params_0 = make_model_parameters(
     b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist
 )
 
-ode_sparsity = ode_get_sparsity(model_params_0)
-
 n_days_burn_in = 400_000
 n_days = n_days_burn_in + 100_000
 
@@ -51,7 +49,7 @@ Threads.@threads for i in eachindex(x_vals_job)
     )
 
     ode_solution = ode_solve(
-        model_params, n_days, n_inf_0, ode_sparsity,
+        model_params, n_days, n_inf_0,
         saveat_step = periodic_Δt, n_days_burn_in = n_days_burn_in
     )
 

@@ -7,12 +7,10 @@ model_params = make_model_parameters(
     b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist
 )
 
-ode_sparsity = ode_get_sparsity(model_params)
-
 n_days = 10000
 seq_t = collect(0:n_days)
 
-ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
+ode_solution = @time ode_solve(model_params, n_days, n_inf_0)
 
 sus, inf, inc = get_results(ode_solution, seq_t, model_params)
 

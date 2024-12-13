@@ -23,9 +23,7 @@ model_params = make_model_parameters(
 end
 
 
-ode_sparsity = ode_get_sparsity(model_params)
-
-ode_solution = @time ode_solve(model_params, n_days, n_inf_0, ode_sparsity)
+ode_solution = @time ode_solve(model_params, n_days, n_inf_0)
 
 t = 1:n_days
 sus, inf, inc = get_results(ode_solution, t, model_params)
