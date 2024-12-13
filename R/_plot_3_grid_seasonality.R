@@ -42,6 +42,16 @@ plot_data_periodic <- plot_data %>%
          period = pmin(period, 8),
          period = factor(round(period)))
 
+plot_data %>%
+  filter(eta > 0,
+         period < 365 * 2^4) %>% 
+  filter(periodic) %>%
+  ggplot() +
+  geom_tile(aes(x = eta, y = r, fill = (period / 365))) +
+  
+  scale_fill_viridis_c(trans = "log2")
+  
+
 plot_data_quasiperiodic <- plot_data %>% filter(quasiperiodic)
 plot_data_chaotic <- plot_data %>% filter(chaotic)
 

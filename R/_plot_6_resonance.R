@@ -64,13 +64,13 @@ p_incidence <- ggplot() +
   
   coord_cartesian(xlim = c(0, 0.1), ylim = c(0, 2.0)) +
   
-  xlab("Mean antibody decay rate <i>r</i>") + ylab("Yearly infection incidence") +
+  xlab("Mean antibody decay rate <i>r</i>") + ylab("Annual infection incidence") +
   
   plot_theme_paper +
   theme(strip.text = element_markdown(),
         axis.text.x.top = element_text(margin = margin(b = 0.25, unit = "cm"))) +
   
-  ggtitle(NULL, "Yearly infection incidence")
+  ggtitle(NULL, "Annual infection incidence")
 
 p_incidence
 
@@ -81,7 +81,8 @@ p_incidence_diff <- ggplot() +
   annotate("rect", xmin = bifur_zero, xmax = Inf, ymin = -Inf, ymax = Inf,
            fill = "grey70", alpha = 0.2) +
   
-  geom_hline(yintercept = 1, colour = colour_C, linetype = "82") +
+  annotate("linerange", y = 1.0, xmin = 0.0, xmax = 0.1,
+           colour = colour_C, linetype = "82") +
   
   geom_line(aes(x = r, y = inc_mean_diff),
             linewidth = 0.7,
@@ -98,7 +99,7 @@ p_incidence_diff <- ggplot() +
   theme(strip.text = element_markdown(colour = "white"),
         axis.text.x.top = element_text(margin = margin(b = 0.25, unit = "cm"))) +
   
-  ggtitle(NULL, "Proportional difference in<br>yearly infection incidence")
+  ggtitle(NULL, "Proportional difference in<br>annual infection incidence")
 
 p_incidence_diff 
 

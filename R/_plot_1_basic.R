@@ -58,15 +58,21 @@ p_inf <- ggplot() +
   ggtitle(NULL, "<b>A</b> — Infection prevalence")
 
 p_0 <- ggplot() +
-  geom_ribbon(aes(x = t, ymin = 0, ymax = prevalence),
-              plot_data_sus %>% filter(strata == 0),
-              fill = blues[33],
-              colour = "black", linewidth = 0.4) +
+  # geom_ribbon(aes(x = t, ymin = 0, ymax = prevalence),
+  #             plot_data_sus %>% filter(strata == 0),
+  #             fill = blues[33],
+  #             outline.type = "upper",
+  #             colour = "black", linewidth = 0.4) +
   
-  annotate("richtext", x = -50, y = 1.0, label = "<i>S</i><sub>0</sub>",
-           label.r = unit(0, "cm"), label.size = 0, label.colour = "white") +
+  geom_line(aes(x = t, y = prevalence),
+            linewidth = 0.6,
+            plot_data_sus %>% filter(strata == 0)) +
   
-  annotate("linerange", xmin = -10, xmax = 0, y = 1.0, linewidth = 0.4) +
+  # 
+  # annotate("richtext", x = -50, y = 1.0, label = "<i>S</i><sub>0</sub>",
+  #          label.r = unit(0, "cm"), label.size = 0, label.colour = "white") +
+  # 
+  # annotate("linerange", xmin = -10, xmax = 0, y = 1.0, linewidth = 0.4) +
   
   
   xlab(NULL) + ylab("Prevalence") +
@@ -78,7 +84,7 @@ p_0 <- ggplot() +
   
   coord_cartesian(xlim = c(-50, NA), ylim = c(0, 1.05)) +
   
-  ggtitle(NULL, "<b>C</b> — Susceptible prevalence <i>S</i><sub>0</sub>")
+  ggtitle(NULL, "<b>B</b> — Susceptible prevalence <i>S</i><sub>0</sub>")
 
 
 
@@ -105,6 +111,7 @@ p_waves <- ggplot() +
                   fill = strata_group,
                   group = strata_group),
               plot_data_waves, linewidth = 0.4,
+              outline.type = "upper",
               colour = "black") +
   
   geom_linerange(aes(xmin = -10, xmax = 0, y = offset), 
@@ -114,7 +121,7 @@ p_waves <- ggplot() +
   
   scale_fill_manual(values = rev(blues[2:33]) ) +
   
-  scale_y_continuous(breaks = -wave_scale * 24 + c(0, 0.1), labels = c(0, 0.1)) +
+  scale_y_continuous(breaks = -wave_scale * 21 + c(0, 0.1), labels = c(0, 0.1)) +
   # scale_y_continuous(breaks = NULL) +
   
   coord_cartesian(ylim = c(-32 * wave_scale, 0.05),
@@ -124,7 +131,7 @@ p_waves <- ggplot() +
   
   theme(legend.position = "none")+
   
-  ggtitle(NULL, "<b>D</b> — Susceptible prevalence <i>S</i><sub>1</sub> – <i>S</i><sub><i>k</i></sub>")
+  ggtitle(NULL, "<b>C</b> — Susceptible prevalence <i>S</i><sub>1</sub> – <i>S</i><sub><i>k</i></sub>")
 
 p_mean_antibody <- ggplot() +
   geom_line(aes(x = t, y = c),
@@ -144,16 +151,16 @@ p_mean_antibody <- ggplot() +
   
   plot_theme_paper +
   
-  ggtitle(NULL, "<b>B</b> — Mean antibody concentration") +
+  ggtitle(NULL, "<b>D</b> — Mean antibody concentration") +
   
   theme(panel.grid.major = element_gridline)
 
 
-(p_inf / p_mean_antibody) | (p_0 / p_waves)
+(p_inf / p_waves) | (p_0 / p_mean_antibody)
 
 
 ggsave(
-  "results/results_basic.pdf",
+  "results/results_basic_template.pdf",
   device = pdf,
   width = 13, height = 7,
   bg = "white"
