@@ -30,16 +30,10 @@ end
 
 function make_model_parameters(;
     k,
-
     beta, gamma, 
-
-    
     C, r,
-
     b, h,
-
     c_jump_dist,
-
     eta = 0.0,
     boosting = "independent"
 )
@@ -56,33 +50,26 @@ function make_model_parameters(;
         p_trans = build_immunity_transition_vector(S, c_levels, c_jump_dist)
     elseif boosting == "loglinear"
         M = build_immunity_matrix_boost_loglinear(S, c_levels, c_jump_dist)
-    elseif boosting == "none"
+    elseif boosting == "none" # Should be equivalent to independent, but allowing I stratification (and preventing decrease in strata)
         M = build_immunity_matrix_no_boost(S, c_levels, c_jump_dist)
     else
         throw(ArgumentError("Unknown boosting method specified"))
     end
 
-    # rho = -r / (k * (10^(-C/k) - 1))
+    # Calculate rho from decay rate r
     rho = r / (C * log(10))
 
     wane_transition_rate = rho * k
 
     return model_parameters(
         k, S,
-
         beta, gamma, 
-
         eta,
-        
         C, r, rho,
-
         wane_transition_rate,
-
         b, h,
         c_jump_dist,
-
         c_levels, p_acq,
-
         M, p_trans
     )    
 end
@@ -108,7 +95,6 @@ function build_immunity_matrix_boost_loglinear(N, c_levels, c_jump_dist)
 
     return mat_immunity
 end
-
 
 function build_immunity_matrix_no_boost(N, c_levels, c_jump_dist)
     mat_immunity = zeros(N, N)

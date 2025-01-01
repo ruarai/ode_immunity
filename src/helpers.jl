@@ -20,6 +20,25 @@ function get_results(ode_solution, t, model_params)
     )
 end
 
+function get_results_boosting(ode_solution, t, model_params)
+    return (
+        sus = Matrix(ode_solution(t)[ode_ix_boosting(c_sus, model_params.S, 1:model_params.S), :]'),
+        inf = Matrix(ode_solution(t)[ode_ix_boosting(c_inf, model_params.S, 1:model_params.S), :]'),
+        count = Matrix(ode_solution(t)[ode_ix_boosting(c_count, model_params.S, 1:model_params.S), :]')
+    )
+end
+
+function get_summ_boosting(ode_solution, t, model_params)
+    sus, inf, count = get_results_boosting(ode_solution, t, model_params)
+
+    return (
+        sus = sum(sus, dims = 2), 
+        inf = sum(inf, dims = 2), 
+        inc = vcat([0], diff(sum(count, dims = 2), dims = 1))
+    )
+
+end
+
 
 function get_period(ode_sol, model_params, burn_in_days, n_days, Δt, ϵ)
     t = burn_in_days:Δt:n_days

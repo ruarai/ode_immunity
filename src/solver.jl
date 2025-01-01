@@ -1,9 +1,5 @@
 
-
-function ode_ix_boosting(c, S, i)
-    return (c .- 1) .* S .+ i
-end
-
+# Index functions without boosting
 function ode_ix_sus(i)
     return i
 end
@@ -14,6 +10,11 @@ end
 
 function ode_ix_count(S)
     return S + 2
+end
+
+# Index function for with boosting (i.e. with I stratification)
+function ode_ix_boosting(c, S, i)
+    return (c .- 1) .* S .+ i
 end
 
 function ode_solve(
@@ -29,6 +30,32 @@ function ode_solve(
     u0 = zeros(datatype, model_params.S + 2)
     u0[ode_ix_sus(1)] = 1.0 - n_inf_0
     u0[ode_ix_inf(model_params.S)] = n_inf_0
+
+    tspan = (0.0, n_days)
+    prob = ODEProblem{true, SciMLBase.FullSpecialize}(ode_step_fn, u0, tspan, model_params)
+
+    vec_saveat = n_days_burn_in:saveat_step:n_days
+
+    return DifferentialEquations.solve(
+        prob, Euler(), dt = 0.01,
+        saveat = vec_saveat
+    );
+end
+
+
+function ode_solve_boosting(
+    model_params,
+    n_days,
+    n_inf_0;
+    saveat_step = 1,
+    datatype = Float64,
+    n_days_burn_in = 0.0
+)
+    ode_step_fn = ODEFunction(ode_step_boosting!)
+
+    u0 = zeros(datatype, model_params.S * 3)
+    u0[ode_ix_boosting(c_sus, model_params.S, 1)] = 1.0 - n_inf_0
+    u0[ode_ix_boosting(c_inf, model_params.S, 1)] = n_inf_0
 
     tspan = (0.0, n_days)
     prob = ODEProblem{true, SciMLBase.FullSpecialize}(ode_step_fn, u0, tspan, model_params)

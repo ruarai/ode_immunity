@@ -17,10 +17,11 @@ using ProgressMeter
 using NaNMath
 using JLD2
 using Dates
+using Distributions
 
 # Steady state solutions dependencies
-#using MultiFloats
-using DoubleFloats
+# using MultiFloats
+# using DoubleFloats
 using NonlinearSolve
 
 # ODE solver dependencies
@@ -34,6 +35,7 @@ include("model_parameters.jl")
 include("solver.jl")
 
 include("model_no_boosting.jl")
+include("model_boosting.jl")
 
 include("helpers.jl")
 
