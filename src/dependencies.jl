@@ -12,7 +12,6 @@ end
 
 
 # Base dependencies
-using Distributions
 using LinearAlgebra
 using ProgressMeter
 using NaNMath
@@ -23,16 +22,11 @@ using Dates
 #using MultiFloats
 using DoubleFloats
 using NonlinearSolve
-using StaticArrays
 
 # ODE solver dependencies
 using DifferentialEquations
-using Symbolics
 using Plots
 using ChaosTools
-
-# Stochastics/agent-based dependencies
-using Random
 
 include("model_globals.jl")
 include("steady_state_functions.jl")
@@ -51,11 +45,5 @@ function get_jobs(arg_ix, n_array, n_jobs)
 
     return [((i - 1) * n + 1):(min(i * n, N)) for i in 1:M][arg_ix]
 end
-
-function expand_grid(; kws...)
-    names, vals = keys(kws), values(kws)
-    return DataFrame(NamedTuple{names}(t) for t in Iterators.product(vals...))
-end
-
 
 println("$(now()) -- dependencies loaded")

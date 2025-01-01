@@ -3,6 +3,7 @@
 
 library(tidyverse)
 library(rhdf5)
+library(patchwork)
 
 
 source("R/plot_theme.R")
@@ -75,7 +76,7 @@ p_0 <- ggplot() +
   # annotate("linerange", xmin = -10, xmax = 0, y = 1.0, linewidth = 0.4) +
   
   
-  xlab(NULL) + ylab("Prevalence") +
+  xlab(NULL) + ylab("Fraction") +
   
   plot_theme_paper +
   theme(legend.position = "none",
@@ -84,22 +85,22 @@ p_0 <- ggplot() +
   
   coord_cartesian(xlim = c(-50, NA), ylim = c(0, 1.05)) +
   
-  ggtitle(NULL, "<b>B</b> — Susceptible prevalence <i>S</i><sub>0</sub>")
+  ggtitle(NULL, "<b>B</b> — Susceptible fraction <i>S</i><sub>0</sub>")
 
 
 
 
 
 
-wave_scale <- 0.01
+wave_scale <- 0.03
 plot_data_waves <- plot_data_sus %>%
-  filter(strata > 0, t < t_max) %>%
-  mutate(strata_group = factor(strata),
-         offset = if_else(strata == 0, 0.0, -strata * wave_scale))
+  filter(strata > 0, t < t_max, strata %% 2 == 0) %>%
+  mutate(strata_group = factor(strata) %>% fct_rev(),
+         offset = if_else(strata == 0, 0.0, strata * wave_scale))
 
 plot_data_labels <- plot_data_waves %>% filter(t == 1) %>%
   mutate(offset = if_else(strata == 0, offset + 1, offset)) %>%
-  filter(strata == 1 | strata %% 8 == 0)
+  filter(strata %in% c(2, 8, 16, 24, 32))
 
 p_waves <- ggplot() +
   
@@ -108,30 +109,39 @@ p_waves <- ggplot() +
                 plot_data_labels) +
   geom_ribbon(aes(x = t, ymin = offset,
                   ymax = prevalence + offset,
-                  fill = strata_group,
                   group = strata_group),
               plot_data_waves, linewidth = 0.4,
               outline.type = "upper",
+              fill = colour_A,
               colour = "black") +
+  
+  # geom_line(aes(x = t, y = prevalence + offset, colour = prevalence, group = strata),
+  #           plot_data_waves) +
   
   geom_linerange(aes(xmin = -10, xmax = 0, y = offset), 
                  linewidth = 0.4, plot_data_labels) +
   
-  xlab("Time (days)") + ylab("Prevalence") + 
+  xlab("Time (days)") + ylab("Fraction") + 
   
   scale_fill_manual(values = rev(blues[2:33]) ) +
   
-  scale_y_continuous(breaks = -wave_scale * 21 + c(0, 0.1), labels = c(0, 0.1)) +
+  scale_y_continuous(breaks = wave_scale * 18 + c(0, 0.1), labels = c(0, 0.1)) +
   # scale_y_continuous(breaks = NULL) +
   
-  coord_cartesian(ylim = c(-32 * wave_scale, 0.05),
+  coord_cartesian(ylim = c(0.05, 32 * wave_scale),
                   xlim = c(-50, NA)) +
+  
+  scale_colour_viridis_c() +
   
   plot_theme_paper +
   
-  theme(legend.position = "none")+
+  theme(legend.position = "none",
+        panel.grid.major.x = element_gridline)+
   
-  ggtitle(NULL, "<b>C</b> — Susceptible prevalence <i>S</i><sub>1</sub> – <i>S</i><sub><i>k</i></sub>")
+  ggtitle(NULL, "<b>C</b> — Susceptible fraction <i>S</i><sub>2</sub>, ... <i>S</i><sub><i>k</i></sub>")
+
+p_waves
+
 
 p_mean_antibody <- ggplot() +
   geom_line(aes(x = t, y = c),
@@ -147,7 +157,7 @@ p_mean_antibody <- ggplot() +
   
   coord_cartesian(ylim = c(10^0, 10^7)) +
   
-  xlab("Time *t* (days)") + ylab("Concentration") +
+  xlab("Time (days)") + ylab("Concentration") +
   
   plot_theme_paper +
   

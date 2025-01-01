@@ -2,37 +2,9 @@ library(tidyverse)
 library(rhdf5)
 library(patchwork)
 
-
 source("R/plot_theme.R")
 
-file <- "data/paper/period_over_grid.jld2"
-
-x_vals <- h5read(file, "x_vals")
-y_inf_summary <- h5read(file, "y_inf_summary")
-y_period <- h5read(file, "y_period")
-
-plot_data <- tibble(
-  eta = x_vals[1, ], r = x_vals[2, ],
-  inf_min = y_inf_summary[, 1], inf_max = y_inf_summary[, 2],
-  inf_mean = y_inf_summary[, 3], inf_chaos = y_inf_summary[, 4],
-  
-  inc_min = y_inf_summary[, 5], inc_max = y_inf_summary[, 6],  
-  inc_mean = y_inf_summary[, 7], inc_chaos = y_inf_summary[ , 8],
-  lyapunov = y_inf_summary[, 9],
-  
-  period = y_period[,1], period_sd = y_period[,2], period_n = y_period[,3]
-) %>%
-  mutate(
-    inf_diff = inf_max - inf_min,
-    period_error = pmin(abs(period %% 365 - 365), period %% 365),
-   
-    periodic = (period_error < 1) & (period_n > 1),
-    chaotic = (inf_chaos > 0) & (!periodic),
-    
-    quasiperiodic = (period_n > 1) & (!periodic) & (eta > 0)
-  )
-
-
+plot_data <- read_seasonality_data("data/paper/period_over_grid.jld2")
 
 
 plot_data_periodic <- plot_data %>%
@@ -42,27 +14,11 @@ plot_data_periodic <- plot_data %>%
          period = pmin(period, 8),
          period = factor(round(period)))
 
-plot_data %>%
-  filter(eta > 0,
-         period < 365 * 2^4) %>% 
-  filter(periodic) %>%
-  ggplot() +
-  geom_tile(aes(x = eta, y = r, fill = (period / 365))) +
-  
-  scale_fill_viridis_c(trans = "log2")
-  
-
 plot_data_quasiperiodic <- plot_data %>% filter(quasiperiodic)
 plot_data_chaotic <- plot_data %>% filter(chaotic)
 
 plot_data_eta_zero <- plot_data %>% filter(eta == 0)
 plot_data_eta_zero_periodic <- plot_data %>% filter(eta == 0, r < 0.065)
-
-
-plot_data_quasiperiodic %>%
-  filter(eta > 0.35, r > 0.05) %>%
-  select(eta, r)
-
 
 bifur_zero <- plot_data_eta_zero %>% filter(inf_diff < 1e-3) %>% pull(r) %>% head(1)
 
@@ -97,7 +53,7 @@ plot_annotations <- list(
              label.r = unit(0.1, "cm"), label.size = 0, fill = shades::opacity("white", 0.8))
 )
 
-period_cols <- viridis::magma(n = 8, direction = -1, begin = 0.0, end = 1.0)
+period_cols <- viridis::inferno(n = 8, direction = -1, begin = 0.1)
 p_period <- ggplot() +
   
   geom_tile(aes(x = eta, y = r, fill = period),

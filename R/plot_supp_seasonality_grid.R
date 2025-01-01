@@ -3,31 +3,9 @@ library(tidyverse)
 library(rhdf5)
 library(patchwork)
 
-
 source("R/plot_theme.R")
 
-
-x_vals <- h5read("data/paper/period_over_grid.jld2", "x_vals")
-y_inf_summary <- h5read("data/paper/period_over_grid.jld2", "y_inf_summary")
-y_period <- h5read("data/paper/period_over_grid.jld2", "y_period")
-
-plot_data <- tibble(
-  eta = x_vals[1, ], r = x_vals[2, ],
-  inf_min = y_inf_summary[, 1], inf_max = y_inf_summary[, 2],
-  inf_mean = y_inf_summary[, 3], inf_chaos = y_inf_summary[, 4],
-  
-  inc_min = y_inf_summary[, 5], inc_max = y_inf_summary[, 6],  
-  inc_mean = y_inf_summary[, 7], inc_chaos = y_inf_summary[ , 8],
-  lyapunov = y_inf_summary[, 9],
-  
-  period = y_period[,1], period_sd = y_period[,2], period_n = y_period[,3]
-) %>%
-  mutate(inf_diff = inf_max - inf_min,
-         periodic = (period_sd < 1) & (period_n >= 5),
-         quasiperiodic = (period_sd >= 1) & (period_n >= 5))
-
-
-
+plot_data <- read_seasonality_data("data/paper/period_over_grid.jld2")
 
 plot_data_periodic <- plot_data %>%
   filter(eta > 0) %>% 
@@ -64,31 +42,34 @@ plot_annotations <- list(
 
 period_cols <- viridis::inferno(n = 8, direction = -1, begin = 0.1)
 p_period <- ggplot() +
+  
   geom_tile(aes(x = eta, y = r, fill = period),
             plot_data_periodic) +
-  # geom_tile(aes(x = eta, y = r, fill = factor(9)),
-  #           alpha = 0,
-  #           plot_data_quasiperiodic) +
+  
   geom_tile(aes(x = eta, y = r, fill = factor(4.5)),
             plot_data_quasiperiodic) +
+  geom_tile(aes(x = eta, y = r, fill = factor(9)),
+            plot_data_chaotic) +
   
   plot_annotations +
   
+  scale_fill_manual(
+    name = "Period",
+    values = c(period_cols[1:4], "#2260BE", period_cols[5:8], "#BDE6F4") %>% `names<-`(c(1:4, "4.5", 5:9)),
+    
+    labels = c("1 yr", str_c(2:4, "yrs"), "Quasiperiodic", str_c(5:7, "yrs"), "≥8 yrs", "Chaotic") %>% `names<-`(c(1:4, "4.5", 5:9)),
+    breaks = c(1:4, 4.5, 5:9)
+  ) +
   
-  scale_fill_manual(name = "Period",
-                    values = c(period_cols[1:4], "#2260BE", period_cols[5:8]) %>% `names<-`(c(1:4, "4.5", 5:8)),
-                    
-                    labels = c("1 yr", str_c(2:4, "yrs"), "Quasiperiodic", str_c(5:7, "yrs"), "≥8 yrs") %>% `names<-`(c(1:4, "4.5", 5:8)),
-                    breaks = c(1:4, 4.5, 5:8)
-                    ) +
-
   
-  coord_fixed(ratio = 5) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
-  guides(fill = guide_legend(nrow = 2, ncol = 5)) +
+  coord_fixed(ratio = 5, ylim = c(0, 0.1)) +
+  xlab("Seasonality strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
+  guides(fill = guide_legend(nrow = 2, ncol = 5),
+         colour = guide_none()) +
   
   plot_theme_paper +
   theme(legend.position = "bottom", legend.byrow = TRUE)
+
 
 p_attack_rate <- ggplot()  +
   annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
@@ -99,7 +80,7 @@ p_attack_rate <- ggplot()  +
   
   scale_fill_stepsn(
     colours = colorspace::sequential_hcl(n = 20, h = c(300, 75), c = c(40, NA, 95), l = c(15, 90), power = c(1, 1.1)),
-    name = "Yearly infection\nattack rate",
+    name = "Annual infection incidence",
     limits = c(0, 2.0),
     breaks = seq(0, 2.0, 0.2),
     labels = c("0", "", "0.4", "", "0.8", "", "1.2", "", "1.6", "", "2.0")
@@ -163,7 +144,7 @@ p_min <- ggplot()  +
 
 
 
-p_full <- (p_period | p_attack_rate) / (p_max | p_min) +
+p_full <- (p_period | p_min) / (p_attack_rate | p_max) +
   plot_annotation(tag_levels = "A") &
   theme(plot.tag = element_text(face = "bold", size = 15))
 

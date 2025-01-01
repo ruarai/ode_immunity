@@ -22,7 +22,7 @@ c_levels <- 10 ^ seq(0, 8, by = 8 / 32)
 
 t_ex_start <- 365 * 100
 t_ex_end <- 365 * (100 + 8)
-t_ex_yearly_end <- 365 * (100 + 120)
+t_ex_yearly_end <- 365 * (100 + 40)
 
 plot_data_ex_inf <- y_inf %>%
   reshape2::melt(c("i", "t"), value.name = "prevalence") %>%

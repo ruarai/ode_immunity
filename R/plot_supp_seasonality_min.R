@@ -5,21 +5,7 @@ library(patchwork)
 
 source("R/plot_theme.R")
 
-x_vals <- h5read("data/paper/period_over_grid.jld2", "x_vals")
-y_inf_summary <- h5read("data/paper/period_over_grid.jld2", "y_inf_summary")
-y_period <- h5read("data/paper/period_over_grid.jld2", "y_period")
-
-plot_data <- tibble(
-  eta = x_vals[1, ], r = x_vals[2, ],
-  inf_min = y_inf_summary[, 1], inf_max = y_inf_summary[, 2],
-  inf_mean = y_inf_summary[, 3], inf_chaos = y_inf_summary[, 4],
-  
-  inc_min = y_inf_summary[, 5], inc_max = y_inf_summary[, 6],  
-  inc_mean = y_inf_summary[, 7], inc_chaos = y_inf_summary[ , 8],
-  lyapunov = y_inf_summary[, 9],
-  
-  period = y_period[,1], period_sd = y_period[,2], period_n = y_period[,3]
-) %>%
+plot_data <- read_seasonality_data("data/paper/period_over_grid.jld2") %>%
   mutate(eta_label = str_c("Seasonality constant <i>η</i> = ", eta))
 
 
