@@ -9,12 +9,10 @@ source("R/plot_theme.R")
 
 rs <- c(0.05, 0.1)
 
-xlim <- c(-0.01, 0.11)
-
-x_r <- h5read("data/paper/bifurcations_w_boost.jld2", "x_r")
-y_I_sol <- h5read("data/paper/bifurcations_w_boost.jld2", "y_I_sol")
-y_inc_sol <- h5read("data/paper/bifurcations_w_boost.jld2", "y_inc_sol")
-y_fixed_I <- h5read("data/paper/bifurcations_w_boost.jld2", "y_fixed_I")
+x_r <- h5read("data/paper/bifurcations.jld2", "x_r")
+y_I_sol <- h5read("data/paper/bifurcations.jld2", "y_I_sol")
+y_inc_sol <- h5read("data/paper/bifurcations.jld2", "y_inc_sol")
+y_fixed_I <- h5read("data/paper/bifurcations.jld2", "y_fixed_I")
 
 hide_x_axis <- list(
   theme(axis.text.x = element_blank(), axis.title.x = element_blank())
@@ -26,7 +24,6 @@ days_burn_in <- 30000
 data_I_sol <- y_I_sol %>%
   reshape2::melt(varnames = c("r", "t"), value.name = "prev") %>% 
   mutate(r = x_r[r])
-
 
 data_inc_sol <- y_inc_sol %>%
   reshape2::melt(varnames = c("r", "t"), value.name = "inc") %>% 
@@ -102,8 +99,8 @@ p_bifurcation_min <- ggplot() +
 p_bifurcation_min
 
 
-period <- h5read("data/paper/bifurcations_w_boost.jld2", "period")
-# attack_rate <- h5read("data/paper/bifurcations_w_boost.jld2", "attack_rate")
+period <- h5read("data/paper/bifurcations.jld2", "period")
+# attack_rate <- h5read("data/paper/bifurcations.jld2", "attack_rate")
 
 data_period <- period %>%
   reshape2::melt(varnames = c("r", "name"), value.name = "value") %>% 

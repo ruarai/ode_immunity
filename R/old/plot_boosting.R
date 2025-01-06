@@ -96,9 +96,9 @@ y_fixed_I <- h5read("data/paper/bifurcations.jld2", "y_fixed_I")
 
 
 
-x_rho_boost <- h5read("data/paper/bifurcations_w_boost.jld2", "x_rho")
-y_I_sol_boost <- h5read("data/paper/bifurcations_w_boost.jld2", "y_I_sol")
-y_fixed_I_boost <- h5read("data/paper/bifurcations_w_boost.jld2", "y_fixed_I")
+x_rho_boost <- h5read("data/paper/bifurcations.jld2", "x_rho")
+y_I_sol_boost <- h5read("data/paper/bifurcations.jld2", "y_I_sol")
+y_fixed_I_boost <- h5read("data/paper/bifurcations.jld2", "y_fixed_I")
 
 plot(y_I_sol_boost[x_rho_boost == 0.006,28000:30000])
 plot(y_I_sol[x_rho_boost == 0.006,28000:30000])

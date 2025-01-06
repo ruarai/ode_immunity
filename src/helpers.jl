@@ -32,7 +32,7 @@ function get_summ_boosting(ode_solution, t, model_params)
     sus, inf, count = get_results_boosting(ode_solution, t, model_params)
 
     return (
-        sus = sum(sus, dims = 2), 
+        sus = sus, 
         inf = sum(inf, dims = 2), 
         inc = vcat([0], diff(sum(count, dims = 2), dims = 1))
     )

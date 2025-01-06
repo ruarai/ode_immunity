@@ -192,7 +192,7 @@ ggsave(
 #   scale_fill_manual(values = protect_colours, breaks = c(">95%", "5-95%", "<5%"), name = "Protection<br>against<br>infection <i>ω</i>") +
 #   scale_colour_manual(values = protect_colours, breaks = c(">95%", "5-95%", "<5%"), name = "Protection<br>against<br>infection <i>ω</i>") +
 #   
-#   xlab("Time *t* (days)") + ylab("Proportion<br>of population") +
+#   xlab("Time (days)") + ylab("Proportion<br>of population") +
 #   
 #   coord_cartesian(xlim = c(0, 1500), ylim = c(0, 1.0)) +
 #   

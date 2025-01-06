@@ -10,8 +10,8 @@ boosting_matrices <- h5read("data/paper/basic_boosting.jld2", "boosting_matrices
 plot_data_matrices <- boosting_matrices %>%
   reshape2::melt(varnames = c("scenario", "i", "j"), value.name = "p") %>%
   mutate(
-    scenario = c("none", "loglinear")[scenario],
-    scenario = factor(scenario, c("loglinear", "none"), labels = c("Multiplicative boosting", "No boosting"))
+    scenario = c("none", "multiplicative")[scenario],
+    scenario = factor(scenario, c("multiplicative", "none"), labels = c("Multiplicative boosting", "No boosting"))
   ) %>%
   mutate(scenario = fct_rev(scenario)) %>%
   mutate(p = pmin(p, 0.2))

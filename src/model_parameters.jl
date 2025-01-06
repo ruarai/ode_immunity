@@ -48,8 +48,8 @@ function make_model_parameters(;
 
     if boosting == "independent" # i.e., no boosting
         p_trans = build_immunity_transition_vector(S, c_levels, c_jump_dist)
-    elseif boosting == "loglinear"
-        M = build_immunity_matrix_boost_loglinear(S, c_levels, c_jump_dist)
+    elseif boosting == "multiplicative"
+        M = build_immunity_matrix_boost_multiplicative(S, c_levels, c_jump_dist)
     elseif boosting == "none" # Should be equivalent to independent, but allowing I stratification (and preventing decrease in strata)
         M = build_immunity_matrix_no_boost(S, c_levels, c_jump_dist)
     else
@@ -76,7 +76,7 @@ end
 
 # Create the post-infection immunity matrix M. Captures the probability of transitioning from
 # strata j to strata i (bit backwards so matrix multiplication works later)
-function build_immunity_matrix_boost_loglinear(N, c_levels, c_jump_dist)
+function build_immunity_matrix_boost_multiplicative(N, c_levels, c_jump_dist)
     mat_immunity = zeros(N, N)
 
     log_c_levels = log10.(c_levels)
