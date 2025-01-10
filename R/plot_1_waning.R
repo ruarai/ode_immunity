@@ -159,7 +159,7 @@ p_prob_2 <- ggplot() +
       transform = identity,
       breaks = c(0, 8, 16, 24, 32),
       labels = function(x) scales::label_log()(10^-(C * x / k)),
-      name = "Decay <i>D</i>(<i>t</i>)"
+      name = "Relative antibody concentration <i>C</i>(<i>t</i>)"
     )
   ) +
   
