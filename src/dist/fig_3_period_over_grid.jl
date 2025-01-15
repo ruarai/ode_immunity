@@ -13,11 +13,13 @@ periodic_Δt = 0.25
 t_post_burn_in = n_days_burn_in:n_days
 
 # Seasonality
-x_eta = 0.00:0.001:0.5
+#x_eta = 0.00:0.001:0.5
+x_eta = 0.00:0.005:0.5
 length(x_eta)
 
 # Waning
-r_step = 0.0002
+#r_step = 0.0002
+r_step = 0.0004
 x_r = r_step:r_step:0.1
 length(x_r)
 
@@ -28,7 +30,7 @@ x_vals_job = x_vals[ix_jobs]
 
 y_period = zeros(length(x_vals_job), 3)
 y_inf_summary = zeros(length(x_vals_job), 9)
-y_peaks = Vector{Vector{Tuple{Float64, Float64}}}(undef, 10)
+y_peaks = Vector{Vector{Tuple{Float64, Float64}}}(undef, length(x_vals_job))
 
 time_start = Base.time()
 
