@@ -12,17 +12,17 @@ y_inf <- h5read("data/paper/period_over_grid_examples.jld2", "y_inf")
 y_sus <- h5read("data/paper/period_over_grid_examples.jld2", "y_sus")
 
 x_labels <- str_c(
-  "<b>", c("i", "ii", "iii", "iv", "v"), ".</b>",
-  " <i>η</i> = ", scales::label_comma(accuracy = 0.01)(x_eta),
-  ", <i>r</i> = ", scales::label_comma(accuracy = 0.01)(x_r), " — ",
-  c("zero seasonality", "quasiperiodic", "periodic (1 year)", "periodic (2 years)", "chaotic")
+  "<b>", c("i", "ii", "iii", "iv", "v"), ".</b> ",
+  c("Zero seasonality", "Quasiperiodic", "Periodic (1 year)", "Periodic (2 years)", "Chaotic"),
+  " (<i>η</i> = ", scales::label_comma(accuracy = 0.01)(x_eta),
+  ", <i>r</i> = ", scales::label_comma(accuracy = 0.01)(x_r), ")"
 )
 
 c_levels <- 10 ^ seq(0, 8, by = 8 / 32)
 
 t_ex_start <- 365 * 100
 t_ex_end <- 365 * (100 + 8)
-t_ex_yearly_end <- 365 * (100 + 40)
+t_ex_yearly_end <- 365 * (100 + 60)
 
 plot_data_ex_inf <- y_inf %>%
   reshape2::melt(c("i", "t"), value.name = "prevalence") %>%
@@ -89,6 +89,7 @@ p_ex_yearly_inf
 
 (p_ex_inf | p_ex_yearly_inf) +
   plot_layout(widths = c(2, 1))
+
 
 ggsave(
   "results/results_examples_infection.png",
@@ -171,3 +172,16 @@ ggsave(
   width = 7, height = 7,
   bg = "white"
 )
+
+
+(p_ex_inf + ggtitle(NULL, "<b>A</b>") | p_ex_yearly_inf + ggtitle(NULL, "<b>B</b>") | p_ex_yearly_antibody + ggtitle(NULL, "<b>C</b>")) +
+  plot_layout(widths = c(2, 1, 1))
+
+ggsave(
+  "results/results_examples.png",
+  device = png(),
+  width = 13, height = 7,
+  bg = "white"
+)
+
+

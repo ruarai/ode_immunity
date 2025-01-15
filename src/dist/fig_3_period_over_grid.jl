@@ -28,6 +28,7 @@ x_vals_job = x_vals[ix_jobs]
 
 y_period = zeros(length(x_vals_job), 3)
 y_inf_summary = zeros(length(x_vals_job), 9)
+y_peaks = Vector{Vector{Tuple{Float64, Float64}}}(undef, 10)
 
 time_start = Base.time()
 
@@ -65,6 +66,8 @@ Threads.@threads for i in eachindex(x_vals_job)
     )
 
     y_period[i, :] = [period_mean period_sd period_n]
+
+    y_peaks[i] = get_inf_peaks(ode_solution, t_post_burn_in, model_params)
 end
 
 time_elapsed = Base.time() - time_start
@@ -72,6 +75,6 @@ time_elapsed = Base.time() - time_start
 println("Completed $(length(ix_jobs)) jobs in $(round(time_elapsed, digits = 2)), ($(round(time_elapsed/length(ix_jobs), digits = 2)) seconds/job)")
 
 x_vals_job = stack(x_vals_job)
-jldsave("data_dist/period_grid/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_summary)
+jldsave("data_dist/period_grid/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_summary, y_peaks)
 
 println("Outputs saved.")

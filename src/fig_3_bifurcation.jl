@@ -10,6 +10,7 @@ x_r = collect(0:0.002:0.15)
 y_fixed_I = zeros(length(x_r))
 y_I_sol = zeros(length(x_r), length(t_seq))
 y_inc_sol = zeros(length(x_r), length(t_seq))
+y_means = zeros(length(x_r), length(t_seq))
 
 
 period = zeros(length(x_r), 3)
@@ -32,6 +33,11 @@ period = zeros(length(x_r), 3)
     y_I_sol[i, :] = get_inf(ode_solution, t_seq, model_params)
     y_inc_sol[i, :] = get_inc(ode_solution, t_seq, model_params)
 
+
+
+    S_sol = get_sus(ode_solution, t_seq, model_params)
+    y_means[i, :] = [sum(S_sol[t, :] / (1 - y_I_sol[i, t]) .* model_params.c_levels) for t in eachindex(t_seq)]
+
     period_mean, period_sd, period_n = get_period(ode_solution, model_params, n_days_burn_in, n_days, periodic_Δt, periodic_ϵ)
 
     period[i, :] = [period_mean period_sd period_n]
@@ -39,5 +45,5 @@ end
 
 jldsave(
     "data/paper/bifurcations.jld2";
-    x_r, y_fixed_I, y_I_sol, y_inc_sol, period
+    x_r, y_fixed_I, y_I_sol, y_inc_sol, y_means, period
 )

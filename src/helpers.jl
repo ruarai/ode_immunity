@@ -98,3 +98,15 @@ function get_max_lyapunov(model_params, n_days, n_days_burn_in)
     dyn_system = CoupledODEs(ode_step_no_count!, u0, model_params)
     return lyapunov(dyn_system, n_days - n_days_burn_in, Ttr = n_days_burn_in, Δt = 100.0, d0 = 1e-9)
 end
+
+function get_inf_peaks(ode_solution, t_post_burn_in, model_params)
+    inf = ode_solution(t_post_burn_in)[ode_ix_inf(model_params.S), :]
+    
+    diff_inf = cat(0, diff(inf), dims = 1)
+    diff_inf_peaks = cat((diff_inf[1:(end - 1)] .> 0) .& (diff_inf[2:end] .<= 0), false, dims = 1)
+    
+    peaks_pairs = [(t_post_burn_in[i], inf[i]) for i in findall(diff_inf_peaks)]
+
+    return peaks_pairs
+end
+

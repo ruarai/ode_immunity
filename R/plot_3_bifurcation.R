@@ -13,6 +13,7 @@ x_r <- h5read("data/paper/bifurcations.jld2", "x_r")
 y_I_sol <- h5read("data/paper/bifurcations.jld2", "y_I_sol")
 y_inc_sol <- h5read("data/paper/bifurcations.jld2", "y_inc_sol")
 y_fixed_I <- h5read("data/paper/bifurcations.jld2", "y_fixed_I")
+y_means <- h5read("data/paper/bifurcations.jld2", "y_means")
 
 hide_x_axis <- list(
   theme(axis.text.x = element_blank(), axis.title.x = element_blank())
@@ -23,6 +24,10 @@ days_burn_in <- 30000
 
 data_I_sol <- y_I_sol %>%
   reshape2::melt(varnames = c("r", "t"), value.name = "prev") %>% 
+  mutate(r = x_r[r])
+
+data_y_means <- y_means %>%
+  reshape2::melt(varnames = c("r", "t"), value.name = "mean") %>% 
   mutate(r = x_r[r])
 
 data_inc_sol <- y_inc_sol %>%
@@ -211,9 +216,39 @@ p_examples <- data_I_sol %>%
         legend.position = "none",
         panel.grid.major.x = element_gridline) +
   
-  ggtitle(NULL, "<b>D</b> — Exemplar dynamics")
+  ggtitle(NULL, "<b>D</b> — Exemplar infection prevalence")
 
 p_examples
+
+
+p_examples_antibodies <- data_y_means %>%
+  filter(r %in% rs, t < 4000) %>% 
+  mutate(r_label = str_c("Antibody decay rate <i>r </i>  = ", r)) %>% 
+  ggplot() +
+  
+  geom_line(aes(x = t, y = mean),
+            linewidth = 0.7) +
+  
+  scale_x_continuous(breaks = scales::breaks_extended(),
+                     labels = scales::label_comma()) +
+  
+  scale_y_log10(breaks = scales::breaks_log(),
+                labels = scales::label_log()) +
+  
+  facet_wrap(~r_label, ncol = 3, scales = "free") +
+  
+  xlab("Time (days)") + ylab("Concentration") +
+  
+  coord_cartesian(xlim = c(0, 3400),
+                  ylim = c(10^2, 10^6.5)) +
+  
+  plot_theme_paper +
+  theme(strip.text = element_markdown(),
+        plot.subtitle = element_markdown(),
+        legend.position = "none",
+        panel.grid.major.x = element_gridline) +
+  
+  ggtitle(NULL, "<b>E</b> — Exemplar mean antibody concentration")
 
 
 # p_top <- (
@@ -231,8 +266,8 @@ p_top <- (p_bifurcation_min | p_period | p_attack_rate) +
 
 # p_top
 
-(p_top / p_examples) +
-  plot_layout(heights = c(1.5, 1)) + 
+(p_top / p_examples / p_examples_antibodies) +
+  plot_layout(heights = c(1.5, 1, 1)) + 
   # plot_annotation(tag_levels = list("A", c("1", "2", "3")), tag_sep = " ") &
   theme(plot.tag = element_text(face = "bold", size = 15))
 
@@ -242,6 +277,6 @@ p_top <- (p_bifurcation_min | p_period | p_attack_rate) +
 ggsave(
   "results/results_bifurcation.pdf",
   device = cairo_pdf,
-  width = 14, height = 8,
+  width = 14, height = 11,
   bg = "white"
 )
