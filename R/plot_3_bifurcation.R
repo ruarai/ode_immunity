@@ -266,8 +266,8 @@ p_top <- (p_bifurcation_min | p_period | p_attack_rate) +
 
 # p_top
 
-(p_top / p_examples / p_examples_antibodies) +
-  plot_layout(heights = c(1.5, 1, 1)) + 
+(p_top / p_examples) +
+  plot_layout(heights = c(1.5, 1)) + 
   # plot_annotation(tag_levels = list("A", c("1", "2", "3")), tag_sep = " ") &
   theme(plot.tag = element_text(face = "bold", size = 15))
 
@@ -277,6 +277,6 @@ p_top <- (p_bifurcation_min | p_period | p_attack_rate) +
 ggsave(
   "results/results_bifurcation.pdf",
   device = cairo_pdf,
-  width = 14, height = 11,
+  width = 14, height = 8,
   bg = "white"
 )

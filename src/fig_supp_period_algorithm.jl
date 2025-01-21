@@ -19,4 +19,16 @@ t_seq = collect(0:Δt:n_days)
 y = ode_solution(t_seq)[1:(model_params.S + 1), :]
 
 
-jldsave("data/paper/ex_period.jld2"; t_seq, y)
+model_params_seasonal = make_model_parameters(
+    k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+    C = baseline_C, r = 0.06,
+    b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist,
+    eta = 0.37
+)
+
+
+ode_solution_seasonal = @time ode_solve(model_params_seasonal, n_days, n_inf_0, saveat_step = Δt)
+
+y_seasonal = ode_solution_seasonal(t_seq)[1:(model_params_seasonal.S + 1), :]
+
+jldsave("data/paper/ex_period.jld2"; t_seq, y, y_seasonal)
