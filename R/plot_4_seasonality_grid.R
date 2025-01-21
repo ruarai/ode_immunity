@@ -17,6 +17,8 @@ plot_data_periodic <- plot_data %>%
 plot_data_quasiperiodic <- plot_data %>% filter(quasiperiodic)
 plot_data_chaotic <- plot_data %>% filter(chaotic)
 
+plot_data_empty <- plot_data %>% filter(!periodic, !quasiperiodic, !chaotic)
+
 plot_data_eta_zero <- plot_data %>% filter(eta == 0)
 plot_data_eta_zero_periodic <- plot_data %>% filter(eta == 0, r < 0.065)
 
@@ -58,30 +60,35 @@ p_period <- ggplot() +
   
   geom_tile(aes(x = eta, y = r, fill = period),
             plot_data_periodic) +
-  
-  geom_tile(aes(x = eta, y = r, fill = factor(4.5)),
-            plot_data_quasiperiodic) +
   geom_tile(aes(x = eta, y = r, fill = factor(9)),
+            plot_data_quasiperiodic) +
+  geom_tile(aes(x = eta, y = r, fill = factor(10)),
             plot_data_chaotic) +
+  geom_tile(aes(x = eta, y = r, fill = factor(11)),
+            plot_data_empty) +
   
   plot_annotations +
   
   scale_fill_manual(
     name = "Period",
-    values = c(period_cols[1:4], "#2260BE", period_cols[5:8], "#BDE6F4") %>% `names<-`(c(1:4, "4.5", 5:9)),
+    values = c(period_cols, "#2260BE", "#BDE6F4", "white") %>% 
+      `names<-`(1:11),
     
-    labels = c("1 yr", str_c(2:4, "yrs"), "Quasiperiodic", str_c(5:7, "yrs"), "≥8 yrs", "Chaotic") %>% `names<-`(c(1:4, "4.5", 5:9)),
-    breaks = c(1:4, 4.5, 5:9)
+    labels = c("1 year", str_c(2:7, " years"), "≥8 years", "Quasiperiodic", "Chaotic", "Unclassified") %>%
+      `names<-`(1:11),
+    
+    breaks = c(9, 1:4, 10, 5:8, 11)
   ) +
   
   
   coord_fixed(ratio = 5, ylim = c(0, 0.1)) +
   xlab("Seasonality strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
-  guides(fill = guide_legend(nrow = 2, ncol = 5),
+  guides(fill = guide_legend(nrow = 3, ncol = 5),
          colour = guide_none()) +
   
   plot_theme_paper +
-  theme(legend.position = "bottom", legend.byrow = TRUE)
+  theme(legend.position = "bottom", legend.byrow = TRUE,
+        legend.key = element_rect(colour = "grey80", linewidth = 0.5))
 
 p_period
 
