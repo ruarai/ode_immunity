@@ -8,8 +8,12 @@ function get_inf(ode_solution, t, model_params)
     return ode_solution(t)[ode_ix_inf(model_params.S), :]
 end
 
-function get_inc(ode_solution, t, model_params)
-    vcat([0], diff(ode_solution(t)[ode_ix_count(model_params.S), :]))
+function get_inc(ode_solution, t, model_params; maintain_length = true)
+    if maintain_length
+        vcat([NaN], diff(ode_solution(t)[ode_ix_count(model_params.S), :]))
+    else
+        diff(ode_solution(t)[ode_ix_count(model_params.S), :])
+    end
 end
 
 function get_results(ode_solution, t, model_params)
