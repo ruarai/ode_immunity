@@ -10,7 +10,7 @@ global const n_inf_0 = 0.001
 
 
 global const baseline_k = 32
-global const baseline_C = 8.0
+global const baseline_a = 8.0
 
 global const baseline_R = 1.5
 global const baseline_gamma = 0.25

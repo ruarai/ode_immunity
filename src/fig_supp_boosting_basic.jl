@@ -2,14 +2,14 @@ include("dependencies.jl")
 
 model_params_no_boosting = make_model_parameters(
     k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-    C = baseline_C, r = baseline_r,
+    a = baseline_a, r = baseline_r,
     b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
     boosting = "independent"
 )
 
 model_params_boosting_A = make_model_parameters(
     k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-    C = baseline_C, r = baseline_r,
+    a = baseline_a, r = baseline_r,
     b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
     boosting = "none"
 )
@@ -17,7 +17,7 @@ model_params_boosting_A = make_model_parameters(
 
 model_params_boosting_B = make_model_parameters(
     k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-    C = baseline_C, r = baseline_r,
+    a = baseline_a, r = baseline_r,
     b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
     boosting = "multiplicative"
 )

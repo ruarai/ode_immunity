@@ -17,7 +17,7 @@ period = zeros(length(x_r), 3)
 @showprogress Threads.@threads for i in eachindex(x_r)
     model_params_boosting = make_model_parameters(
         k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-        C = baseline_C, r = x_r[i],
+        a = baseline_a, r = x_r[i],
         b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
 
         boosting = "multiplicative"

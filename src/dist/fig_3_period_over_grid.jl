@@ -38,7 +38,7 @@ Threads.@threads for i in eachindex(x_vals_job)
 
     model_params = make_model_parameters(
         k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-        C = baseline_C, r = x_vals_job[i].r,
+        a = baseline_a, r = x_vals_job[i].r,
         b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
         eta = x_vals_job[i].eta
     )

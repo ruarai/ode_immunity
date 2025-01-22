@@ -3,7 +3,7 @@ include("dependencies.jl")
 
 model_params = make_model_parameters(
     k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-    C = baseline_C, r = baseline_r,
+    a = baseline_a, r = baseline_r,
     b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist,
     eta = 0.0
 )
@@ -21,7 +21,7 @@ y = ode_solution(t_seq)[1:(model_params.S + 1), :]
 
 model_params_seasonal = make_model_parameters(
     k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-    C = baseline_C, r = 0.06,
+    a = baseline_a, r = 0.06,
     b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist,
     eta = 0.37
 )

@@ -18,7 +18,7 @@ y_sus = zeros(length(x_eta), length(t_seq), baseline_k + 1)
 @showprogress Threads.@threads for i in eachindex(x_eta)
     model_params = make_model_parameters(
         k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-        C = baseline_C, r = x_r[i],
+        a = baseline_a, r = x_r[i],
         b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
         eta = x_eta[i]
     )

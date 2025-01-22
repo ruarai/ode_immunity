@@ -8,7 +8,7 @@ struct model_parameters
 
     eta::Float64
 
-    C::Float64
+    a::Float64
     r::Float64
     rho::Float64
 
@@ -31,14 +31,14 @@ end
 function make_model_parameters(;
     k,
     beta, gamma, 
-    C, r,
+    a, r,
     b, h,
     c_jump_dist,
     eta = 0.0,
     boosting = "independent"
 )
     S = k + 1
-    c_levels = collect(10 .^ (C .* (0:k) / k))
+    c_levels = collect(10 .^ (a .* (0:k) / k))
     
     p_acq = (c_levels .^ h) ./ (b ^ h .+ c_levels .^ h)
 
@@ -57,7 +57,7 @@ function make_model_parameters(;
     end
 
     # Calculate rho from decay rate r
-    rho = r / (C * log(10))
+    rho = r / (a * log(10))
 
     wane_transition_rate = rho * k
 
@@ -65,7 +65,7 @@ function make_model_parameters(;
         k, S,
         beta, gamma, 
         eta,
-        C, r, rho,
+        a, r, rho,
         wane_transition_rate,
         b, h,
         c_jump_dist,
