@@ -17,23 +17,38 @@ y_tbl <- y %>%
   mutate(t_mod = t %% 365)
 
 
-season_to_days <- function(y, x){
-  t <- -(atan2(y, x) - pi / 2)
-  if_else(t < 0, t + 2 * pi, t) / (2 * pi) * 365
+xy_to_days <- function(x, y) {
+  theta <- atan2(y, x)
+  if_else(theta < 0, theta + 2 * pi, theta) / (2 * pi) * 365
 }
+
+
+tibble(
+  t = 0:1000
+) %>%
+  mutate(
+    theta = t * pi * 2 / 365,
+    x = cos(theta), y = sin(theta),
+    theta = atan2(y, x),
+    theta = if_else(theta < 0, theta + 2 * pi, theta),
+    t2 = xy_to_days(x, y)
+  ) %>% 
+  ggplot() +
+  geom_line(aes(x = t, y = y))
+
 
 
 y_tbl %>%
   mutate(theta = t_mod / 365 * 2 * pi,
-         x = sin(theta), y = cos(theta)) %>%
+         x = cos(theta), y = sin(theta)) %>%
   summarise(mean_x = weighted.mean(x, prevalence), mean_y = weighted.mean(y, prevalence)) %>%
-  mutate(mean_day = season_to_days(mean_y, mean_x),
-         mean_mag = sqrt(mean_x^2 + mean_y^2))
+  mutate(mean_day = xy_to_days(mean_x, mean_y),
+         mean_mag = sqrt(mean_x^2 + mean_y^2), mean_var = 1 - mean_mag)
 
 ggplot() +
   geom_path(aes(x = t_mod, y = prevalence),
             y_tbl) +
-  coord_radial(expand = FALSE, inner.radius = 0.7) +
+  coord_radial(expand = FALSE, inner.radius = 0.7, start = -pi / 2, direction = -1) +
   
   plot_theme_paper +
   

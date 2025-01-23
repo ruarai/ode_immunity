@@ -45,7 +45,7 @@ p_ex_inf <- ggplot() +
   
   scale_y_continuous(breaks = c(0, 0.1, 0.2)) +
   
-  coord_cartesian(ylim = c(0, 0.15)) +
+  coord_cartesian(ylim = c(0, 0.115)) +
   
   plot_theme_paper +
   theme(panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5),
@@ -79,7 +79,7 @@ p_ex_yearly_inf <- ggplot() +
   
   scale_y_continuous(breaks = c(0, 0.1, 0.2)) +
   
-  coord_cartesian(ylim = c(0, 0.15)) +
+  coord_cartesian(ylim = c(0, 0.115)) +
   
   plot_theme_paper +
   theme(panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5),
@@ -89,15 +89,6 @@ p_ex_yearly_inf
 
 (p_ex_inf | p_ex_yearly_inf) +
   plot_layout(widths = c(2, 1))
-
-
-ggsave(
-  "results/results_examples_infection.png",
-  device = png(),
-  width = 7, height = 7,
-  bg = "white"
-)
-
 
 
 plot_data_ex_mean <- y_sus %>%
@@ -161,26 +152,13 @@ p_ex_yearly_antibody <- ggplot() +
         strip.text = element_markdown(colour = "white"))
 
 
-
-
-(p_ex_antibody | p_ex_yearly_antibody) +
-  plot_layout(widths = c(2, 1))
-
-ggsave(
-  "results/results_supp_examples_antibodies.png",
-  device = png(),
-  width = 7, height = 7,
-  bg = "white"
-)
-
-
-(p_ex_inf + ggtitle(NULL, "<b>A</b>") | p_ex_yearly_inf + ggtitle(NULL, "<b>B</b>") | p_ex_yearly_antibody + ggtitle(NULL, "<b>C</b>")) +
+p_examples <- (p_ex_inf + ggtitle(NULL, "<b>A</b>") | p_ex_yearly_inf + ggtitle(NULL, "<b>B</b>") | p_ex_yearly_antibody + ggtitle(NULL, "<b>C</b>")) +
   plot_layout(widths = c(2, 1, 1))
 
 ggsave(
   "results/results_examples.png",
   device = png(),
-  width = 13, height = 7,
+  width = 13, height = 6,
   bg = "white"
 )
 

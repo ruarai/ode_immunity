@@ -78,9 +78,9 @@ p_bias <- plot_data %>%
   scale_fill_gradientn(colours = hex_cols,
                        limits = c(0, 365),
                        breaks = 365 * c(0, 0.25, 0.5, 0.75, 1),
-                       labels = c("Jan\nSummer", "Apr\nAutumn",
-                                  "Jul\nWinter", "Oct\nSpring",
-                                  "Jan\nSummer"),
+                       labels = c("Jan\nWinter", "Apr\nSpring",
+                                  "Jul\nSummer", "Oct\nAutumn",
+                                  "Jan\nWinter"),
                        name = "Mean\n(time of year)") +
   
   
@@ -196,7 +196,7 @@ p_ex_yearly_inf <- ggplot() +
         plot.title = element_markdown(size = 14),
         panel.spacing.x = unit(1.5, "cm")) +
   
-  ggtitle(NULL, "<b>C</b> — Exemplar yearly infection prevalence")
+  ggtitle(NULL, "<b>C</b> — Exemplar infection prevalence by time of year")
 
 p_ex_yearly_inf
 
