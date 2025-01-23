@@ -176,7 +176,7 @@ p_attack_rate <- ggplot() +
         panel.grid.major = element_gridline,
         plot.subtitle = element_markdown()) +
   
-  ggtitle(NULL, "<b>C</b> — Yearly infection incidence<br> at solution")
+  ggtitle(NULL, "<b>C</b> — Average annual infection incidence<br> at solution")
 
 plot_data_ex_fixed_points <- data_fixed %>%
   filter(r %in% rs) %>%

@@ -287,7 +287,7 @@ p_attack_rate <- ggplot() +
   theme(legend.position = "none",
         panel.grid.major = element_gridline) +
   
-  ggtitle(NULL, "<b>C</b> — Yearly infection incidence at solution")
+  ggtitle(NULL, "<b>C</b> — Average annual infection incidence at solution")
 p_attack_rate
 
 p_left <- (p_bifurcation / p_period / p_attack_rate) +
