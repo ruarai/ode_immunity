@@ -123,8 +123,8 @@ function get_seasonality_coordinates(ode_solution, t_seq, model_params)
     t_mod = t_seq .% 365
     theta = (t_mod ./ 365) * 2 * pi
 
-    x = sin.(theta)
-    y = cos.(theta)
+    x = cos.(theta)
+    y = sin.(theta)
 
     weighted_x = sum(x .* inc) / sum(inc)
     weighted_y = sum(y .* inc) / sum(inc)
