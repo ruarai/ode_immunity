@@ -105,8 +105,26 @@ function get_inf_peaks(ode_solution, t_post_burn_in, model_params)
     diff_inf = cat(0, diff(inf), dims = 1)
     diff_inf_peaks = cat((diff_inf[1:(end - 1)] .> 0) .& (diff_inf[2:end] .<= 0), false, dims = 1)
     
-    peaks_pairs = [(t_post_burn_in[i], inf[i]) for i in findall(diff_inf_peaks)]
+    peaks_ix = findall(diff_inf_peaks)
+    peaks_ix_sub = peaks_ix[1:min(128, length(peaks_ix))]
+
+    peaks_pairs = [(t_post_burn_in[i], inf[i]) for i in peaks_ix_sub]
 
     return peaks_pairs
+end
+
+function get_seasonality_coordinates(ode_solution, t_seq, model_params)
+    inc = get_inc(ode_solution, t_seq, model_params)
+
+    t_mod = t_seq .% 365
+    theta = (t_mod ./ 365) * 2 * pi
+
+    x = sin.(theta)
+    y = cos.(theta)
+
+    weighted_x = sum(x .* inc) / sum(inc)
+    weighted_y = sum(y .* inc) / sum(inc)
+
+    return (weighted_x, weighted_y)
 end
 

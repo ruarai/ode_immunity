@@ -13,13 +13,11 @@ periodic_Δt = 0.25
 t_post_burn_in = n_days_burn_in:n_days
 
 # Seasonality
-#x_eta = 0.00:0.001:0.5
-x_eta = 0.00:0.005:0.5
+x_eta = 0.00:0.001:0.5
 length(x_eta)
 
 # Waning
-#r_step = 0.0002
-r_step = 0.0004
+r_step = 0.0002
 x_r = r_step:r_step:0.1
 length(x_r)
 
@@ -30,6 +28,7 @@ x_vals_job = x_vals[ix_jobs]
 
 y_period = zeros(length(x_vals_job), 3)
 y_inf_summary = zeros(length(x_vals_job), 9)
+y_seasonality = zeros(length(x_vals_job), 2)
 y_peaks = Vector{Vector{Tuple{Float64, Float64}}}(undef, length(x_vals_job))
 
 time_start = Base.time()
@@ -69,7 +68,11 @@ Threads.@threads for i in eachindex(x_vals_job)
 
     y_period[i, :] = [period_mean period_sd period_n]
 
-    y_peaks[i] = get_inf_peaks(ode_solution, t_post_burn_in, model_params)
+    # y_peaks[i] = get_inf_peaks(ode_solution, t_post_burn_in, model_params)
+
+    seasonality_x, seasonality_y = get_seasonality_coordinates(ode_solution, t_post_burn_in, model_params)
+
+    y_seasonality[i, :] = [seasonality_x, seasonality_y]
 end
 
 time_elapsed = Base.time() - time_start
@@ -77,6 +80,6 @@ time_elapsed = Base.time() - time_start
 println("Completed $(length(ix_jobs)) jobs in $(round(time_elapsed, digits = 2)), ($(round(time_elapsed/length(ix_jobs), digits = 2)) seconds/job)")
 
 x_vals_job = stack(x_vals_job)
-jldsave("data_dist/period_grid/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_summary, y_peaks)
+jldsave("data_dist/period_grid/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_summary, y_peaks, y_seasonality)
 
 println("Outputs saved.")
