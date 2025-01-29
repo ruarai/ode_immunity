@@ -6,8 +6,8 @@ println("Job at array index $arg_ix of $n_array, with n_cpu = $(Threads.nthreads
 
 include("../dependencies.jl")
 
-n_days_burn_in = 400_000
-n_days = n_days_burn_in + 100_000
+n_days_burn_in = 1000 * 365
+n_days = n_days_burn_in + 250 * 365
 
 periodic_Δt = 0.25
 t_post_burn_in = n_days_burn_in:n_days
@@ -47,8 +47,6 @@ Threads.@threads for i in eachindex(x_vals_job)
         model_params, n_days, n_inf_0,
         saveat_step = periodic_Δt, n_days_burn_in = n_days_burn_in
     )
-
-    sus, inf, inc = get_results()
 
     inf = get_inf(ode_solution, t_post_burn_in, model_params)
     inc = get_inc(ode_solution, t_post_burn_in, model_params; maintain_length = false)

@@ -4,16 +4,15 @@ n_days = 150000
 
 t_seq = collect(1:n_days)
 
-# 0.25, 0.035, "iv",
-# 0.25, 0.045, "iii",
-# 0.25, 0.055, "ii",
-# 0.05, 0.055, "i"
-x_eta = [0.25 0.25 0.25 0.05]
-x_r = [0.035 0.045 0.055 0.055]
+# 0.015, 0.015
+# 0.22, 0.0292
+x_eta = [0.015 0.022]
+x_r = [0.015 0.0292]
 
 y_sus = zeros(length(x_eta), length(t_seq), baseline_k + 1)
 y_inf = zeros(length(x_eta), length(t_seq))
 y_inc = zeros(length(x_eta), length(t_seq))
+
 
 @showprogress Threads.@threads for i in eachindex(x_eta)
     model_params = make_model_parameters(
@@ -32,4 +31,6 @@ y_inc = zeros(length(x_eta), length(t_seq))
     y_inc[i, :] = inc
 end
 
-jldsave("data/paper/seasonality_bias_examples.jld2"; x_eta, x_r, y_sus, y_inf, y_inc)
+
+
+jldsave("data/paper/seasonality_bias_examples_supp.jld2"; x_eta, x_r, y_sus, y_inf, y_inc)
