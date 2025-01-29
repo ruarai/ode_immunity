@@ -3,13 +3,14 @@ library(rhdf5)
 library(patchwork)
 
 
+source("R/read_seasonality_data.R")
 source("R/plot_theme.R")
 
 
 plot_data <- read_seasonality_data("data/paper/period_over_grid.jld2")
 
 
-plot_data_eta_zero_periodic <- plot_data %>% filter(eta == 0, r < 0.065)
+plot_data_eta_zero_periodic <- plot_data %>% filter(eta == 0, r < 0.09)
 bifur_zero <- plot_data %>% filter(eta == 0, inf_diff < 1e-3) %>% pull(r) %>% head(1)
 
 
@@ -47,13 +48,13 @@ p_incidence <- ggplot() +
   
   coord_cartesian(xlim = c(0, 0.1), ylim = c(0, 2.0)) +
   
-  xlab("Mean antibody decay rate <i>r</i>") + ylab("Annual infection incidence") +
+  xlab("Antibody decay rate <i>r</i>") + ylab("Infection incidence") +
   
   plot_theme_paper +
   theme(strip.text = element_markdown(),
         axis.text.x.top = element_text(margin = margin(b = 0.25, unit = "cm"))) +
   
-  ggtitle(NULL, "Annual infection incidence")
+  ggtitle(NULL, "<b>A</b> — Average annual infection incidence")
 
 p_incidence
 
@@ -76,13 +77,13 @@ p_incidence_diff <- ggplot() +
   scale_y_continuous(breaks = c(0.75, 1, 1.25)) +
   coord_cartesian(xlim = c(0, 0.1)) +
   
-  xlab("Mean antibody decay rate <i>r</i>") + ylab("Proportional difference") +
+  xlab("Antibody decay rate <i>r</i>") + ylab("Proportional difference") +
   
   plot_theme_paper +
   theme(strip.text = element_markdown(colour = "white"),
         axis.text.x.top = element_text(margin = margin(b = 0.25, unit = "cm"))) +
   
-  ggtitle(NULL, "Proportional difference in<br>annual infection incidence")
+  ggtitle(NULL, "<b>B</b> — Proportional difference in<br>average annual infection incidence")
 
 p_incidence_diff 
 

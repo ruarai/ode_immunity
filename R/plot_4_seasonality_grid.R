@@ -3,6 +3,7 @@ library(rhdf5)
 library(patchwork)
 
 source("R/plot_theme.R")
+source("R/read_seasonality_data.R")
 
 plot_data <- read_seasonality_data("data/paper/period_over_grid.jld2")
 
@@ -136,17 +137,30 @@ ggsave(
 )
 
 
-# (p_period + ggtitle(NULL, "<b>A</b> — Dynamics") | 
-#     p_min + ggtitle(NULL, "<b>B</b> — Minimum infection prevalence")) / (
-#       ((p_ex_inf | p_ex_yearly_inf | p_ex_antibody | p_ex_yearly_antibody) +
-#          plot_layout(widths = c(2, 1, 2, 1)))
-#     )
-# 
-# 
-# 
-# ggsave(
-#   "results/results_grid_seasonality_2.png",
-#   device = png,
-#   width = 13, height = 13,
-#   bg = "white"
-# )
+p <- (
+  p_period + ggtitle(NULL, "<b>A</b> — Dynamics") |
+  p_min + ggtitle(NULL, "<b>B</b> — Minimum infection prevalence")
+) / p_examples
+
+
+
+
+ggsave(
+  "results/results_grid_seasonality_2.png",
+  p,
+  device = png,
+  width = 13, height = 13,
+  bg = "white"
+)
+p_legend <- cowplot::plot_grid(x[[17]])
+
+
+ggsave(
+  "results/results_grid_seasonality_legend.pdf",
+  p_legend,
+  device = cairo_pdf,
+  width = 13/2, height = 2,
+  bg = "white"
+)
+
+

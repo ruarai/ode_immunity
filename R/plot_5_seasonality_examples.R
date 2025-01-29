@@ -21,8 +21,10 @@ x_labels <- str_c(
 c_levels <- 10 ^ seq(0, 8, by = 8 / 32)
 
 t_ex_start <- 365 * 100
-t_ex_end <- 365 * (100 + 8)
+t_ex_end <- 365 * (100 + 6)
 t_ex_yearly_end <- 365 * (100 + 60)
+
+y_panel_spacing <- 0.3
 
 plot_data_ex_inf <- y_inf %>%
   reshape2::melt(c("i", "t"), value.name = "prevalence") %>%
@@ -31,10 +33,18 @@ plot_data_ex_inf <- y_inf %>%
   group_by(label, eta, r, t) %>%
   summarise(prevalence = sum(prevalence))
 
+plot_data_labels <- plot_data_ex_inf %>%
+  distinct(label)
+
 
 p_ex_inf <- ggplot() +
   geom_line(aes(x = t, y = prevalence),
             plot_data_ex_inf) +
+  
+  geom_richtext(aes(x = t_ex_start, y = 0.1, label = label),
+                hjust = 0, label.r = unit(0, "cm"), label.size = 0,
+                fill = "grey97", 
+                plot_data_labels) +
   
   facet_wrap(~label, ncol = 1) +
   
@@ -45,11 +55,12 @@ p_ex_inf <- ggplot() +
   
   scale_y_continuous(breaks = c(0, 0.1, 0.2)) +
   
-  coord_cartesian(ylim = c(0, 0.115)) +
+  coord_cartesian(ylim = c(0, 0.11)) +
   
   plot_theme_paper +
   theme(panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5),
-        strip.text = element_markdown(size = 12))
+        strip.text.x = element_blank(),
+        panel.spacing.y = unit(y_panel_spacing, "cm"))
 
 p_ex_inf
 
@@ -83,7 +94,8 @@ p_ex_yearly_inf <- ggplot() +
   
   plot_theme_paper +
   theme(panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5),
-        strip.text = element_markdown(colour = "white"))
+        strip.text.x = element_blank(),
+        panel.spacing.y = unit(y_panel_spacing, "cm"))
 
 p_ex_yearly_inf
 
@@ -149,16 +161,26 @@ p_ex_yearly_antibody <- ggplot() +
   
   plot_theme_paper +
   theme(panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5),
-        strip.text = element_markdown(colour = "white"))
+        strip.text.x = element_blank(),
+        panel.spacing.y = unit(y_panel_spacing, "cm"))
 
 
-p_examples <- (p_ex_inf + ggtitle(NULL, "<b>A</b>") | p_ex_yearly_inf + ggtitle(NULL, "<b>B</b>") | p_ex_yearly_antibody + ggtitle(NULL, "<b>C</b>")) +
-  plot_layout(widths = c(2, 1, 1))
+p_examples <- (
+  (
+    p_ex_inf + ggtitle(NULL, "<b>C</b> — Infection prevalence") | 
+      p_ex_yearly_inf + ggtitle(NULL, "<b>D</b> — Infection prevalence<br>by time of year") |
+      p_ex_yearly_antibody + ggtitle(NULL, "<b>E</b> — Mean antibody<br>concentration") 
+  ) +
+    plot_layout(widths = c( 2, 1, 1))
+)
+
+p_examples
 
 ggsave(
   "results/results_examples.png",
-  device = png(),
-  width = 13, height = 6,
+  p_examples,
+  device = png,
+  width = 10, height = 6,
   bg = "white"
 )
 

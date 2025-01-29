@@ -46,10 +46,10 @@ hex_cols <- twilight_palette %>%
 
 example_points <- tribble(
   ~eta, ~r, ~label,
-  0.25, 0.035, "iii",
-  0.25, 0.045, "ii",
-  0.25, 0.055, "i",
-  0.05, 0.045, "iv"
+  0.25, 0.035, "iv",
+  0.25, 0.045, "iii",
+  0.25, 0.055, "ii",
+  0.05, 0.055, "i"
 )
 
 plot_annotations <- list(
@@ -133,7 +133,7 @@ y_inf <- h5read("data/paper/seasonality_bias_examples.jld2", "y_inf")
 y_sus <- h5read("data/paper/seasonality_bias_examples.jld2", "y_sus")
 
 x_labels <- str_c(
-  "<b>", c("iii", "ii", "i", "iv"), ".</b> ",
+  "<b>", c("iv", "iii", "ii", "i"), ".</b> ",
   " <i>η</i> = ", scales::label_comma(accuracy = 0.01)(x_eta),
   ", <i>r</i> = ", scales::label_comma(accuracy = 0.001)(x_r), ""
 )
