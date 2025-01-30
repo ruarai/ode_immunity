@@ -1,5 +1,15 @@
 
 
+
+is_harmonic <- function(period) {
+  # Check multiples up to 12
+  M <- outer(period, 1:12)
+  
+  a <- pmin(M %% 365, abs(M %% 365 - 365))
+  
+  apply(a, 1, min) < 1
+}
+
 read_seasonality_data <- function(file) {
   
   x_vals <- h5read(file, "x_vals")
@@ -23,9 +33,9 @@ read_seasonality_data <- function(file) {
   ) %>%
     mutate(
       inf_diff = inf_max - inf_min,
-      period_error = pmin(abs(period %% 365 - 365), period %% 365),
+      is_period_harmonic = is_harmonic(period),
       
-      periodic = (period_error < 1) & (period_n > 1),
+      periodic = is_period_harmonic & (period_n > 1),
       chaotic = (inf_chaos > 0) & (!periodic),
       
       quasiperiodic = (period_n > 1) & (!periodic) & (eta > 0)
