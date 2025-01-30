@@ -7,22 +7,13 @@ source("R/plot_theme.R")
 
 source("R/read_seasonality_data.R")
 
-season_to_days <- function(y, x){
-  t <- -(atan2(y, x) - pi / 2)
-  if_else(t < 0, t + 2 * pi, t) / (2 * pi) * 365
+xy_to_days <- function(x, y) {
+  theta <- atan2(y, x)
+  if_else(theta < 0, theta + 2 * pi, theta) / (2 * pi) * 365
 }
 
-tibble(
-  d = 0:365
-) %>%
-  mutate(theta = d / 365 * 2 * pi,
-         x = sin(theta), y = cos(theta),
-         t = season_to_days(y, x)) %>% 
-  ggplot() +
-  geom_line(aes(x = theta, y = t))
-
 plot_data <- read_seasonality_data("data/paper/period_over_grid.jld2") %>%
-  mutate(season_day = season_to_days(season_y, season_x),
+  mutate(season_day = xy_to_days(season_x, season_y),
          season_mag = sqrt(season_x ^ 2 + season_y ^ 2),
          season_var = 1 - season_mag)
 
