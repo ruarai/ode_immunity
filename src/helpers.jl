@@ -104,9 +104,9 @@ function get_max_lyapunov(model_params, n_days, n_days_burn_in)
 end
 
 function get_seasonality_coordinates(ode_solution, t_seq, model_params)
-    inc = get_inc(ode_solution, t_seq, model_params)
+    inc = get_inc(ode_solution, t_seq, model_params, maintain_length = false)
 
-    t_mod = t_seq .% 365
+    t_mod = t_seq[2:end] .% 365
     theta = (t_mod ./ 365) * 2 * pi
 
     x = cos.(theta)
