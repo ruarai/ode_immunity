@@ -53,7 +53,7 @@ function ode_solve_boosting(
 )
     ode_step_fn = ODEFunction(ode_step_boosting!)
 
-    u0 = zeros(datatype, model_params.S * 3)
+    u0 = zeros(datatype, model_params.S * 2 + 1)
     u0[ode_ix_boosting(c_sus, model_params.S, 1)] = 1.0 - n_inf_0
     u0[ode_ix_boosting(c_inf, model_params.S, 1)] = n_inf_0
 

@@ -1,6 +1,5 @@
 function ode_step_boosting!(du, u, model_params, t)
     S = model_params.S
-
     fill!(du, 0)
     
     # Waning transitions between susceptibility compartments
@@ -30,7 +29,7 @@ function ode_step_boosting!(du, u, model_params, t)
         end
     end
 
-    du[ode_ix_boosting(c_count, S, 1:S)] .+= inf_incidence 
+    du[model_params.S * 2 + 1] += inf_incidence 
 end
 
 function ode_step_no_count_boosting!(du, u, model_params, t)

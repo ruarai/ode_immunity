@@ -10,9 +10,13 @@ source("R/plot_theme.R")
 scenario_labels <- c(
   "Baseline model", 
   "No boosting", 
-  "Multiplicative boosting"
+  "I stratified"
 )
 
+scenario_colours <- ggokabeito::palette_okabe_ito(order = c(9, 3, 5)) %>% 
+  `names<-`(scenario_labels)
+
+n_days_burn_in <- 100 * 365
 
 seq_t <- h5read("data/paper/supp_boosting_basic.jld2", "seq_t")
 c_levels <- h5read("data/paper/supp_boosting_basic.jld2", "c_levels")
@@ -36,7 +40,7 @@ plot_data_sus <- h5read("data/paper/supp_boosting_basic.jld2", "results_sus") %>
     t = seq_t[t],
     c = c_levels[strata],
     scenario = c("independent", "none", "multiplicative")[scenario],
-    scenario = factor(scenario, c("independent", "none", "multiplicative"), labels = c("Baseline model", "No boosting", "Multiplicative boosting"))
+    scenario = factor(scenario, c("independent", "none", "multiplicative"), labels = scenario_labels)
   )
 
 
@@ -50,16 +54,16 @@ plot_data_means <- plot_data_sus %>%
 
 p_example_prevalence <- ggplot() +
   geom_line(aes(x = t, y = prevalence, colour = scenario),
-            plot_data_inf %>% filter(scenario == "Multiplicative boosting"),
+            plot_data_inf %>% filter(scenario == scenario_labels[3]),
             linewidth = 0.7) +
   geom_line(aes(x = t, y = prevalence, colour = scenario),
-            plot_data_inf %>% filter(scenario == "No boosting"),
+            plot_data_inf %>% filter(scenario == scenario_labels[1]),
             linewidth = 0.9) +
   
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
   
-  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 9)) +
+  scale_colour_manual(name = "Model", values = scenario_colours) +
   guides(colour = guide_legend(reverse = TRUE)) +
   
   xlab("Time (days)") + ylab("Prevalence") +
@@ -74,16 +78,16 @@ p_example_prevalence <- ggplot() +
 p_example_mean_antibodies <- ggplot() +
   geom_line(aes(x = t, y = c, colour = scenario),
             linewidth = 0.7,
-            plot_data_means %>% filter(scenario == "Multiplicative boosting")) +
+            plot_data_means %>% filter(scenario == scenario_labels[3])) +
   geom_line(aes(x = t, y = c, colour = scenario),
             linewidth = 0.9,
-            plot_data_means %>% filter(scenario == "No boosting")) +
+            plot_data_means %>% filter(scenario == scenario_labels[1])) +
   
   coord_cartesian(ylim = c(10^-0.5, 10^7)) +
   
   xlab("Time (days)") + ylab("Concentration") +
-                                   
-  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 9)) +
+  
+  scale_colour_manual(name = "Model", values = scenario_colours) +
   guides(colour = guide_legend(reverse = TRUE)) +
   
   scale_y_continuous(trans = "log10", labels = scales::label_log(base = 10), breaks = 10^c(0, 2, 4, 6, 8)) +
@@ -118,7 +122,7 @@ data_I_sol <- bind_rows(
            scenario = "multiplicative") %>%
     filter(r > 0)
 ) %>%
-  mutate(scenario = factor(scenario, c("independent", "multiplicative"), labels = c("Baseline model", "Multiplicative boosting")))
+  mutate(scenario = factor(scenario, c("independent", "multiplicative"), labels = scenario_labels[c(1, 3)]))
   
 
 data_inc_sol <- bind_rows(
@@ -132,7 +136,7 @@ data_inc_sol <- bind_rows(
     mutate(r = x_r[r],
            scenario = "multiplicative")
 ) %>%
-  mutate(scenario = factor(scenario, c("independent", "multiplicative"), labels = c("Baseline model", "Multiplicative boosting")))
+  mutate(scenario = factor(scenario, c("independent", "multiplicative"), labels = scenario_labels[c(1, 3)]))
 
 data_mean_incidence <- data_inc_sol %>%
   filter(t > 10000) %>% 
@@ -140,7 +144,7 @@ data_mean_incidence <- data_inc_sol %>%
   summarise(mean_inc = mean(inc))
 
 maxmins <- data_I_sol %>%
-  filter(t > days_burn_in, r > 0.002) %>% 
+  filter(t > n_days_burn_in, r > 0.002) %>% 
   group_by(r, scenario) %>%
   summarise(max = max(prev), min = min(prev))
 
@@ -155,7 +159,7 @@ data_fixed <- bind_rows(
     mutate(r = x_r[r],
            scenario = "multiplicative")
 ) %>%
-  mutate(scenario = factor(scenario, c("independent", "multiplicative"), labels = c("Baseline model", "Multiplicative boosting"))) %>%
+  mutate(scenario = factor(scenario, c("independent", "multiplicative"), labels = scenario_labels[c(1, 3)])) %>%
   filter(r > 0)
 
 bifur_points <- maxmins %>% 
@@ -189,9 +193,8 @@ p_bifurcation <- ggplot() +
              bifur_points,
              size = 1.5, colour = "white") +
   
-  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 9)) +
-  
-  scale_linewidth_manual(values = c("Multiplicative boosting" = 0.7, "Baseline model" = 0.9)) +
+  scale_colour_manual(name = "Model", values = scenario_colours) +
+  scale_linewidth_manual(values = c(0.9, 0.7, 0.7) %>% `names<-`(scenario_labels)) +
   
   xlab("Mean antibody decay rate <i>r</i>") +
   ylab("Prevalence") +
@@ -222,7 +225,7 @@ data_period <- bind_rows(
            scenario = "multiplicative"),
 ) %>%
   mutate(
-    scenario = factor(scenario, c("independent", "multiplicative"), labels = c("Baseline model", "Multiplicative boosting")),
+    scenario = factor(scenario, c("independent", "multiplicative"), labels = scenario_labels[c(1, 3)]),
     name = c("period", "period_sd", "period_n")[name]
   ) %>%
   
@@ -250,9 +253,8 @@ p_period <- ggplot() +
              data_period %>% group_by(scenario) %>% filter(r == max(r)),
              size = 1.5, colour = "white") +
   
-  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 9)) +
-  
-  scale_linewidth_manual(values = c("Multiplicative boosting" = 0.7, "Baseline model" = 0.9)) +
+  scale_colour_manual(name = "Model", values = scenario_colours) +
+  scale_linewidth_manual(values = c(0.9, 0.7, 0.7) %>% `names<-`(scenario_labels)) +
   
   xlab("Mean antibody decay rate <i>r</i>") +
   ylab("Frequency (years<sup>-1</sup>)") +
@@ -278,10 +280,8 @@ p_attack_rate <- ggplot() +
   xlab("Mean antibody decay rate <i>r</i>") +
   ylab("Infection incidence") +
   
-  ggokabeito::scale_colour_okabe_ito(name = "Scenario", order = c(5, 9)) +
-  
-  scale_linewidth_manual(values = c("Multiplicative boosting" = 0.7, "Baseline model" = 0.9)) +
-  
+  scale_colour_manual(name = "Model", values = scenario_colours) +
+  scale_linewidth_manual(values = c(0.9, 0.7, 0.7) %>% `names<-`(scenario_labels)) +
   
   plot_theme_paper +
   theme(legend.position = "none",

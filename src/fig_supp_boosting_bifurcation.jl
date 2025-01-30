@@ -1,7 +1,7 @@
 include("dependencies.jl")
 
-n_days_burn_in = 50000
-n_days = 100000
+n_days_burn_in = 100 * 365
+n_days = 200 * 365
 t_seq = 0:n_days
 
 periodic_Δt = 0.25
@@ -42,7 +42,7 @@ period = zeros(length(x_r), 3)
 end
 
 
-plot(y_fixed_I, ylim = (0, 0.))
+plot(y_fixed_I, ylim = (0, 0.1))
 plot!(mean(y_I_sol[:, 50000:end], dims = 2))
 
 jldsave(
