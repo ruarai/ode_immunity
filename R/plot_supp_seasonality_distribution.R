@@ -37,10 +37,8 @@ hex_cols <- twilight_palette %>%
 
 example_points <- tribble(
   ~eta, ~r, ~label,
-  0.25, 0.035, "iv",
-  0.25, 0.045, "iii",
-  0.25, 0.055, "ii",
-  0.05, 0.055, "i"
+  0.015, 0.015, "i",
+  0.022, 0.0292, "ii",
 )
 
 plot_annotations <- list(
@@ -118,23 +116,22 @@ p_bias | p_variance
 
 
 
-x_eta <- h5read("data/paper/seasonality_bias_examples.jld2", "x_eta")
-x_r <- h5read("data/paper/seasonality_bias_examples.jld2", "x_r")
-y_inf <- h5read("data/paper/seasonality_bias_examples.jld2", "y_inf")
-y_inc <- h5read("data/paper/seasonality_bias_examples.jld2", "y_inc")
-y_sus <- h5read("data/paper/seasonality_bias_examples.jld2", "y_sus")
+x_eta <- h5read("data/paper/seasonality_bias_examples_supp.jld2", "x_eta")
+x_r <- h5read("data/paper/seasonality_bias_examples_supp.jld2", "x_r")
+y_inf <- h5read("data/paper/seasonality_bias_examples_supp.jld2", "y_inf")
+y_inc <- h5read("data/paper/seasonality_bias_examples_supp.jld2", "y_inc")
+y_sus <- h5read("data/paper/seasonality_bias_examples_supp.jld2", "y_sus")
 
 x_labels <- str_c(
-  "<b>", c("iv", "iii", "ii", "i"), ".</b> ",
-  " <i>η</i> = ", scales::label_comma(accuracy = 0.01)(x_eta),
+  "<b>", c("i", "ii"), ".</b> ",
+  " <i>η</i> = ", scales::label_comma(accuracy = 0.001)(x_eta),
   ", <i>r</i> = ", scales::label_comma(accuracy = 0.001)(x_r), ""
 )
 
 c_levels <- 10 ^ seq(0, 8, by = 8 / 32)
 
-t_ex_start <- 365 * 100
-t_ex_end <- 365 * (100 + 8)
-t_ex_yearly_end <- 365 * (100 + 60)
+t_ex_start <- 365 * 400
+t_ex_yearly_end <- t_ex_start + 365 * 60
 
 
 plot_data_ex_inc_year <- y_inc %>%
@@ -155,6 +152,31 @@ plot_data_ex_means <- plot_data %>%
   mutate(season_var_label = scales::label_comma(accuracy = 0.01)(season_var),
          season_var_label = str_c("Variance = ", season_var_label))
 
+
+p_ex_inc <- ggplot() +
+  geom_line(aes(x = t - t_ex_start, y = incidence, group = year),
+            plot_data_ex_inc_year %>% filter(t < t_ex_start + 365 * 6)) +
+  facet_wrap(~label, ncol = 1) +
+  
+  xlab("Time (years)") + ylab("Infection incidence") +
+  
+  scale_y_continuous(breaks = c(0, 0.01, 0.02)) +
+  
+  scale_x_continuous(breaks = scales::breaks_width(365),
+                     labels = function(x) { (x - min(x, na.rm = TRUE)) / 365 }) +
+  
+  coord_cartesian(ylim = c(-0.002, 0.02)) +
+  
+  plot_theme_paper +
+  theme(panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5),
+        strip.text = element_markdown(),
+        plot.title = element_markdown(size = 14),
+        panel.spacing.x = unit(1.5, "cm")) +
+  
+  ggtitle(NULL, "<b>C</b> — Exemplar infection incidence")
+
+
+
 p_ex_yearly_inc <- ggplot() +
   geom_line(aes(x = t_year, y = incidence, group = year),
             linewidth = 0.3, alpha = 0.5,
@@ -168,7 +190,7 @@ p_ex_yearly_inc <- ggplot() +
              label.size = 0, fill = "#FAEFF5",
              plot_data_ex_means) +
   
-  facet_wrap(~label, ncol = 4) +
+  facet_wrap(~label, ncol = 1) +
   
   xlab("Time of year") + ylab("Infection incidence") +
   
@@ -178,9 +200,9 @@ p_ex_yearly_inc <- ggplot() +
                                 "Jul", "", 
                                 "Jan")) +
   
-  scale_y_continuous(breaks = c(0, 0.02, 0.04)) +
+  scale_y_continuous(breaks = c(0, 0.01, 0.02)) +
   
-  coord_cartesian(ylim = c(0, 0.04)) +
+  coord_cartesian(ylim = c(-0.002, 0.02)) +
   
   plot_theme_paper +
   theme(panel.grid.major.x = element_line(colour = "grey50", linetype = "28", linewidth = 0.5),
@@ -188,19 +210,21 @@ p_ex_yearly_inc <- ggplot() +
         plot.title = element_markdown(size = 14),
         panel.spacing.x = unit(1.5, "cm")) +
   
-  ggtitle(NULL, "<b>C</b> — Exemplar infection incidence by time of year")
+  ggtitle(NULL, "<b>D</b> — Exemplar infection incidence by time of year")
 
 p_ex_yearly_inc
 
+p_ex_inc | p_ex_yearly_inc
 
-p <- ((p_bias | p_variance) / p_ex_yearly_inc) +
-  plot_layout(heights = c(3, 1))
+ 
+p <- ((p_bias | p_variance) / (p_ex_inc | p_ex_yearly_inc)) +
+  plot_layout(heights = c(3, 1.3))
 
 ggsave(
-  "results/results_grid_seasonal_bias.png",
+  "results/results_supp_grid_seasonal_bias.png",
   p,
   device = png,
-  width = 13, height = 11,
+  width = 13, height = 13,
   bg = "white"
 )
 
