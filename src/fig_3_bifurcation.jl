@@ -6,7 +6,7 @@ n_days = 100000
 t_seq = 0:n_days
 
 periodic_Δt = 0.25
-x_r = collect(0.002:0.002:0.15)
+x_r = collect(0.0005:0.0005:0.05)
 
 y_fixed_I = zeros(length(x_r))
 y_I_sol = zeros(length(x_r), length(t_seq))

@@ -7,7 +7,7 @@ library(patchwork)
 
 source("R/plot_theme.R")
 
-rs <- c(0.05, 0.1)
+rs <- c(0.015, 0.03)
 
 x_r <- h5read("data/paper/bifurcations.jld2", "x_r")
 y_I_sol <- h5read("data/paper/bifurcations.jld2", "y_I_sol")
@@ -152,7 +152,7 @@ p_period <- ggplot() +
   xlab("Antibody decay rate <i>r</i>") +
   ylab("Frequency (years<sup>-1</sup>)") +
   
-  coord_cartesian(xlim = c(0, 0.15), ylim = c(0, 4)) +
+  coord_cartesian(xlim = c(0, 0.05), ylim = c(0, 4)) +
   
   scale_y_continuous(labels = scales::label_comma()) +
   # sec_x_axis +
