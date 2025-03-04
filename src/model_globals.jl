@@ -16,7 +16,7 @@ global const baseline_R = 1.5
 global const baseline_gamma = 0.25
 global const baseline_beta = baseline_R * baseline_gamma
 
-global const baseline_r = 0.02
+global const baseline_r = 0.015
 global const baseline_b = 2^3
 global const baseline_h = 8
 
