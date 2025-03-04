@@ -38,7 +38,7 @@ function make_model_parameters(;
     boosting = "independent"
 )
     S = k + 1
-    c_levels = collect(10 .^ (a .* (0:k) / k))
+    c_levels = collect(2 .^ (a .* (0:k) / k))
     
     p_acq = (c_levels .^ h) ./ (b ^ h .+ c_levels .^ h)
 
@@ -57,7 +57,7 @@ function make_model_parameters(;
     end
 
     # Calculate rho from decay rate r
-    rho = r / (a * log(10))
+    rho = r / (a * log(2))
 
     wane_transition_rate = rho * k
 
@@ -79,7 +79,7 @@ end
 function build_immunity_matrix_boost_multiplicative(N, c_levels, c_jump_dist)
     mat_immunity = zeros(N, N)
 
-    log_c_levels = log10.(c_levels)
+    log_c_levels = log2.(c_levels)
 
     for j in 1:N, i in j:N
         if j == N
@@ -99,7 +99,7 @@ end
 function build_immunity_matrix_no_boost(N, c_levels, c_jump_dist)
     mat_immunity = zeros(N, N)
 
-    log_c_levels = log10.(c_levels)
+    log_c_levels = log2.(c_levels)
 
     for j in 1:N, i in j:N
         if j == N
@@ -119,7 +119,7 @@ end
 # For the case without I stratification, i.e. no boosting
 function build_immunity_transition_vector(N, c_levels, c_jump_dist)
     p_trans = zeros(N)
-    log_c_levels = log10.(c_levels)
+    log_c_levels = log2.(c_levels)
 
     for i in 1:N
         if i == N

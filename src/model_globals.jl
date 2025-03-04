@@ -16,9 +16,10 @@ global const baseline_R = 1.5
 global const baseline_gamma = 0.25
 global const baseline_beta = baseline_R * baseline_gamma
 
-global const baseline_r = 0.05
-global const baseline_b = 10^3
-global const baseline_h = 3
+global const baseline_r = 0.02
+global const baseline_b = 2^3
+global const baseline_h = 8
+
 
 global const baseline_c_jump_dist = Normal(6, 0.5)
 

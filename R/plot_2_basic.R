@@ -148,14 +148,14 @@ p_mean_antibody <- ggplot() +
             plot_data_means,
             linewidth = 0.7) +
   
-  scale_y_continuous(trans = "log10",
-                     breaks = 10^c(0, 2, 4, 6, 8),
-                     labels = scales::label_log(base = 10))  +
+  scale_y_continuous(trans = "log2",
+                     breaks = 2^c(0, 2, 4, 6, 8),
+                     labels = scales::label_log(base = 2))  +
   
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
   
-  coord_cartesian(ylim = c(10^0, 10^7)) +
+  coord_cartesian(ylim = c(2^0, 2^7)) +
   
   xlab("Time (days)") + ylab("Concentration") +
   
