@@ -1,17 +1,20 @@
 include("dependencies.jl")
+using ForwardDiff
 
 n_days_burn_in = 50000
 n_days = 100000
 t_seq = 0:n_days
 
 periodic_Δt = 0.25
-x_r = collect(0:0.002:0.15)
+x_r = collect(0.002:0.002:0.15)
 
 y_fixed_I = zeros(length(x_r))
 y_I_sol = zeros(length(x_r), length(t_seq))
 y_inc_sol = zeros(length(x_r), length(t_seq))
 y_means = zeros(length(x_r), length(t_seq))
 
+
+y_eigs = Vector{Vector{ComplexF64}}(undef, length(x_r))
 
 period = zeros(length(x_r), 3)
 
@@ -41,9 +44,23 @@ period = zeros(length(x_r), 3)
     period_mean, period_sd, period_n = get_period(ode_solution, model_params, n_days_burn_in, n_days, periodic_Δt, periodic_ϵ)
 
     period[i, :] = [period_mean period_sd period_n]
+
+    du0 = zeros(Float64, model_params.S)
+    u0 = u_steady[1:33]
+    J = ForwardDiff.jacobian((du, u) -> ode_step_minimal!(du, u, model_params, 0.0), du0, u0)
+
+    y_eigs[i] = eigvals(J)
 end
+
+y_eigs_stack = stack(y_eigs)
+y_real_eigs = real.(y_eigs_stack)
+y_imag_eigs = imag.(y_eigs_stack)
+
+plot(y_real_eigs', y_imag_eigs', seriestype = :path, legend = false, xlim = (-0.01, 0.01))
+
+scatter(y_eigs_stack[:, 3], xlim = (-0.1, 0.1), ylim = (-0.1, 0.1))
 
 jldsave(
     "data/paper/bifurcations.jld2";
-    x_r, y_fixed_I, y_I_sol, y_inc_sol, y_means, period
+    x_r, y_fixed_I, y_I_sol, y_inc_sol, y_means, period, y_real_eigs, y_imag_eigs
 )

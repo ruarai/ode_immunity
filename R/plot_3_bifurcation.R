@@ -14,6 +14,8 @@ y_I_sol <- h5read("data/paper/bifurcations.jld2", "y_I_sol")
 y_inc_sol <- h5read("data/paper/bifurcations.jld2", "y_inc_sol")
 y_fixed_I <- h5read("data/paper/bifurcations.jld2", "y_fixed_I")
 y_means <- h5read("data/paper/bifurcations.jld2", "y_means")
+y_real_eigs <- h5read("data/paper/bifurcations.jld2", "y_real_eigs")
+y_imag_eigs <- h5read("data/paper/bifurcations.jld2", "y_imag_eigs")
 
 hide_x_axis <- list(
   theme(axis.text.x = element_blank(), axis.title.x = element_blank())
@@ -39,22 +41,31 @@ data_mean_incidence <- data_inc_sol %>%
   group_by(r) %>%
   summarise(mean_inc = mean(inc))
 
+data_eigs <- left_join(
+  reshape2::melt(y_real_eigs, varnames = c("i", "r"), value.name = "e"),
+  reshape2::melt(y_imag_eigs, varnames = c("i", "r"), value.name = "e_i")
+) %>% 
+  mutate(r = x_r[r]) %>%
+  as_tibble()
+
+eigs_stable <- data_eigs %>%
+  group_by(r) %>%
+  summarise(stable = all(e < 1e-10),
+            maximum = max(e))
+
+data_fixed <- y_fixed_I %>%
+  reshape2::melt(varnames = c("r"), value.name = "prev") %>% 
+  mutate(r = x_r[r]) %>%
+  left_join(eigs_stable) %>%
+  mutate(group = data.table::rleid(stable))
+
+bifur_points <- data_fixed %>% 
+  filter((stable & lead(!stable)) | (lag(!stable) & stable))
+
 maxmins <- data_I_sol %>%
   filter(t > days_burn_in, r > 0.0003) %>% 
   group_by(r) %>%
   summarise(max = max(prev), min = min(prev))
-
-data_fixed <- y_fixed_I %>%
-  reshape2::melt(varnames = c("r"), value.name = "prev") %>% 
-  mutate(r = x_r[r])
-
-bifur_points <- maxmins %>% 
-  left_join(data_fixed) %>%
-  mutate(diff = max - prev) %>%
-  ungroup() %>% 
-  filter(diff > 1e-4) %>%
-  slice(n()) %>%
-  select(r, prev = prev)
 
 
 p_bifurcation_min <- ggplot() +
@@ -64,17 +75,17 @@ p_bifurcation_min <- ggplot() +
   geom_line(aes(x = r, y = max),
             colour = colour_A,
             linewidth = 1.0,
-            maxmins %>% filter(r <= bifur_points$r[1])) +
+            maxmins %>% filter(r <= bifur_points$r[2])) +
   geom_line(aes(x = r, y = min),
             colour = colour_A,
             linewidth = 1.0,
-            maxmins %>% filter(r <= bifur_points$r[1], min > 0)) +
-  geom_line(aes(x = r, y = prev),
+            maxmins %>% filter(r <= bifur_points$r[2], min > 0)) +
+  geom_line(aes(x = r, y = prev, group = group),
             linewidth = 1.0,
-            data_fixed %>% filter(r >= bifur_points$r[1])) +
+            data_fixed %>% filter(stable)) +
   geom_line(aes(x = r, y = prev),
             linewidth = 1.0, linetype = "44",
-            data_fixed %>% filter(r > 0)) +
+            data_fixed %>% filter(!stable)) +
   
   
   geom_point(aes(x = r, y = prev), 
@@ -114,7 +125,7 @@ data_period <- period %>%
   
   pivot_wider() %>% 
   
-  filter(r < bifur_points$r[1], period_sd < 1, period_n > 1)
+  filter(r < bifur_points$r[2], period_sd < 1, period_n > 1)
 
 min_periods <- data_period %>% slice(1) %>%
   select(r_min = r)
@@ -178,9 +189,10 @@ p_attack_rate <- ggplot() +
   
   ggtitle(NULL, "<b>C</b> — Average annual infection incidence<br> at solution")
 
+
 plot_data_ex_fixed_points <- data_fixed %>%
   filter(r %in% rs) %>%
-  mutate(stable = r >= bifur_points$r[[1]]) %>% 
+  mutate(stable = r >= bifur_points$r[[2]]) %>% 
   mutate(r_label = str_c("Antibody decay rate <i>r </i>  = ", r))
 
 
@@ -280,3 +292,54 @@ ggsave(
   width = 14, height = 8,
   bg = "white"
 )
+
+
+
+
+p_supp_A <- ggplot() +
+  geom_path(aes(x = e, y = e_i, group = i),
+            linewidth = 0.5,
+            data_eigs) +
+  
+  geom_hline(yintercept = 0, linetype = "44") +
+  geom_vline(xintercept = 0, linetype = "44") +
+  
+  xlab("Re(λ<sub><i>i</i></sub>)") +
+  ylab("Im(λ<sub><i>i</i></sub>)") +
+  
+  coord_cartesian(xlim = c(-0.01,0.01),
+                  ylim = c(-0.1, 0.1)) +
+  
+  ggtitle(NULL, "<b>A</b> — Eigenvalues for varying<br>antibody decay rate <i>r</i>") +
+  
+  plot_theme_paper
+
+
+p_supp_B <- ggplot() +
+  geom_line(aes(x = r, y = maximum),
+            linewidth = 0.8,
+            eigs_stable) +
+  
+  geom_hline(yintercept = 0, linetype = "44") +
+  
+  ylab("max<sub><i>i</i></sub> Re(λ<sub><i>i</i></sub>)") +
+  xlab("Antibody decay rate <i>r</i>") +
+  
+  coord_cartesian(ylim = c(-0.005, 0.005)) +
+  
+  ggtitle(NULL, "<b>B</b> — Maximum real part<br>of eigenvalue") +
+  
+  plot_theme_paper
+
+
+p_supp_A | p_supp_B
+
+
+
+ggsave(
+  "results/results_supp_eigenvalues.pdf",
+  device = cairo_pdf,
+  width = 8, height = 4,
+  bg = "white"
+)
+ 
