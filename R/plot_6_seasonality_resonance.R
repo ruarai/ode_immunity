@@ -51,7 +51,7 @@ p_incidence <- ggplot() +
   xlab("Antibody decay rate <i>r</i>") + ylab("Infection incidence") +
   
   plot_theme_paper +
-  theme(strip.text = element_markdown(),
+  theme(strip.text = element_markdown(colour = "white"),
         axis.text.x.top = element_text(margin = margin(b = 0.25, unit = "cm"))) +
   
   ggtitle(NULL, "<b>A</b> — Average annual infection incidence")
@@ -113,7 +113,6 @@ p_axes_freq <- ggplot() +
 p_axes_freq
 
 
-p_incidence / p_axes_freq + plot_layout(heights = c(20, 1))
 
 ((p_incidence / p_axes_freq + plot_layout(heights = c(20, 1))) |
     (p_incidence_diff / p_axes_freq + plot_layout(heights = c(20, 1))))
@@ -122,6 +121,45 @@ p_incidence / p_axes_freq + plot_layout(heights = c(20, 1))
 ggsave(
   "results/results_seasonality_resonance.pdf",
   device = cairo_pdf,
-  width = 11, height = 6.75,
+  width = 11, height = 8,
   bg = "white"
 )
+
+plot_data_labels <- tibble(eta = c(0.1, 0.3, 0.5)) %>% 
+  mutate(eta_label = str_c("Seasonality<br>strength<br><i>η</i> = ", eta),
+         eta_label = factor(eta_label))
+
+p_labels <- ggplot() +
+  geom_richtext(aes(x = 0, y = 0, label = eta_label),
+                label.colour = "white",
+                size = 6,
+                plot_data_labels) +
+  
+  facet_wrap(~eta_label, ncol = 1) +
+  
+  # scale_x_continuous(breaks = NULL) +
+  scale_y_continuous(breaks = NULL) +
+  xlab("") + ylab(NULL) +
+  
+  plot_theme_paper +
+  theme(strip.text = element_text(colour = "white"),
+        axis.text.x = element_text(colour = "white"),
+        axis.line.x = element_line(colour = "white"),
+        axis.ticks.x = element_line(colour = "white"))
+
+((p_labels / plot_spacer() + plot_layout(heights = c(20, 1))) |
+(p_incidence / p_axes_freq + plot_layout(heights = c(20, 1))) |
+    (p_incidence_diff / p_axes_freq + plot_layout(heights = c(20, 1)))) +
+  plot_layout(widths = c(1, 3, 3))
+
+ggsave(
+  "results/results_seasonality_resonance.pdf",
+  device = cairo_pdf,
+  width = 13, height = 8,
+  bg = "white"
+)
+
+
+
+
+
