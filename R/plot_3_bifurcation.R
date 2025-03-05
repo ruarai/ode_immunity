@@ -7,7 +7,7 @@ library(patchwork)
 
 source("R/plot_theme.R")
 
-rs <- c(0.015, 0.03)
+rs <- c(0.003, 0.015, 0.03)
 
 x_r <- h5read("data/paper/bifurcations.jld2", "x_r")
 y_I_sol <- h5read("data/paper/bifurcations.jld2", "y_I_sol")
@@ -190,37 +190,47 @@ p_attack_rate <- ggplot() +
   ggtitle(NULL, "<b>C</b> — Average annual infection incidence<br> at solution")
 
 
-plot_data_ex_fixed_points <- data_fixed %>%
-  filter(r %in% rs) %>%
-  mutate(stable = r >= bifur_points$r[[2]]) %>% 
-  mutate(r_label = str_c("Antibody decay rate <i>r </i>  = ", r))
+inf <- h5read("data/paper/bifurcation_stable_fixed.jld2", "inf")
+seq_t <- h5read("data/paper/bifurcation_stable_fixed.jld2", "seq_t")
 
 
-p_examples <- data_I_sol %>%
-  filter(r %in% rs, t < 4000) %>% 
-  mutate(r_label = str_c("Antibody decay rate <i>r </i>  = ", r)) %>% 
-  ggplot() +
+
+
+data_examples <- data_I_sol %>%
+  filter(r %in% rs) %>% 
+  mutate(periodic = r < bifur_points$r[2]) %>%
+  bind_rows(
+    tibble(r = 0.003, t = seq_t, prev = inf, periodic = FALSE)
+  ) %>%
+  mutate(r_label = str_c("Antibody decay rate <i>r </i>  = ", r)) %>%
+  filter(
+    !((r > 0.003) & (t  > 2000)),
+    t < 8000
+  )
+
+
+p_examples <- ggplot() +
   
   geom_line(aes(x = t, y = prev),
+            data_examples %>% filter(periodic),
+            colour = colour_A,
+            linewidth = 0.7) +
+  
+  geom_line(aes(x = t, y = prev),
+            data_examples %>% filter(!periodic),
             linewidth = 0.7) +
 
-  geom_hline(aes(yintercept = prev, linetype = stable),
-             plot_data_ex_fixed_points,
-             linewidth = 0.7, colour = "black") +
-  
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
   
   scale_y_continuous(breaks = c(0.0, 0.05, 0.1)) +
   
-  scale_linetype_manual(values = c("TRUE" = "solid", "FALSE" = "44")) +
-  
   facet_wrap(~r_label, ncol = 3, scales = "free") +
   
   xlab("Time (days)") + ylab("Infection prevalence") +
   
-  coord_cartesian(xlim = c(0, 3400),
-                  ylim = c(0, 0.08)) +
+  coord_cartesian(xlim = c(0, NA),
+                  ylim = c(0, 0.065)) +
   
   plot_theme_paper +
   theme(strip.text = element_markdown(),
@@ -232,44 +242,6 @@ p_examples <- data_I_sol %>%
 
 p_examples
 
-
-p_examples_antibodies <- data_y_means %>%
-  filter(r %in% rs, t < 4000) %>% 
-  mutate(r_label = str_c("Antibody decay rate <i>r </i>  = ", r)) %>% 
-  ggplot() +
-  
-  geom_line(aes(x = t, y = mean),
-            linewidth = 0.7) +
-  
-  scale_x_continuous(breaks = scales::breaks_extended(),
-                     labels = scales::label_comma()) +
-  
-  scale_y_log10(breaks = scales::breaks_log(),
-                labels = scales::label_log()) +
-  
-  facet_wrap(~r_label, ncol = 3, scales = "free") +
-  
-  xlab("Time (days)") + ylab("Concentration") +
-  
-  coord_cartesian(xlim = c(0, 3400),
-                  ylim = c(10^2, 10^6.5)) +
-  
-  plot_theme_paper +
-  theme(strip.text = element_markdown(),
-        plot.subtitle = element_markdown(),
-        legend.position = "none",
-        panel.grid.major.x = element_gridline) +
-  
-  ggtitle(NULL, "<b>E</b> — Exemplar mean antibody concentration")
-
-
-# p_top <- (
-#   (p_bifurcation / p_bifurcation_min) |
-#   (p_period / p_attack_rate)
-# ) +
-#   plot_layout(tag_level = "new")
-
-
 p_top <- (p_bifurcation_min | p_period | p_attack_rate) +
   plot_layout(tag_level = "new")
 
@@ -279,7 +251,7 @@ p_top <- (p_bifurcation_min | p_period | p_attack_rate) +
 # p_top
 
 (p_top / p_examples) +
-  plot_layout(heights = c(1.5, 1)) + 
+  plot_layout(heights = c(1, 1)) + 
   # plot_annotation(tag_levels = list("A", c("1", "2", "3")), tag_sep = " ") &
   theme(plot.tag = element_text(face = "bold", size = 15))
 
