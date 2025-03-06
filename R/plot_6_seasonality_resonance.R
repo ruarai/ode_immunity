@@ -132,7 +132,7 @@ plot_data_labels <- tibble(eta = c(0.1, 0.3, 0.5)) %>%
 p_labels <- ggplot() +
   geom_richtext(aes(x = 0, y = 0, label = eta_label),
                 label.colour = "white",
-                size = 6,
+                size = 5,
                 plot_data_labels) +
   
   facet_wrap(~eta_label, ncol = 1) +
@@ -147,7 +147,7 @@ p_labels <- ggplot() +
         axis.line.x = element_line(colour = "white"),
         axis.ticks.x = element_line(colour = "white"))
 
-((p_labels / plot_spacer() + plot_layout(heights = c(20, 1))) |
+((p_labels / plot_spacer() + plot_layout(heights = c(20, 2))) |
 (p_incidence / p_axes_freq + plot_layout(heights = c(20, 1))) |
     (p_incidence_diff / p_axes_freq + plot_layout(heights = c(20, 1)))) +
   plot_layout(widths = c(1, 3, 3))
@@ -155,7 +155,7 @@ p_labels <- ggplot() +
 ggsave(
   "results/results_seasonality_resonance.pdf",
   device = cairo_pdf,
-  width = 13, height = 8,
+  width = 13, height = 6,
   bg = "white"
 )
 
