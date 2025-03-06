@@ -136,7 +136,7 @@ p_period <- ggplot() +
              tibble(r = rs),
              colour = "grey80", linewidth = 1.0, alpha = 0.3) +
   geom_line(aes(x = r, y = 365 / period),
-            linewidth = 1.0,
+            linewidth = 1.0, colour = colour_A,
             data_period) +
   
   
@@ -194,7 +194,10 @@ inf <- h5read("data/paper/bifurcation_stable_fixed.jld2", "inf")
 seq_t <- h5read("data/paper/bifurcation_stable_fixed.jld2", "seq_t")
 
 
-
+example_labels <- tibble(
+  r = rs
+) %>%
+  mutate(r_label = str_c("<b>", c("i", "ii", "iii"), "</b>. Antibody decay rate <i>r </i>  = ", r))
 
 data_examples <- data_I_sol %>%
   filter(r %in% rs) %>% 
@@ -202,7 +205,7 @@ data_examples <- data_I_sol %>%
   bind_rows(
     tibble(r = 0.003, t = seq_t, prev = inf, periodic = FALSE)
   ) %>%
-  mutate(r_label = str_c("Antibody decay rate <i>r </i>  = ", r)) %>%
+  left_join(example_labels) %>% 
   filter(
     !((r > 0.003) & (t  > 2000)),
     t < 8000
