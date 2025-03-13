@@ -35,12 +35,13 @@ hex_cols <- twilight_palette %>%
   shifter(n = floor(471 / 2))
 
 
+## TODO change these.
 example_points <- tribble(
   ~eta, ~r, ~label,
-  0.25, 0.035, "iv",
-  0.25, 0.045, "iii",
-  0.25, 0.055, "ii",
-  0.05, 0.055, "i"
+  0.25, 0.01, "iv",
+  0.25, 0.013, "iii",
+  0.25, 0.0165, "ii",
+  0.05, 0.0165, "i"
 )
 
 plot_annotations <- list(
@@ -49,7 +50,7 @@ plot_annotations <- list(
   geom_point(aes(x = eta, y = r), example_points,
              colour = "white", size = 0.5),
   
-  geom_label(aes(x = eta + 0.015, y = r - 0.0035, label = label), example_points,
+  geom_label(aes(x = eta + 0.015, y = r - 0.0015, label = label), example_points,
              label.r = unit(0.1, "cm"), label.size = 0, fill = shades::opacity("white", 0.8))
 )
 
@@ -63,7 +64,7 @@ p_bias <- plot_data %>%
   annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
   geom_tile(aes(x = eta, y = r, fill = season_day)) +
   
-  coord_fixed(ratio = 5, ylim = c(0, 0.1)) +
+  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
   xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
   
   scale_fill_gradientn(colours = hex_cols,
@@ -93,7 +94,7 @@ p_variance <- ggplot()  +
   geom_tile(aes(x = eta, y = r, fill = season_var),
             plot_data) +
   
-  coord_fixed(ratio = 5, ylim = c(0, 0.1)) +
+  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
   xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
   
   scale_fill_distiller(name = "Variance",
@@ -120,9 +121,8 @@ p_bias | p_variance
 
 x_eta <- h5read("data/paper/seasonality_bias_examples.jld2", "x_eta")
 x_r <- h5read("data/paper/seasonality_bias_examples.jld2", "x_r")
-y_inf <- h5read("data/paper/seasonality_bias_examples.jld2", "y_inf")
 y_inc <- h5read("data/paper/seasonality_bias_examples.jld2", "y_inc")
-y_sus <- h5read("data/paper/seasonality_bias_examples.jld2", "y_sus")
+y_seasonality <- h5read("data/paper/seasonality_bias_examples.jld2", "y_seasonality")
 
 x_labels <- str_c(
   "<b>", c("iv", "iii", "ii", "i"), ".</b> ",
@@ -147,11 +147,14 @@ plot_data_ex_inc_year <- y_inc %>%
   mutate(year = floor(t / 365),
          t_year = t %% 365)
 
-
-plot_data_ex_means <- plot_data %>%
-  left_join(plot_data_ex_inc_year %>% distinct(eta, r, label)) %>%
-  filter(!is.na(label)) %>% 
-  select(eta, r, season_day, season_var, label) %>%
+plot_data_ex_means <- tibble(
+  x = y_seasonality[,1], y = y_seasonality[,2],
+  eta = x_eta[1,], r = x_r[1,],
+  label = x_labels
+)  %>%
+  mutate(season_day = xy_to_days(x, y),
+         season_mag = sqrt(x ^ 2 + y ^ 2),
+         season_var = 1 - season_mag) %>%
   mutate(season_var_label = scales::label_comma(accuracy = 0.01)(season_var),
          season_var_label = str_c("Variance = ", season_var_label))
 

@@ -33,10 +33,10 @@ plot_annotations <- list(
     plot_data_year_marks
   ),
   
-  annotate("linerange", x = -0.0065, ymin = bifur_zero, ymax = 0.1),
+  annotate("linerange", x = -0.0065, ymin = bifur_zero, ymax = 0.03),
   annotate("segment", x = -0.003, y = bifur_zero, xend = -0.01, yend = bifur_zero),
   geom_text(aes(x = -0.07, y = r_0 + 0.0002, label = year_label), hjust = 0, plot_data_year_marks),
-  annotate("text", x = -0.07, y = 0.085, label = "Fixed\npoint", hjust = 0)
+  annotate("text", x = -0.07, y = 0.0275, label = "Fixed\npoint", hjust = 0)
 )
 
 
@@ -62,7 +62,7 @@ p_period <- ggplot() +
   ) +
   
   
-  coord_fixed(ratio = 5, ylim = c(0, 0.1)) +
+  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
   xlab("Seasonality strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
   guides(fill = guide_legend(nrow = 2, ncol = 5),
          colour = guide_none()) +
@@ -86,7 +86,7 @@ p_attack_rate <- ggplot()  +
     labels = c("0", "", "0.4", "", "0.8", "", "1.2", "", "1.6", "", "2.0")
   ) +
   
-  coord_fixed(ratio = 5) +
+  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
   xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +
@@ -106,7 +106,8 @@ p_max <- ggplot()  +
     breaks = seq(0, 0.25, 0.025),
     labels = c("0", "", "0.05", "", "0.1", "", "0.15", "", "0.2", "", "0.25")
   ) +
-  coord_fixed(ratio = 5) +
+  
+  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
   xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +
@@ -133,7 +134,7 @@ p_min <- ggplot()  +
                "", "-1")
   ) +
   
-  coord_fixed(ratio = 5) +
+  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
   xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +

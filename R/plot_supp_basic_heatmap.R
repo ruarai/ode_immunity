@@ -68,12 +68,12 @@ p_heatmap <- plot_data_sus %>%
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
   
-  scale_y_continuous(trans = "log10", breaks = 10^c(0, 2, 4, 6, 8),
-                     labels = scales::label_log(base = 10),
+  scale_y_continuous(trans = "log10", breaks = 2^c(0, 2, 4, 6, 8),
+                     labels = scales::label_log(base = 2),
                      sec.axis = sec_axis(
                        transform = "identity",
-                       labels = function(x) log10(x) * (32 / 8),
-                       breaks = 10^c(0, 2, 4, 6, 8),
+                       labels = function(x) log2(x) * (32 / 8),
+                       breaks = 2^c(0, 2, 4, 6, 8),
                        name = "Strata *i*"
                      )) +
 
@@ -81,7 +81,7 @@ p_heatmap <- plot_data_sus %>%
                        breaks = rescale_density(c(1e-8, 0.01, 0.05, 0.2, 1 - 1e-3)),
                        labels = c(0, 0.01, 0.05, 0.2, 1.0))  +
   
-  coord_cartesian(xlim = c(0, 1500), ylim = c(10^0, 10^8)) +
+  coord_cartesian(xlim = c(0, 1500), ylim = c(2^0, 2^8)) +
   
   # guides(fill = guide_colourbar(barwidth = 15)) +
   
@@ -127,14 +127,14 @@ p_mean_antibody <- ggplot() +
             plot_data_means,
             linewidth = 0.7) +
   
-  scale_y_continuous(trans = "log10",
-                     breaks = 10^c(0, 2, 4, 6, 8),
-                     labels = scales::label_log(base = 10))  +
+  scale_y_continuous(trans = "log2",
+                     breaks = 2^c(0, 2, 4, 6, 8),
+                     labels = scales::label_log(base = 2))  +
   
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
   
-  coord_cartesian(ylim = c(10^0, 10^7)) +
+  coord_cartesian(ylim = c(2^0, 2^7)) +
   
   xlab("Time (days)") + ylab("Antibody<br>concentration") +
   

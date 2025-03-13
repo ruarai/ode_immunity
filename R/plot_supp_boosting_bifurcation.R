@@ -83,14 +83,14 @@ p_example_mean_antibodies <- ggplot() +
             linewidth = 0.9,
             plot_data_means %>% filter(scenario == scenario_labels[1])) +
   
-  coord_cartesian(ylim = c(10^-0.5, 10^7)) +
+  coord_cartesian(ylim = c(2^-0.5, 2^7)) +
   
   xlab("Time (days)") + ylab("Concentration") +
   
   scale_colour_manual(name = "Model", values = scenario_colours) +
   guides(colour = guide_legend(reverse = TRUE)) +
   
-  scale_y_continuous(trans = "log10", labels = scales::label_log(base = 10), breaks = 10^c(0, 2, 4, 6, 8)) +
+  scale_y_continuous(trans = "log2", labels = scales::label_log(base = 2), breaks = 2^c(0, 2, 4, 6, 8)) +
   
   scale_x_continuous(breaks = scales::breaks_extended(),
                      labels = scales::label_comma()) +
@@ -108,6 +108,24 @@ p_example_mean_antibodies <- ggplot() +
 
 x_r <- h5read("data/paper/bifurcations.jld2", "x_r")
 
+
+
+data_eigs <- bind_rows(
+  reshape2::melt(h5read("data/paper/bifurcations.jld2", "y_real_eigs"),
+                 varnames = c("i", "r"), value.name = "e") %>%
+    mutate(r = x_r[r], scenario = "independent"),
+  
+  reshape2::melt(h5read("data/paper/bifurcations_boosting.jld2", "y_real_eigs"),
+                 varnames = c("i", "r"), value.name = "e") %>%
+    mutate(r = x_r[r], scenario = "multiplicative"),
+) %>%
+  filter(abs(e) > 1e-10) %>% 
+  mutate(scenario = factor(scenario, c("independent", "multiplicative"), labels = scenario_labels[c(1, 3)]))
+
+
+eigs_stable <- data_eigs %>%
+  group_by(r, scenario) %>%
+  summarise(stable = all(e < 1e-10))
 
 data_I_sol <- bind_rows(
   reshape2::melt(h5read("data/paper/bifurcations.jld2", "y_I_sol"), 
@@ -144,7 +162,7 @@ data_mean_incidence <- data_inc_sol %>%
   summarise(mean_inc = mean(inc))
 
 maxmins <- data_I_sol %>%
-  filter(t > n_days_burn_in, r > 0.002) %>% 
+  filter(t > n_days_burn_in, r > 0.0006) %>% 
   group_by(r, scenario) %>%
   summarise(max = max(prev), min = min(prev))
 
@@ -160,30 +178,40 @@ data_fixed <- bind_rows(
            scenario = "multiplicative")
 ) %>%
   mutate(scenario = factor(scenario, c("independent", "multiplicative"), labels = scenario_labels[c(1, 3)])) %>%
-  filter(r > 0)
+  filter(r > 0) %>%
+  left_join(eigs_stable) %>%
+  mutate(group = data.table::rleid(stable))
 
-bifur_points <- maxmins %>% 
-  left_join(data_fixed) %>%
-  mutate(diff = max - min) %>%
-  ungroup() %>% 
+
+bifur_points <- data_fixed %>% 
   group_by(scenario) %>% 
-  filter(diff > 1e-4) %>%
-  slice(n()) %>%
-  mutate(mean = max / 2 + min / 2) %>% 
-  select(r, scenario, prev = mean)
+  filter((stable & lead(!stable)) | (lag(!stable) & stable))
+
+# bifur_points <- maxmins %>% 
+#   left_join(data_fixed) %>%
+#   mutate(diff = max - min) %>%
+#   ungroup() %>% 
+#   group_by(scenario) %>% 
+#   filter(diff > 1e-4) %>%
+#   slice(n()) %>%
+#   mutate(mean = max / 2 + min / 2) %>% 
+#   select(r, scenario, prev = mean)
 
 
 p_bifurcation <- ggplot() +
-  geom_vline(xintercept = 0.05,
+  geom_vline(xintercept = 0.015,
              colour = "grey80", linewidth = 1.0, alpha = 0.5) +
   geom_line(aes(x = r, y = max, colour = scenario, linewidth = scenario),
             maxmins) +
   geom_line(aes(x = r, y = min, colour = scenario, linewidth = scenario),
             maxmins) +
-  geom_line(aes(x = r, y = prev, colour = scenario, linewidth = scenario),
-            linetype = "44",
-            data_fixed) +
   
+  geom_line(aes(x = r, y = prev, colour = scenario, linewidth = scenario, group = interaction(group, scenario)),
+            linetype = "44",
+            data_fixed %>% filter(!stable)) +
+  
+  geom_line(aes(x = r, y = prev, colour = scenario, linewidth = scenario, group = interaction(group, scenario)),
+            data_fixed %>% filter(stable)) +
   
   geom_point(aes(x = r, y = prev, colour = scenario), 
              bifur_points,
@@ -195,6 +223,11 @@ p_bifurcation <- ggplot() +
   
   scale_colour_manual(name = "Model", values = scenario_colours) +
   scale_linewidth_manual(values = c(0.9, 0.7, 0.7) %>% `names<-`(scenario_labels)) +
+  
+  coord_cartesian(ylim = c(1e-4, 0.05)) +
+  
+  scale_y_log10(labels = scales::label_log(),
+                breaks = 10^c(-10, -8, -6, -4, -2, 0)) +
   
   xlab("Mean antibody decay rate <i>r</i>") +
   ylab("Prevalence") +
@@ -231,7 +264,7 @@ data_period <- bind_rows(
   
   pivot_wider() %>% 
   
-  left_join(bifur_points %>% select(r_bifur = r, scenario)) %>%
+  left_join(bifur_points %>% select(r_bifur = r, scenario) %>% group_by(scenario) %>%  filter(r_bifur == max(r_bifur))) %>%
   filter(r < r_bifur, period_sd < 1, period_n > 1)
 
 
@@ -240,7 +273,7 @@ min_periods <- data_period %>% group_by(scenario) %>% slice(1) %>%
   select(r_min = r, scenario)
 
 p_period <- ggplot() +
-  geom_vline(xintercept = 0.05,
+  geom_vline(xintercept = 0.015,
              colour = "grey80", linewidth = 1.0, alpha = 0.5) +
   geom_line(aes(x = r, y = 365 / period, colour = scenario, linewidth = scenario),
             data_period) +
@@ -259,7 +292,7 @@ p_period <- ggplot() +
   xlab("Mean antibody decay rate <i>r</i>") +
   ylab("Frequency (years<sup>-1</sup>)") +
   
-  coord_cartesian(xlim = c(0, 0.15),
+  coord_cartesian(xlim = c(0, 0.05),
                   ylim = c(-0.1, 4)) +
   
   plot_theme_paper +
@@ -272,7 +305,7 @@ p_period
 
 
 p_attack_rate <- ggplot() +
-  geom_vline(xintercept = 0.05,
+  geom_vline(xintercept = 0.015,
              colour = "grey80", linewidth = 1.0, alpha = 0.5) +
   geom_line(aes(x = r, y = mean_inc * 365, colour = scenario, linewidth = scenario),
             data_mean_incidence) +

@@ -46,7 +46,7 @@ p_incidence <- ggplot() +
   
   facet_wrap(~eta_label, ncol = 1) +
   
-  coord_cartesian(xlim = c(0, 0.1), ylim = c(0, 2.0)) +
+  coord_cartesian(xlim = c(0, 0.03), ylim = c(0, 2.0)) +
   
   xlab("Antibody decay rate <i>r</i>") + ylab("Infection incidence") +
   
@@ -75,7 +75,7 @@ p_incidence_diff <- ggplot() +
   facet_wrap(~eta_label, ncol = 1) +
   
   scale_y_continuous(breaks = c(0.75, 1, 1.25)) +
-  coord_cartesian(xlim = c(0, 0.1)) +
+  coord_cartesian(xlim = c(0, 0.03), ylim = c(0.71, 1.29)) +
   
   xlab("Antibody decay rate <i>r</i>") + ylab("Proportional difference") +
   
@@ -100,7 +100,7 @@ p_axes_freq <- ggplot() +
   annotate("point", x = bifur_zero, y = 0, size = 1.25, colour = "white") +
   
   
-  scale_x_continuous(limits = c(0, 0.1),
+  scale_x_continuous(limits = c(0, 0.03),
                      breaks = c(0.0, freq_breaks_r, bifur_zero),
                      labels = c(0.0, freq_breaks, "")) +
   
@@ -155,7 +155,7 @@ p_labels <- ggplot() +
 ggsave(
   "results/results_seasonality_resonance.pdf",
   device = cairo_pdf,
-  width = 13, height = 6,
+  width = 13, height = 6.5,
   bg = "white"
 )
 

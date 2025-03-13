@@ -33,11 +33,11 @@ plot_data_year_marks <- tibble(r_0 = year_marks, year = year_stops) %>%
 
 plot_data_example_points <- tribble(
   ~eta, ~r, ~label, ~colour,
-  0.0, 0.06, "i", factor(0),
-  0.07, 0.06, "ii", factor(4.5),
-  0.2, 0.06, "iii", factor(1),
-  0.27, 0.06, "iv", factor(2),
-  0.37, 0.06, "v", factor(9)
+  0.0, 0.018, "i", factor(0),
+  0.07, 0.018, "ii", factor(4.5),
+  0.2, 0.018, "iii", factor(1),
+  0.27, 0.018, "iv", factor(2),
+  0.37, 0.018, "v", factor(9)
 )
 plot_annotations <- list(
   geom_segment(
@@ -46,13 +46,13 @@ plot_annotations <- list(
     plot_data_year_marks
   ),
   
-  annotate("linerange", x = -0.0065, ymin = bifur_zero, ymax = 0.1),
+  annotate("linerange", x = -0.0065, ymin = bifur_zero, ymax = 0.03),
   annotate("segment", x = -0.003, y = bifur_zero, xend = -0.01, yend = bifur_zero),
-  geom_text(aes(x = -0.07, y = r_0 + 0.0002, label = year_label), hjust = 0, plot_data_year_marks),
-  annotate("text", x = -0.07, y = 0.085, label = "Fixed\npoint", hjust = 0),
+  geom_text(aes(x = -0.08, y = r_0 + 0.0002, label = year_label), hjust = 0, plot_data_year_marks, size = 4.5),
+  annotate("text", x = -0.08, y = 0.0275, label = "Fixed\npoint", hjust = 0, size = 4.5),
   geom_point(aes(x = eta, y = r), plot_data_example_points, colour = "black", size = 1.4, stroke = 1),
   geom_point(aes(x = eta, y = r), plot_data_example_points, colour = "white", size = 0.7, stroke = 0.5),
-  geom_label(aes(x = eta + 0.01, y = r - 0.005, label = label), plot_data_example_points,
+  geom_label(aes(x = eta + 0.01, y = r - 0.002, label = label), plot_data_example_points,
              label.r = unit(0.1, "cm"), label.size = 0, fill = shades::opacity("white", 0.8))
 )
 
@@ -82,7 +82,7 @@ p_period <- ggplot() +
   ) +
   
   
-  coord_fixed(ratio = 5, ylim = c(0, 0.1)) +
+  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
   xlab("Seasonality strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
   guides(fill = guide_legend(nrow = 3, ncol = 5),
          colour = guide_none()) +
@@ -114,7 +114,7 @@ p_min <- ggplot()  +
                "", "-1")
   ) +
   
-  coord_fixed(ratio = 5, ylim = c(0, 0.1)) +
+  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
   xlab("Seasonality strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +
@@ -126,15 +126,8 @@ p_min <- ggplot()  +
 p_period | p_min
 
 
-p_period + ggtitle(NULL, "<b>A</b> — Qualitative dynamics") | 
-  p_min + ggtitle(NULL, "<b>B</b> — Minimum infection prevalence")
 
-ggsave(
-  "results/results_grid_seasonality.png",
-  device = png,
-  width = 13, height = 7,
-  bg = "white"
-)
+
 
 
 p <- (
@@ -152,15 +145,16 @@ ggsave(
   width = 13, height = 13,
   bg = "white"
 )
-p_legend <- cowplot::plot_grid(x[[17]])
 
-
-ggsave(
-  "results/results_grid_seasonality_legend.pdf",
-  p_legend,
-  device = cairo_pdf,
-  width = 13/2, height = 2,
-  bg = "white"
-)
+# p_legend <- cowplot::plot_grid(x[[17]])
+# 
+# 
+# ggsave(
+#   "results/results_grid_seasonality_legend.pdf",
+#   p_legend,
+#   device = cairo_pdf,
+#   width = 13/2, height = 2,
+#   bg = "white"
+# )
 
 

@@ -1,16 +1,18 @@
 include("dependencies.jl")
+using ForwardDiff
 
 n_days_burn_in = 100 * 365
 n_days = 200 * 365
 t_seq = 0:n_days
 
 periodic_Δt = 0.25
-x_r = collect(0:0.002:0.15)
+x_r = collect(0.0005:0.0005:0.05)
 
 y_fixed_I = zeros(length(x_r))
 y_I_sol = zeros(length(x_r), length(t_seq))
 y_inc_sol = zeros(length(x_r), length(t_seq))
 
+y_eigs = Vector{Vector{ComplexF64}}(undef, length(x_r))
 
 period = zeros(length(x_r), 3)
 
@@ -39,13 +41,21 @@ period = zeros(length(x_r), 3)
     period_mean, period_sd, period_n = get_period(ode_solution, model_params_boosting, n_days_burn_in, n_days, periodic_Δt, periodic_ϵ)
 
     period[i, :] = [period_mean period_sd period_n]
+
+
+    du0 = zeros(Float64, length(u_steady))
+    u0 = copy(u_steady)
+    J = ForwardDiff.jacobian((du, u) -> ode_step_no_count_boosting!(du, u, model_params_boosting, 0.0), du0, u0)
+
+    y_eigs[i] = eigvals(J)
 end
 
 
-plot(y_fixed_I, ylim = (0, 0.1))
-plot!(mean(y_I_sol[:, 50000:end], dims = 2))
+y_eigs_stack = stack(y_eigs)
+y_real_eigs = real.(y_eigs_stack)
+y_imag_eigs = imag.(y_eigs_stack)
 
 jldsave(
     "data/paper/bifurcations_boosting.jld2";
-    x_r, y_fixed_I, y_I_sol, y_inc_sol, period
+    x_r, y_fixed_I, y_I_sol, y_inc_sol, period, y_real_eigs
 )

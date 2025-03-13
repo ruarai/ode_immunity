@@ -43,6 +43,7 @@ p_ex_inf <- ggplot() +
   
   geom_richtext(aes(x = t_ex_start, y = 0.1, label = label),
                 hjust = 0, label.r = unit(0, "cm"), label.size = 0,
+                size = 4.5,
                 fill = "grey97", 
                 plot_data_labels) +
   

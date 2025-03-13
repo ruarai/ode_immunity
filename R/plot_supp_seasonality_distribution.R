@@ -61,7 +61,7 @@ p_bias <- plot_data %>%
   annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
   geom_tile(aes(x = eta, y = r, fill = season_day)) +
   
-  coord_fixed(ratio = 5, ylim = c(0, 0.1)) +
+  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
   xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
   
   scale_fill_gradientn(colours = hex_cols,
@@ -91,7 +91,7 @@ p_variance <- ggplot()  +
   geom_tile(aes(x = eta, y = r, fill = season_var),
             plot_data) +
   
-  coord_fixed(ratio = 5, ylim = c(0, 0.1)) +
+  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
   xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
   
   scale_fill_distiller(name = "Variance",
