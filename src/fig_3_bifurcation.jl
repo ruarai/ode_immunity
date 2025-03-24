@@ -56,10 +56,6 @@ y_eigs_stack = stack(y_eigs)
 y_real_eigs = real.(y_eigs_stack)
 y_imag_eigs = imag.(y_eigs_stack)
 
-plot(y_real_eigs', y_imag_eigs', seriestype = :path, legend = false, xlim = (-0.01, 0.01))
-
-scatter(y_eigs_stack[:, 3], xlim = (-0.1, 0.1), ylim = (-0.1, 0.1))
-
 jldsave(
     "data/paper/bifurcations.jld2";
     x_r, y_fixed_I, y_I_sol, y_inc_sol, y_means, period, y_real_eigs, y_imag_eigs
