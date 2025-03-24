@@ -42,4 +42,4 @@ results_inf = reduce(hcat, [inf, inf_A, inf_B])
 results_inc = reduce(hcat, [inc, inc_A, inc_B])
 
 
-jldsave("data/paper/supp_boosting_basic.jld2"; seq_t, c_levels, results_sus, results_inf, results_inc)
+jldsave("data/supp_boosting_basic.jld2"; seq_t, c_levels, results_sus, results_inf, results_inc)

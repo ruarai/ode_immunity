@@ -33,4 +33,4 @@ end
 
 
 
-jldsave("data/paper/seasonality_bias_examples_supp.jld2"; x_eta, x_r, y_sus, y_inf, y_inc)
+jldsave("data/seasonality_bias_examples_supp.jld2"; x_eta, x_r, y_sus, y_inf, y_inc)

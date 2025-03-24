@@ -25,4 +25,4 @@ ode_solution = @time ode_solve(model_params, n_days, 0, u0 = u0_noisy);
 
 sus, inf, inc = get_results(ode_solution, seq_t, model_params)
 
-jldsave("data/paper/bifurcation_stable_fixed.jld2"; seq_t, inf)
+jldsave("data/bifurcation_stable_fixed.jld2"; seq_t, inf)

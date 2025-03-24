@@ -29,4 +29,4 @@ y_sus = zeros(length(x_eta), length(t_seq), baseline_k + 1)
     y_sus[i, :, :] = get_sus(ode_solution, t_seq, model_params)
 end
 
-jldsave("data/paper/period_over_grid_examples.jld2"; x_eta, x_r, y_inf, y_sus)
+jldsave("data/period_over_grid_examples.jld2"; x_eta, x_r, y_inf, y_sus)

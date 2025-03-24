@@ -9,13 +9,13 @@ source("R/plot_theme.R")
 
 rs <- c(0.003, 0.015, 0.03)
 
-x_r <- h5read("data/paper/bifurcations.jld2", "x_r")
-y_I_sol <- h5read("data/paper/bifurcations.jld2", "y_I_sol")
-y_inc_sol <- h5read("data/paper/bifurcations.jld2", "y_inc_sol")
-y_fixed_I <- h5read("data/paper/bifurcations.jld2", "y_fixed_I")
-y_means <- h5read("data/paper/bifurcations.jld2", "y_means")
-y_real_eigs <- h5read("data/paper/bifurcations.jld2", "y_real_eigs")
-y_imag_eigs <- h5read("data/paper/bifurcations.jld2", "y_imag_eigs")
+x_r <- h5read("data/bifurcations.jld2", "x_r")
+y_I_sol <- h5read("data/bifurcations.jld2", "y_I_sol")
+y_inc_sol <- h5read("data/bifurcations.jld2", "y_inc_sol")
+y_fixed_I <- h5read("data/bifurcations.jld2", "y_fixed_I")
+y_means <- h5read("data/bifurcations.jld2", "y_means")
+y_real_eigs <- h5read("data/bifurcations.jld2", "y_real_eigs")
+y_imag_eigs <- h5read("data/bifurcations.jld2", "y_imag_eigs")
 
 hide_x_axis <- list(
   theme(axis.text.x = element_blank(), axis.title.x = element_blank())
@@ -115,8 +115,8 @@ p_bifurcation_min <- ggplot() +
 p_bifurcation_min
 
 
-period <- h5read("data/paper/bifurcations.jld2", "period")
-# attack_rate <- h5read("data/paper/bifurcations.jld2", "attack_rate")
+period <- h5read("data/bifurcations.jld2", "period")
+# attack_rate <- h5read("data/bifurcations.jld2", "attack_rate")
 
 data_period <- period %>%
   reshape2::melt(varnames = c("r", "name"), value.name = "value") %>% 
@@ -190,8 +190,8 @@ p_attack_rate <- ggplot() +
   ggtitle(NULL, "<b>C</b> — Average annual infection incidence<br> at solution")
 
 
-inf <- h5read("data/paper/bifurcation_stable_fixed.jld2", "inf")
-seq_t <- h5read("data/paper/bifurcation_stable_fixed.jld2", "seq_t")
+inf <- h5read("data/bifurcation_stable_fixed.jld2", "inf")
+seq_t <- h5read("data/bifurcation_stable_fixed.jld2", "seq_t")
 
 
 example_labels <- tibble(

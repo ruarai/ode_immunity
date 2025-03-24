@@ -7,3 +7,4 @@ data_dist/
 slurm_out/
 data/
 .vscode/
+data_old/

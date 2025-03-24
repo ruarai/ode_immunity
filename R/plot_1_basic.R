@@ -8,11 +8,11 @@ library(patchwork)
 
 source("R/plot_theme.R")
 
-sus <- h5read("data/paper/basic_boosting.jld2", "sus")
-inf <- h5read("data/paper/basic_boosting.jld2", "inf")
-seq_t <- h5read("data/paper/basic_boosting.jld2", "seq_t")
-c_levels <- h5read("data/paper/basic_boosting.jld2", "c_levels")
-p_acq <- h5read("data/paper/basic_boosting.jld2", "p_acq")
+sus <- h5read("data/basic_boosting.jld2", "sus")
+inf <- h5read("data/basic_boosting.jld2", "inf")
+seq_t <- h5read("data/basic_boosting.jld2", "seq_t")
+c_levels <- h5read("data/basic_boosting.jld2", "c_levels")
+p_acq <- h5read("data/basic_boosting.jld2", "p_acq")
 
 t_max <- 1000
 

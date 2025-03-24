@@ -18,10 +18,10 @@ scenario_colours <- ggokabeito::palette_okabe_ito(order = c(9, 3, 5)) %>%
 
 n_days_burn_in <- 100 * 365
 
-seq_t <- h5read("data/paper/supp_boosting_basic.jld2", "seq_t")
-c_levels <- h5read("data/paper/supp_boosting_basic.jld2", "c_levels")
+seq_t <- h5read("data/supp_boosting_basic.jld2", "seq_t")
+c_levels <- h5read("data/supp_boosting_basic.jld2", "c_levels")
 
-plot_data_inf <- h5read("data/paper/supp_boosting_basic.jld2", "results_inf") %>%
+plot_data_inf <- h5read("data/supp_boosting_basic.jld2", "results_inf") %>%
   reshape2::melt(varnames = c("t", "scenario"), value.name = "prevalence") %>%
   as_tibble() %>% 
   mutate(
@@ -33,7 +33,7 @@ plot_data_inf <- h5read("data/paper/supp_boosting_basic.jld2", "results_inf") %>
   filter(t < 1500)
 
 
-plot_data_sus <- h5read("data/paper/supp_boosting_basic.jld2", "results_sus") %>%
+plot_data_sus <- h5read("data/supp_boosting_basic.jld2", "results_sus") %>%
   reshape2::melt(varnames = c("t", "strata", "scenario"), value.name = "prevalence") %>%
   as_tibble() %>% 
   mutate(
@@ -106,16 +106,16 @@ p_example_mean_antibodies <- ggplot() +
 
 
 
-x_r <- h5read("data/paper/bifurcations.jld2", "x_r")
+x_r <- h5read("data/bifurcations.jld2", "x_r")
 
 
 
 data_eigs <- bind_rows(
-  reshape2::melt(h5read("data/paper/bifurcations.jld2", "y_real_eigs"),
+  reshape2::melt(h5read("data/bifurcations.jld2", "y_real_eigs"),
                  varnames = c("i", "r"), value.name = "e") %>%
     mutate(r = x_r[r], scenario = "independent"),
   
-  reshape2::melt(h5read("data/paper/bifurcations_boosting.jld2", "y_real_eigs"),
+  reshape2::melt(h5read("data/bifurcations_boosting.jld2", "y_real_eigs"),
                  varnames = c("i", "r"), value.name = "e") %>%
     mutate(r = x_r[r], scenario = "multiplicative"),
 ) %>%
@@ -128,13 +128,13 @@ eigs_stable <- data_eigs %>%
   summarise(stable = all(e < 1e-10))
 
 data_I_sol <- bind_rows(
-  reshape2::melt(h5read("data/paper/bifurcations.jld2", "y_I_sol"), 
+  reshape2::melt(h5read("data/bifurcations.jld2", "y_I_sol"), 
                  varnames = c("r", "t"), value.name = "prev") %>% 
     mutate(r = x_r[r],
            scenario = "independent") %>%
     filter(r > 0),
   
-  reshape2::melt(h5read("data/paper/bifurcations_boosting.jld2", "y_I_sol"),
+  reshape2::melt(h5read("data/bifurcations_boosting.jld2", "y_I_sol"),
                  varnames = c("r", "t"), value.name = "prev") %>% 
     mutate(r = x_r[r],
            scenario = "multiplicative") %>%
@@ -144,12 +144,12 @@ data_I_sol <- bind_rows(
   
 
 data_inc_sol <- bind_rows(
-  reshape2::melt(h5read("data/paper/bifurcations.jld2", "y_inc_sol"),
+  reshape2::melt(h5read("data/bifurcations.jld2", "y_inc_sol"),
                  varnames = c("r", "t"), value.name = "inc") %>% 
     mutate(r = x_r[r],
            scenario = "independent"),
   
-  reshape2::melt(h5read("data/paper/bifurcations_boosting.jld2", "y_inc_sol"),
+  reshape2::melt(h5read("data/bifurcations_boosting.jld2", "y_inc_sol"),
                  varnames = c("r", "t"), value.name = "inc") %>% 
     mutate(r = x_r[r],
            scenario = "multiplicative")
@@ -168,11 +168,11 @@ maxmins <- data_I_sol %>%
 
 
 data_fixed <- bind_rows(
-  reshape2::melt(h5read("data/paper/bifurcations.jld2", "y_fixed_I"),
+  reshape2::melt(h5read("data/bifurcations.jld2", "y_fixed_I"),
                  varnames = c("r"), value.name = "prev") %>% 
     mutate(r = x_r[r],
            scenario = "independent"),
-  reshape2::melt(h5read("data/paper/bifurcations_boosting.jld2", "y_fixed_I"),
+  reshape2::melt(h5read("data/bifurcations_boosting.jld2", "y_fixed_I"),
                  varnames = c("r"), value.name = "prev") %>% 
     mutate(r = x_r[r],
            scenario = "multiplicative")
@@ -248,11 +248,11 @@ p_bifurcation
 
 
 data_period <- bind_rows(
-  reshape2::melt(h5read("data/paper/bifurcations.jld2", "period"),
+  reshape2::melt(h5read("data/bifurcations.jld2", "period"),
                  varnames = c("r", "name"), value.name = "value") %>%
     mutate(r = x_r[r],
            scenario = "independent"),
-  reshape2::melt(h5read("data/paper/bifurcations_boosting.jld2", "period"),
+  reshape2::melt(h5read("data/bifurcations_boosting.jld2", "period"),
                  varnames = c("r", "name"), value.name = "value") %>%
     mutate(r = x_r[r],
            scenario = "multiplicative"),

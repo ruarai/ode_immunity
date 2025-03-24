@@ -31,4 +31,4 @@ ode_solution_seasonal = @time ode_solve(model_params_seasonal, n_days, n_inf_0, 
 
 y_seasonal = ode_solution_seasonal(t_seq)[1:(model_params_seasonal.S + 1), :]
 
-jldsave("data/paper/ex_period.jld2"; t_seq, y, y_seasonal)
+jldsave("data/ex_period.jld2"; t_seq, y, y_seasonal)

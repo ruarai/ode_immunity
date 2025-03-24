@@ -6,11 +6,11 @@ library(rhdf5)
 
 source("R/plot_theme.R")
 
-sus <- h5read("data/paper/basic_boosting.jld2", "sus")
-inf <- h5read("data/paper/basic_boosting.jld2", "inf")
-seq_t <- h5read("data/paper/basic_boosting.jld2", "seq_t")
-c_levels <- h5read("data/paper/basic_boosting.jld2", "c_levels")
-p_acq <- h5read("data/paper/basic_boosting.jld2", "p_acq")
+sus <- h5read("data/basic_boosting.jld2", "sus")
+inf <- h5read("data/basic_boosting.jld2", "inf")
+seq_t <- h5read("data/basic_boosting.jld2", "seq_t")
+c_levels <- h5read("data/basic_boosting.jld2", "c_levels")
+p_acq <- h5read("data/basic_boosting.jld2", "p_acq")
 
 t_max <- 1500
 
@@ -162,44 +162,3 @@ ggsave(
   width = 10, height = 10,
   bg = "white"
 )
-
-
-# 
-# protect_colours <- colorspace::sequential_hcl(
-#   n = 3, h = c(135, 100), c = c(35, 70, 5), l = c(25, 98), power = c(1, 1.5)
-# )
-# 
-# p_protect <- plot_data %>%
-#   filter(class == "S") %>%
-#   group_by(t) %>%
-#   summarise(p_protected = sum(prevalence * (p > 0.95)),
-#             p_unprotected = sum(prevalence * (p < 0.05))) %>%
-#   
-#   ggplot() +
-#   geom_ribbon(aes(x = t, ymin = 0, ymax = p_protected,
-#                   fill = ">95%", colour = ">95%"),
-#               linewidth = 0.3) +
-#   geom_ribbon(aes(x = t, ymin = p_protected, ymax = 1 - p_unprotected,
-#                   fill = "5-95%", colour = "5-95%"),
-#               linewidth = 0.3) +
-#   geom_ribbon(aes(x = t, ymin = 1 - p_unprotected, ymax = 1,
-#                   fill = "<5%", colour = "<5%"),
-#               linewidth = 0.3)  +
-#   
-#   scale_x_continuous(breaks = scales::breaks_extended(),
-#                      labels = scales::label_comma()) +
-#   
-#   scale_fill_manual(values = protect_colours, breaks = c(">95%", "5-95%", "<5%"), name = "Protection<br>against<br>infection <i>ω</i>") +
-#   scale_colour_manual(values = protect_colours, breaks = c(">95%", "5-95%", "<5%"), name = "Protection<br>against<br>infection <i>ω</i>") +
-#   
-#   xlab("Time (days)") + ylab("Proportion<br>of population") +
-#   
-#   coord_cartesian(xlim = c(0, 1500), ylim = c(0, 1.0)) +
-#   
-#   plot_theme_paper +
-#   theme(panel.grid.major = element_gridline,
-#         legend.title = element_markdown()) +
-#   
-#   ggtitle(NULL, "Population protection")
-
-

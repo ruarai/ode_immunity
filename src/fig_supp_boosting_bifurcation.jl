@@ -56,6 +56,6 @@ y_real_eigs = real.(y_eigs_stack)
 y_imag_eigs = imag.(y_eigs_stack)
 
 jldsave(
-    "data/paper/bifurcations_boosting.jld2";
+    "data/bifurcations_boosting.jld2";
     x_r, y_fixed_I, y_I_sol, y_inc_sol, period, y_real_eigs
 )

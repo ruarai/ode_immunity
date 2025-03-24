@@ -40,4 +40,4 @@ y_seasonality = zeros(length(x_eta), 2)
     y_seasonality[i, :] = [seasonality_x, seasonality_y]
 end
 
-jldsave("data/paper/seasonality_bias_examples.jld2"; x_eta, x_r, y_sus, y_inf, y_inc, y_seasonality)
+jldsave("data/seasonality_bias_examples.jld2"; x_eta, x_r, y_sus, y_inf, y_inc, y_seasonality)

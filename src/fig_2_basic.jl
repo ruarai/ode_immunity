@@ -16,4 +16,4 @@ sus, inf, inc = get_results(ode_solution, seq_t, model_params)
 
 c_levels = model_params.c_levels
 p_acq = model_params.p_acq
-jldsave("data/paper/basic_boosting.jld2"; seq_t, sus, inf, inc, c_levels, p_acq)
+jldsave("data/basic_boosting.jld2"; seq_t, sus, inf, inc, c_levels, p_acq)

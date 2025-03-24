@@ -7,8 +7,8 @@ library(patchwork)
 
 source("R/plot_theme.R")
 
-t_seq <- h5read("data/paper/ex_period.jld2", "t_seq")
-y <- h5read("data/paper/ex_period.jld2", "y")
+t_seq <- h5read("data/ex_period.jld2", "t_seq")
+y <- h5read("data/ex_period.jld2", "y")
 
 y_tbl <- y %>%
   reshape2::melt(varnames = c("ix", "t"), value.name = "prevalence") %>%

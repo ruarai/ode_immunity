@@ -7,7 +7,7 @@ source("R/read_seasonality_data.R")
 source("R/plot_theme.R")
 
 
-plot_data <- read_seasonality_data("data/paper/period_over_grid.jld2")
+plot_data <- read_seasonality_data("data/period_over_grid.jld2")
 
 
 plot_data_eta_zero_periodic <- plot_data %>% filter(eta == 0, r < 0.09)
