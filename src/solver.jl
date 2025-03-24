@@ -42,7 +42,11 @@ function ode_solve(
     vec_saveat = n_days_burn_in:saveat_step:n_days
 
     return DifferentialEquations.solve(
-        prob, Euler(), dt = 0.01,
+        prob, Rodas5P(), dt = 0.01,
+
+        dtmax = 1.0,
+        reltol = 1e-10, abstol = 1e-10,
+
         saveat = vec_saveat
     );
 end

@@ -4,13 +4,13 @@ n_days = 150000
 
 t_seq = collect(1:n_days)
 
-# 0.0, 0.06, "i", factor(0),
-# 0.07, 0.06, "ii", factor(4.5),
-# 0.2, 0.06, "iii", factor(1),
-# 0.27, 0.06, "iv", factor(2),
-# 0.37, 0.06, "v", factor(9)
+# 0.0, 0.018, "i", factor(0),
+# 0.07, 0.018, "ii", factor(4.5),
+# 0.2, 0.018, "iii", factor(1),
+# 0.27, 0.018, "iv", factor(2),
+# 0.37, 0.018, "v", factor(9)
 x_eta = [0 0.07 0.2 0.27 0.37]
-x_r = [0.06 0.06 0.06 0.06 0.06]
+x_r = [0.018 0.018 0.018 0.018 0.018]
 
 y_inf = zeros(length(x_eta), length(t_seq))
 y_sus = zeros(length(x_eta), length(t_seq), baseline_k + 1)
