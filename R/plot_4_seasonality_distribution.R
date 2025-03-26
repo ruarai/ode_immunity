@@ -22,11 +22,11 @@ shifter <- function(x, n = 1) {
   if (n == 0) x else c(tail(x, -n), head(x, n))
 }
 
-hex_cols <- read_table("data/vikO25.txt", skip = 2, col_names = c("R", "G", "B", "name", "hex")) %>%
-  pull(hex) %>%
-  `[`(seq(1, 24, by = 2)) %>%
-  rev() %>% 
-  shifter(n = 10)
+# hex_cols <- read_table("data/vikO25.txt", skip = 2, col_names = c("R", "G", "B", "name", "hex")) %>%
+#   pull(hex) %>%
+#   `[`(seq(1, 24, by = 2)) %>%
+#   rev() %>% 
+#   shifter(n = 10)
 
 
 hex_cols <- twilight_palette %>% 

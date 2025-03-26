@@ -17,6 +17,9 @@ y_means <- h5read("data/bifurcations.jld2", "y_means")
 y_real_eigs <- h5read("data/bifurcations.jld2", "y_real_eigs")
 y_imag_eigs <- h5read("data/bifurcations.jld2", "y_imag_eigs")
 
+period <- h5read("data/bifurcations.jld2", "period")
+# attack_rate <- h5read("data/bifurcations.jld2", "attack_rate")
+
 hide_x_axis <- list(
   theme(axis.text.x = element_blank(), axis.title.x = element_blank())
 )
@@ -115,9 +118,6 @@ p_bifurcation_min <- ggplot() +
 p_bifurcation_min
 
 
-period <- h5read("data/bifurcations.jld2", "period")
-# attack_rate <- h5read("data/bifurcations.jld2", "attack_rate")
-
 data_period <- period %>%
   reshape2::melt(varnames = c("r", "name"), value.name = "value") %>% 
   mutate(name = c("period", "period_sd", "period_n")[name],
@@ -168,6 +168,7 @@ p_period <- ggplot() +
 
 p_period
 
+
 p_attack_rate <- ggplot() +
   geom_vline(aes(xintercept = r),
              tibble(r = rs),
@@ -188,6 +189,7 @@ p_attack_rate <- ggplot() +
         plot.subtitle = element_markdown()) +
   
   ggtitle(NULL, "<b>C</b> — Average annual infection incidence<br> at solution")
+
 
 
 inf <- h5read("data/bifurcation_stable_fixed.jld2", "inf")

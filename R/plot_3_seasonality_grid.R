@@ -185,7 +185,7 @@ x_labels <- str_c(
   ")"
 )
 
-c_levels <- 10^seq(0, 8, by = 8 / 32)
+c_levels <- 2 ^ seq(0, 8, by = 8 / 32)
 
 t_ex_start <- 365 * 100
 t_ex_end <- 365 * (100 + 6)
@@ -313,9 +313,9 @@ p_ex_antibody <- ggplot() +
   }) +
   
   scale_y_continuous(
-    trans = "log10",
-    labels = scales::label_log(base = 10),
-    breaks = 10^c(1, 3, 5)
+    trans = "log2",
+    labels = scales::label_log(base = 2),
+    breaks = 2^c(1, 3, 5)
   ) +
   
   coord_cartesian(ylim = 10^c(2.5, 6.5)) +
@@ -360,12 +360,12 @@ p_ex_yearly_antibody <- ggplot() +
   ) +
   
   scale_y_continuous(
-    trans = "log10",
-    labels = scales::label_log(base = 10),
-    breaks = 10^c(1, 3, 5)
+    trans = "log2",
+    labels = scales::label_log(base = 2),
+    breaks = 2^c(1, 3, 5)
   ) +
   
-  coord_cartesian(ylim = 10^c(2.5, 6.5)) +
+  coord_cartesian(ylim = 2^c(0, 6.5)) +
   
   plot_theme_paper +
   theme(
