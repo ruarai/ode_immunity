@@ -27,7 +27,7 @@ ix_jobs = get_jobs(arg_ix, n_array, length(x_vals))
 x_vals_job = x_vals[ix_jobs]
 
 y_period = zeros(length(x_vals_job), 3)
-y_inf_summary = zeros(length(x_vals_job), 10)
+y_inf_summary = zeros(length(x_vals_job), 11)
 y_seasonality = zeros(length(x_vals_job), 2)
 
 time_start = Base.time()

@@ -29,6 +29,8 @@ using DifferentialEquations
 using Plots
 using ChaosTools
 
+using StatsBase
+
 include("model_globals.jl")
 include("steady_state_functions.jl")
 include("model_parameters.jl")
