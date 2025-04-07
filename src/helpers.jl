@@ -106,3 +106,20 @@ function get_seasonality_coordinates(ode_solution, t_seq, model_params)
     return (weighted_x, weighted_y)
 end
 
+
+function get_peak_density(inf, t_seq)
+    inf_diff = diff(inf)
+
+    peaks_partial = (inf_diff[1:(end-1)] .>= 0) .& (inf_diff[2:end] .< 0)
+
+    # Check at the end, looping back to start
+    peak_loop = (inf_diff[end] >= 0) & (inf_diff[1] < 0)
+    
+    peaks = vcat(peaks_partial, peak_loop)
+    
+    peak_timing = (findall(peaks) .+ 0.5) .% 365
+    
+    peak_density = 365 * length(peak_timing) / (t_seq[end] - t_seq[1])
+
+    return peak_density
+end

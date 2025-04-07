@@ -36,4 +36,4 @@ y_period = reduce(vcat, y_period)
 y_seasonality = reduce(vcat, y_seasonality)
 
 
-jldsave("data/paper/period_over_grid.jld2"; x_vals, y_inf_summary, y_period, y_seasonality)
+jldsave("data/period_over_grid.jld2"; x_vals, y_inf_summary, y_period, y_seasonality)

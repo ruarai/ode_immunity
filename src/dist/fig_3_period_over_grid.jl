@@ -6,8 +6,8 @@ println("Job at array index $arg_ix of $n_array, with n_cpu = $(Threads.nthreads
 
 include("../dependencies.jl")
 
-n_days_burn_in = 1000 * 365
-n_days = n_days_burn_in + 250 * 365
+n_days_burn_in = 2000 * 365
+n_days = n_days_burn_in + 500 * 365
 
 periodic_Δt = 0.25
 t_post_burn_in = n_days_burn_in:n_days
@@ -27,7 +27,7 @@ ix_jobs = get_jobs(arg_ix, n_array, length(x_vals))
 x_vals_job = x_vals[ix_jobs]
 
 y_period = zeros(length(x_vals_job), 3)
-y_inf_summary = zeros(length(x_vals_job), 9)
+y_inf_summary = zeros(length(x_vals_job), 10)
 y_seasonality = zeros(length(x_vals_job), 2)
 
 time_start = Base.time()
@@ -60,6 +60,7 @@ Threads.@threads for i in eachindex(x_vals_job)
     y_inf_summary[i, 7] = mean(inc)
     y_inf_summary[i, 8] = testchaos01(NaNMath.log10.(inc[1:80:end]))
     y_inf_summary[i, 9] = Integer(ode_solution.retcode)
+    y_inf_summary[i, 10] = get_peak_density(inc, t_post_burn_in)
 
     period_mean, period_sd, period_n = get_period(
         ode_solution, model_params, n_days_burn_in, n_days, 

@@ -10,7 +10,7 @@
 
 cd /data/gpfs/projects/punim1541/ode_immunity/
 
-module load Julia/1.9.3-linux-x86_64 
+module load Julia/1.11.1-linux-x86_64 
 module load SUNDIALS/6.3.0
 
 export JULIA_NUM_THREADS=${SLURM_CPUS_PER_TASK}
