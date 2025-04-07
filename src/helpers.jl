@@ -107,13 +107,14 @@ function get_seasonality_coordinates(ode_solution, t_seq, model_params)
 end
 
 
-function get_peak_density(inf, t_seq)
-    inf_diff = diff(inf)
-
-    peaks_partial = (inf_diff[1:(end-1)] .>= 0) .& (inf_diff[2:end] .< 0)
-
+function get_peak_density(inc, t_seq)
+    inc_diff = diff(inc)
+    ϵ = 1e-5
+    
+    peaks_partial = (inc_diff[1:(end-1)] .>= 0) .& (inc_diff[2:end] .< 0) .& (abs.(inc_diff[1:(end-1)] .- inc_diff[2:end]) .> ϵ)
+    
     # Check at the end, looping back to start
-    peak_loop = (inf_diff[end] >= 0) & (inf_diff[1] < 0)
+    peak_loop = (inc_diff[end] >= 0) & (inc_diff[1] < 0) & (abs(inc_diff[end] - inc_diff[1]) > ϵ)
     
     peaks = vcat(peaks_partial, peak_loop)
     
