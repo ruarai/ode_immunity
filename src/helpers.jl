@@ -107,11 +107,12 @@ function get_seasonality_coordinates(ode_solution, t_seq, model_params)
 end
 
 
-function get_peak_density(inc, t_seq)
+function get_peak_density(inc, t_seq; ϵ = 1e-6)
     inc_diff = diff(inc)
-    ϵ = 1e-5
     
-    peaks_partial = (inc_diff[1:(end-1)] .>= 0) .& (inc_diff[2:end] .< 0) .& (abs.(inc_diff[1:(end-1)] .- inc_diff[2:end]) .> ϵ)
+    peaks_partial = (inc_diff[1:(end-1)] .>= 0) .&
+        (inc_diff[2:end] .< 0) .&
+        (abs.(inc_diff[1:(end-1)] .- inc_diff[2:end]) .> ϵ)
     
     # Check at the end, looping back to start
     peak_loop = (inc_diff[end] >= 0) & (inc_diff[1] < 0) & (abs(inc_diff[end] - inc_diff[1]) > ϵ)
