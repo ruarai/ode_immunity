@@ -16,12 +16,33 @@ t_ex_start <- 365 * 100
 t_ex_end <- 365 * (100 + 70)
 
 
+x_labels <- str_c(
+  "<b>",
+  c("i", "ii", "iii", "iv", "v"),
+  ".</b> ",
+  c(
+    "Zero seasonality",
+    "Quasiperiodic",
+    "Periodic (1 year)",
+    "Periodic (2 years)",
+    "Chaotic"
+  ),
+  " (<i>η</i> = ",
+  scales::label_comma(accuracy = 0.01)(x_eta),
+  ", <i>r</i> = ",
+  scales::label_comma(accuracy = 0.001)(x_r),
+  ")"
+)
+
+
 plot_data_ex_inf <- y_inf %>%
   reshape2::melt(c("i", "t"), value.name = "prevalence") %>%
   mutate(eta = x_eta[i], r = x_r[i], label = x_labels[i]) %>%
   filter(t >= t_ex_start, t < t_ex_end) %>%
   group_by(label, eta, r, t) %>%
   summarise(prevalence = sum(prevalence))
+
+
 
 
 peaks <- plot_data_ex_inf %>%
@@ -38,7 +59,6 @@ peaks_end_of_year <- peaks %>%
 
 
 
-
 ggplot() +
   geom_path(aes(x = year, y = t %% 365, group = group),
             linewidth = 0.3, alpha = 0.3,
@@ -52,6 +72,10 @@ ggplot() +
                linewidth = 0.3, alpha = 0.3,
                peaks_end_of_year) +
   
+  geom_segment(aes(x = 100, y = 0, xend = year, yend = t %% 365),
+               linewidth = 0.3, alpha = 0.3,
+               peaks %>% group_by(eta) %>% slice(1)) +
+  
   geom_point(aes(x = year, y = t %% 365),
              size = 0.5,
              peaks) +
@@ -60,7 +84,7 @@ ggplot() +
   
   scale_y_continuous(breaks = c(0, 180, 365)) +
   
-  coord_cartesian(ylim = c(0, 365)) +
+  coord_cartesian(ylim = c(0, 365), xlim = c(98, 172), expand = FALSE) +
   
   plot_theme_paper +
   
@@ -69,31 +93,9 @@ ggplot() +
   theme(strip.text = element_markdown())
 
 
-
-
-ggplot() +
-  
-  geom_segment(aes(x = year, y = t %% 365, xend = year + 3 / 365, yend = t %% 365 + 3, colour = log10(prevalence) ),
-               linewidth = 2.5,
-               plot_data_ex_inf %>% mutate(year = t / 365)) +
-  
-  facet_wrap(~label, ncol = 1) +
-  
-  scale_y_continuous(breaks = c(0, 180, 365)) +
-  
-  coord_cartesian(ylim = c(0, 365)) +
-  
-  scale_colour_viridis_c() +
-  
-  plot_theme_paper +
-  
-  xlab("Time (years)") + ylab("Time of year (days)") +
-  
-  theme(strip.text = element_markdown())
-
-
-
-
-
-
-
+ggsave(
+  "results/results_supp_peak_timing.pdf",
+  device = cairo_pdf,
+  width = 7, height = 6.75,
+  bg = "white"
+)

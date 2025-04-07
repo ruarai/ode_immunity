@@ -26,6 +26,7 @@ read_seasonality_data <- function(file) {
     inc_min = y_inf_summary[, 5], inc_max = y_inf_summary[, 6],  
     inc_mean = y_inf_summary[, 7], inc_chaos = y_inf_summary[ , 8],
     ret_code = y_inf_summary[, 9],
+    peak_density = y_inf_summary[, 10],
     
     period = y_period[,1], period_sd = y_period[,2], period_n = y_period[,3],
     
