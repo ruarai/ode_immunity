@@ -60,7 +60,7 @@ Threads.@threads for i in eachindex(x_vals_job)
     y_inf_summary[i, 7] = mean(inc)
     y_inf_summary[i, 8] = testchaos01(NaNMath.log10.(inc[1:80:end]))
     y_inf_summary[i, 9] = Integer(ode_solution.retcode)
-    y_inf_summary[i, 10] = get_peak_density(inc, t_post_burn_in)
+    y_inf_summary[i, 10] = get_peak_density(inc, t_post_burn_in, ϵ = 1e-10)
     y_inf_summary[i, 11] = entropy(inc)
 
     period_mean, period_sd, period_n = get_period(
