@@ -74,7 +74,7 @@ maxmins <- data_I_sol %>%
 p_bifurcation_min <- ggplot() +
   geom_vline(aes(xintercept = r),
              tibble(r = rs),
-             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+             colour = "grey40", linewidth = 0.6, linetype = "42") +
   geom_line(aes(x = r, y = max),
             colour = colour_A,
             linewidth = 1.0,
@@ -110,7 +110,7 @@ p_bifurcation_min <- ggplot() +
   
   plot_theme_paper +
   theme(legend.position = "none",
-        panel.grid.major = element_gridline,
+        panel.grid.major.y = element_gridline,
         plot.subtitle = element_markdown()) +
   
   ggtitle(NULL, "<b>A</b> — Bifurcation over antibody<br> decay rate <i>r</i>")
@@ -134,7 +134,7 @@ min_periods <- data_period %>% slice(1) %>%
 p_period <- ggplot() +
   geom_vline(aes(xintercept = r),
              tibble(r = rs),
-             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+             colour = "grey40", linewidth = 0.6, linetype = "42") +
   geom_line(aes(x = r, y = 365 / period),
             linewidth = 1.0, colour = colour_A,
             data_period) +
@@ -161,7 +161,7 @@ p_period <- ggplot() +
   
   theme(legend.position = "none",
         axis.text.x.top = element_text(margin = margin(b = 0.3, unit = "cm")),
-        panel.grid.major = element_gridline,
+        panel.grid.major.y = element_gridline,
         plot.subtitle = element_markdown()) +
   
   ggtitle(NULL,"<b>B</b> — Periodic solution frequency")
@@ -172,7 +172,7 @@ p_period
 p_attack_rate <- ggplot() +
   geom_vline(aes(xintercept = r),
              tibble(r = rs),
-             colour = "grey80", linewidth = 1.0, alpha = 0.3) +
+             colour = "grey40", linewidth = 0.6, linetype = "42") +
   geom_line(aes(x = r, y = mean_inc * 365),
             linewidth = 1.0,
             data_mean_incidence) +
@@ -185,7 +185,7 @@ p_attack_rate <- ggplot() +
   
   plot_theme_paper +
   theme(legend.position = "none",
-        panel.grid.major = element_gridline,
+        panel.grid.major.y = element_gridline,
         plot.subtitle = element_markdown()) +
   
   ggtitle(NULL, "<b>C</b> — Average annual infection incidence<br> at solution")
