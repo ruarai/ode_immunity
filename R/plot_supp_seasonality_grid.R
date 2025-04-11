@@ -40,59 +40,55 @@ plot_annotations <- list(
   annotate("text", x = -0.07, y = 0.0275, label = "Fixed\npoint", hjust = 0)
 )
 
-
-# plot_data_peaks <- plot_data %>%
-#   mutate(is_round = abs(round(peak_density) - peak_density) < 1e-9,
-#          label = case_when(
-#            is_round ~ as.character(round(peak_density)),
-#            peak_density < 1 ~ "< 1",
-#            TRUE ~ str_c(round(peak_density), " – ", round(peak_density) + 1)
-#          )) %>%
-#   filter(peak_density > 0) %>% 
-#   mutate(label = factor(label, 
-#                         c("< 1", "1", "1 – 2", "2", "2 – 3", "3", "3 – 4")))
-# 
-# 
-# p_peak_density <- ggplot() +
-#   geom_tile(aes(x = eta, y = r, fill = label),
-#             plot_data_peaks %>% filter(periodic)) +
-#   
-#   plot_annotations +
-#   
-#   scale_fill_viridis_d(option = 4, name = "Peaks per year") +
-#   
-#   
-#   coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
-#   xlab("Seasonality strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
-#   
-#   plot_theme_paper +
-#   # guides(fill = guide_colourbar(barwidth = 15)) +
-#   guides(fill = guide_legend(direction = "horizontal", reverse = FALSE, byrow = TRUE)) +
-#   theme(legend.position = "bottom") +
-#   
-#   ggtitle(NULL, "<b>A</b> — Peaks per year")
+plot_data_peaks <- plot_data %>% 
+  filter(periodic, round(period / 365) > 0) %>%
+  mutate(label = case_when(
+    round(period / 365) > 2 ~ "Period > 2",
+    TRUE ~ str_c(round(peak_density * (period / 365)), "/", round(period/365))
+  ))
 
 
-p_entropy <- ggplot() +
-  geom_tile(aes(x = eta, y = r, fill = log10(1 / entropy) ),
-            plot_data %>% filter(r > 0.001)) +
+
+p_orbits <- ggplot() +
+  
+  geom_tile(aes(x = eta, y = r, fill = label),
+            plot_data_peaks) +
   
   plot_annotations +
   
-  scale_fill_viridis_c(
-    option = 2, 
-    name = "Inverse entropy (log10)"
-  ) +
+  ggokabeito::scale_fill_okabe_ito(name = "[Peaks]/[Period]") +
   
-  
-  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
+  coord_fixed(ratio = 16.66, ylim = c(0, 0.03), xlim = c(-0.07, 0.5)) +
   xlab("Seasonality strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
   
   plot_theme_paper +
+  
+  guides(fill = guide_legend(direction = "horizontal", reverse = FALSE, byrow = FALSE, ncol = 8)) +
+  theme(legend.position = "bottom") +
+  
+  ggtitle(NULL, "<b>A</b> — Number of peaks per period (period ≤ 2yr)")
+
+p_orbits
+
+p_peak_density <- ggplot() +
+  
+  geom_tile(aes(x = eta, y = r, fill = peak_density),
+            plot_data) +
+  
+  plot_annotations +
+  
+  scale_fill_viridis_c(option = 5, name = "Peaks per year") +
+  
+  coord_fixed(ratio = 16.66, ylim = c(0, 0.03), xlim = c(-0.07, 0.5)) +
+  xlab("Seasonality strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
+  
+  plot_theme_paper +
+  
   guides(fill = guide_colourbar(barwidth = 15)) +
   theme(legend.position = "bottom") +
   
-  ggtitle(NULL, "<b>A</b> — Inverse Shannon entropy over infection incidence")
+  ggtitle(NULL, "<b>B</b> — Average number of peaks per year")
+
 
 p_max <- ggplot()  +
   annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
@@ -115,7 +111,7 @@ p_max <- ggplot()  +
   guides(fill = guide_colourbar(barwidth = 15)) +
   theme(legend.position = "bottom") +
   
-  ggtitle(NULL, "<b>B</b> — Peak infection prevalence")
+  ggtitle(NULL, "<b>C</b> — Peak infection prevalence")
 
 
 p_attack_rate <- ggplot()  +
@@ -140,35 +136,10 @@ p_attack_rate <- ggplot()  +
   guides(fill = guide_colourbar(barwidth = 15)) +
   theme(legend.position = "bottom") +
   
-  ggtitle(NULL, "<b>C</b> — Annual average infection incidence")
-
-ggplot()  +
-  annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
-  geom_tile(aes(x = eta, y = r, fill = inf_diff),
-            plot_data) +
-  
-  plot_annotations + 
-  
-  # scale_fill_stepsn(
-  #   colours = colorspace::sequential_hcl(n = 20, h = c(300, 75), c = c(40, NA, 95), l = c(15, 90), power = c(1, 1.1)),
-  #   name = "Annual infection incidence",
-  #   limits = c(0, 2.0),
-  #   breaks = seq(0, 2.0, 0.2),
-  #   labels = c("0", "", "0.4", "", "0.8", "", "1.2", "", "1.6", "", "2.0")
-  # ) +
-  
-  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
-  
-  plot_theme_paper +
-  guides(fill = guide_colourbar(barwidth = 15)) +
-  theme(legend.position = "bottom") +
-  
-  ggtitle(NULL, "<b>C</b> — Peak infection incidence")
+  ggtitle(NULL, "<b>D</b> — Annual average infection incidence")
 
 
-
-p_full <- (p_entropy | p_max) / (p_attack_rate | plot_spacer())
+p_full <- (p_orbits | p_peak_density) / (p_max | p_attack_rate)
 
 
 ggsave(
