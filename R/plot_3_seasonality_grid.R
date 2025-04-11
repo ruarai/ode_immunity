@@ -83,7 +83,7 @@ plot_annotations <- list(
     stroke = 0.5
   ),
   geom_label(
-    aes(x = eta + 0.01, y = r - 0.002, label = label),
+    aes(x = eta + 0.01, y = r + 0.0015, label = label),
     plot_data_example_points,
     label.r = unit(0.1, "cm"),
     label.size = 0,
@@ -92,6 +92,7 @@ plot_annotations <- list(
 )
 
 period_cols <- viridis::inferno(n = 8, direction = -1, begin = 0.1)
+
 p_period <- ggplot() +
   
   geom_tile(aes(x = eta, y = r, fill = period),
@@ -107,7 +108,7 @@ p_period <- ggplot() +
   
   scale_fill_manual(
     name = "Period",
-    values = c(period_cols, "#2260BE", "#BDE6F4", "white") %>% 
+    values = c(period_cols, "#0076BC", "#9ED7F3", "white") %>% 
       `names<-`(1:11),
     
     labels = c("1 year", str_c(2:7, " years"), "≥8 years", "Quasiperiodic", "Chaotic", "Unclassified") %>%
@@ -126,8 +127,14 @@ p_period <- ggplot() +
   theme(legend.position = "bottom", legend.byrow = TRUE,
         legend.key = element_rect(colour = "grey80", linewidth = 0.5))
 
+
 p_period
 
+
+color_tbl <- read_delim("~/Downloads/ScientificColourMaps8/lipari/lipari.txt", col_names = c("R", "G", "B")) %>%
+  mutate(c = rgb(R, G, B))
+
+min_cols <- color_tbl$c[seq(1, nrow(color_tbl), length.out = 128)]
 
 p_min <- ggplot()  +
   geom_tile(aes(x = eta, y = r, fill = pmax(-14, log10(inf_min))),
@@ -140,7 +147,8 @@ p_min <- ggplot()  +
   ) + 
   
   scale_fill_stepsn(
-    colours = rev(colorspace::diverging_hcl(n = 20, h = c(240, 15), c = c(60, 80), l = c(75, 5), power = c(1.2, 1.5))),
+    # colours = rev(colorspace::diverging_hcl(n = 20, h = c(240, 15), c = c(60, 80), l = c(75, 5), power = c(1.2, 1.5))),
+    colours = min_cols,
     name = "Minimum\ninfection\nprevalence (log10)",
     limits = c(-15, -1),
     breaks = seq(-15, -1, 0.5),
@@ -157,6 +165,8 @@ p_min <- ggplot()  +
          colour = guide_none()) +
   theme(legend.position = "bottom",
         legend.title = element_text(margin = margin(r = 0.7, unit = "cm")))
+
+p_min
 
 p_period | p_min
 
@@ -219,7 +229,7 @@ p_ex_inf <- ggplot() +
   
   facet_wrap(~label, ncol = 1) +
   
-  xlab("Time (years)") +
+  xlab("Time (years following burn-in)") +
   ylab("Infection prevalence") +
   
   scale_x_continuous(breaks = scales::breaks_width(365), labels = function(x) {
