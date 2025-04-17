@@ -5,7 +5,7 @@ is_harmonic <- function(period) {
   # Check multiples up to 12
   M <- outer(period, 1:12)
   
-  a <- pmin(M %% 365, abs(M %% 365 - 365))
+  a <- pmin(M %% 365, 365 - M %% 365)
   
   apply(a, 1, min) < 1
 }
@@ -38,9 +38,9 @@ read_seasonality_data <- function(file) {
       is_period_harmonic = is_harmonic(period),
       
       periodic = is_period_harmonic & (period_n > 1),
-      chaotic = (inf_chaos > 0) & (!periodic),
+      chaotic = (inf_chaos > 0.99) & (!periodic),
       
-      quasiperiodic = (period_n > 1) & (!periodic) & (eta > 0)
+      quasiperiodic = (period_n > 1) & (!periodic) & (!chaotic) & (eta > 0)
     )
   
   return(plot_data)

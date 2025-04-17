@@ -15,7 +15,6 @@ plot_data_periodic <- plot_data %>%
          period = pmin(period, 8),
          period = factor(round(period)))
 
-plot_data_quasiperiodic <- plot_data %>% filter(quasiperiodic)
 plot_data_chaotic <- plot_data %>% filter(chaotic)
 
 plot_data_empty <- plot_data %>% filter(!periodic, !quasiperiodic, !chaotic)
@@ -24,6 +23,8 @@ plot_data_eta_zero <- plot_data %>% filter(eta == 0)
 plot_data_eta_zero_periodic <- plot_data %>% filter(eta == 0, r < 0.065)
 
 bifur_zero <- plot_data_eta_zero %>% filter(inf_diff < 1e-3) %>% pull(r) %>% head(1)
+
+plot_data_quasiperiodic <- plot_data %>% filter(quasiperiodic, r < bifur_zero)
 
 year_stops <- c(1/2, 2/3, 1, 3/2, 2, 3)
 year_marks <- approxfun(plot_data_eta_zero_periodic$period, plot_data_eta_zero_periodic$r)(365 * year_stops)
