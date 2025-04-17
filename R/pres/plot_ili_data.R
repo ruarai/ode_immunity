@@ -1,5 +1,8 @@
 
 
+library(tidyverse)
+
+source("R/plot_theme.R")
 
 ili_data <- read_csv("data_old/flu-ili-byregion-fluseason.csv")
 
@@ -32,4 +35,4 @@ ggplot() +
   
   plot_theme_paper +
   
-  ggtitle("Counts of influenza-like illness", "California Department of Public Health</i> ")
+  ggtitle("Counts of influenza-like illness")
