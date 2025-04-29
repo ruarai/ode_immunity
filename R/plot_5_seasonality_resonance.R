@@ -106,7 +106,7 @@ p_axes_freq <- ggplot() +
   
   coord_cartesian(ylim = c(0, 0)) +
   
-  xlab("Natural frequency without seasonality (years<sup>-1</sup>)") + ylab(NULL) +
+  xlab("Natural frequency without seasonal forcing (years<sup>-1</sup>)") + ylab(NULL) +
   theme(axis.line.x = element_blank(), axis.ticks.x = element_blank(),
         axis.text.y = element_blank(), axis.ticks.y = element_blank(), axis.line.y = element_blank())
 
@@ -126,7 +126,7 @@ ggsave(
 )
 
 plot_data_labels <- tibble(eta = c(0.1, 0.3, 0.5)) %>% 
-  mutate(eta_label = str_c("Seasonality<br>strength<br><i>η</i> = ", eta),
+  mutate(eta_label = str_c("Seasonal forcing<br>strength<br><i>η</i> = ", eta),
          eta_label = factor(eta_label))
 
 p_labels <- ggplot() +

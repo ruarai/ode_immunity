@@ -183,7 +183,7 @@ x_labels <- str_c(
   c("i", "ii", "iii", "iv", "v"),
   ".</b> ",
   c(
-    "Zero seasonality",
+    "Zero seasonal forcing",
     "Quasiperiodic",
     "Periodic (1 year)",
     "Periodic (2 years)",

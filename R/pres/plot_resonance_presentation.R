@@ -129,7 +129,7 @@ ggplot() +
   scale_x_continuous(breaks = c(0, freq_breaks_r), labels = c("", freq_breaks)) +
   coord_cartesian(xlim = c(0, 0.03), ylim = c(0.71, 1.29)) +
   
-  xlab("Natural frequency without seasonality (years<sup>-1</sup>)") + ylab("Proportional difference") +
+  xlab("Natural frequency without seasonal forcing (years<sup>-1</sup>)") + ylab("Proportional difference") +
   
   plot_theme_paper +
   theme(strip.text = element_markdown(colour = "black"),
@@ -161,7 +161,7 @@ p_axes_freq <- ggplot() +
   
   coord_cartesian(ylim = c(0, 0)) +
   
-  xlab("Natural frequency without seasonality (years<sup>-1</sup>)") + ylab(NULL) +
+  xlab("Natural frequency without seasonal forcing (years<sup>-1</sup>)") + ylab(NULL) +
   theme(axis.line.x = element_blank(), axis.ticks.x = element_blank(),
         axis.text.y = element_blank(), axis.ticks.y = element_blank(), axis.line.y = element_blank())
 
