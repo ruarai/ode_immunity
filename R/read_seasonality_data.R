@@ -35,9 +35,9 @@ read_seasonality_data <- function(file) {
   ) %>%
     mutate(
       inf_diff = inf_max - inf_min,
-      is_period_harmonic = is_harmonic(period),
+      is_periodic_harmonic = is_harmonic(period),
       
-      periodic = is_period_harmonic & (period_n > 1),
+      periodic = is_periodic_harmonic & (period_n > 1),
       chaotic = (inf_chaos > 0.99) & (!periodic),
       
       quasiperiodic = (period_n > 1) & (!periodic) & (!chaotic) & (eta > 0)

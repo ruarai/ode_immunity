@@ -23,7 +23,7 @@ plot_data_incidence <- plot_data %>%
          log_diff = pmax(log2(inc_mean_diff), -0.4),
          period_year = approxfun(plot_data_eta_zero_periodic$r, plot_data_eta_zero_periodic$period)(r) / 365 ) %>% 
   filter(eta %in% c(0, 0.1, 0.3, 0.5)) %>% 
-  mutate(eta_label = str_c("Seasonality strength <i>η</i> = ", eta))
+  mutate(eta_label = str_c("Seasonal forcing strength <i>η</i> = ", eta))
 
 
 freq_breaks <- seq(0.5, 2.5, by = 0.5)

@@ -6,7 +6,7 @@ library(patchwork)
 source("R/plot_theme.R")
 
 plot_data <- read_seasonality_data("data/period_over_grid.jld2") %>%
-  mutate(eta_label = str_c("Seasonality constant <i>η</i> = ", eta))
+  mutate(eta_label = str_c("Seasonal forcing strength <i>η</i> = ", eta))
 
 
 p_min <- ggplot() +

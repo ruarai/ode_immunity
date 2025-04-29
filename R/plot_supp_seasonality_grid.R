@@ -59,7 +59,7 @@ p_orbits <- ggplot() +
   ggokabeito::scale_fill_okabe_ito(name = "[Peaks]/[Period]") +
   
   coord_fixed(ratio = 16.66, ylim = c(0, 0.03), xlim = c(-0.07, 0.5)) +
-  xlab("Seasonality strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
+  xlab("Seasonal forcing strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
   
   plot_theme_paper +
   
@@ -80,7 +80,7 @@ p_peak_density <- ggplot() +
   scale_fill_viridis_c(option = 5, name = "Peaks per year") +
   
   coord_fixed(ratio = 16.66, ylim = c(0, 0.03), xlim = c(-0.07, 0.5)) +
-  xlab("Seasonality strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
+  xlab("Seasonal forcing strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
   
   plot_theme_paper +
   
@@ -105,7 +105,7 @@ p_max <- ggplot()  +
   ) +
   
   coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
+  xlab("Seasonal forcing strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +
   guides(fill = guide_colourbar(barwidth = 15)) +
@@ -130,7 +130,7 @@ p_attack_rate <- ggplot()  +
   ) +
   
   coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
-  xlab("Seasonality constant <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
+  xlab("Seasonal forcing strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +
   guides(fill = guide_colourbar(barwidth = 15)) +

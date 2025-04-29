@@ -120,7 +120,7 @@ p_period <- ggplot() +
   
   
   coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
-  xlab("Seasonality strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
+  xlab("Seasonal forcing strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
   guides(fill = guide_legend(nrow = 3, ncol = 5),
          colour = guide_none()) +
   
@@ -159,7 +159,7 @@ p_min <- ggplot()  +
   ) +
   
   coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
-  xlab("Seasonality strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
+  xlab("Seasonal forcing strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>")  +
   
   plot_theme_paper +
   guides(fill = guide_colourbar(barwidth = 15),
