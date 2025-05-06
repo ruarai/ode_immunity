@@ -118,3 +118,58 @@ ggplot() +
     strip.text.x = element_blank(),
     panel.spacing.y = unit(y_panel_spacing, "cm")
   )
+
+x_eta_plot <- x_eta[[1]]
+
+plot_data <- y_inf %>%
+  reshape2::melt(c("i", "t"), value.name = "prevalence") %>%
+  as_tibble() %>% 
+  mutate(eta = x_eta[i], r = x_r[i]) %>% 
+  
+  filter(eta == x_eta_plot) %>%
+  
+  filter(t >= t_ex_start) %>%
+  rename(frac_I = prevalence) %>%
+  left_join(
+    y_sus %>%
+      reshape2::melt(c("i", "t", "ix"), value.name = "prevalence") %>%
+      as_tibble() %>% 
+      filter(ix == 1) %>% 
+      mutate(eta = x_eta[i], r = x_r[i]) %>%
+      group_by(eta, r, t) %>%
+      summarise(prevalence = sum(prevalence)) %>% 
+      
+      filter(eta == x_eta_plot) %>%
+      
+      filter(t >= t_ex_start) %>%
+      
+      rename(frac_S = prevalence)
+  )
+  
+plot_data %>%   
+  mutate(t_year = t %% 365) %>% 
+  filter(t_year < 1) %>% 
+  
+  ggplot() +
+  geom_point(aes(x = frac_I, y = frac_S)) +
+  
+  scale_y_log10() +
+  
+  plot_theme_paper
+
+
+plot_data_param <- plot_data %>%
+  mutate(t_year = t %% 365,
+         x = cos(t_year / 365 * 2 * pi) * (1 + 20 * frac_I), y = sin(t_year / 365 * 2 * pi) * (1 + 20 * frac_I),
+         z = frac_S)
+
+
+plotly::plot_ly(
+  plot_data_param,
+  x = ~x, y = ~y, z = ~z, 
+  type = "scatter3d", mode = "lines",
+  line = list(sizemode = "diameter", size = 0.3, color = "black"),
+  opacity = 0.1
+)
+  
+

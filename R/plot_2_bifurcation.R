@@ -118,30 +118,6 @@ p_bifurcation_min <- ggplot() +
 p_bifurcation_min
 
 
-p_attack_rate <- ggplot() +
-  geom_vline(aes(xintercept = r),
-             tibble(r = rs),
-             colour = "grey40", linewidth = 0.6, linetype = "42") +
-  geom_line(aes(x = r, y = mean_inc * 365),
-            linewidth = 1.0,
-            data_mean_incidence) +
-  
-  xlab("Antibody decay rate <i>r</i>") +
-  ylab("Infection incidence") +
-  
-  coord_cartesian(ylim = c(NA, 3.0)) +
-  
-  
-  plot_theme_paper +
-  theme(legend.position = "none",
-        panel.grid.major.y = element_gridline,
-        plot.subtitle = element_markdown()) +
-  
-  ggtitle(NULL, "<b>B</b> — Average annual infection incidence<br> at solution")
-
-
-
-
 data_period <- period %>%
   reshape2::melt(varnames = c("r", "name"), value.name = "value") %>% 
   mutate(name = c("period", "period_sd", "period_n")[name],
@@ -188,9 +164,32 @@ p_period <- ggplot() +
         panel.grid.major.y = element_gridline,
         plot.subtitle = element_markdown()) +
   
-  ggtitle(NULL,"<b>C</b> — Periodic solution frequency")
+  ggtitle(NULL,"<b>B</b> — Stable periodic solution frequency")
 
 p_period
+
+
+
+p_attack_rate <- ggplot() +
+  geom_vline(aes(xintercept = r),
+             tibble(r = rs),
+             colour = "grey40", linewidth = 0.6, linetype = "42") +
+  geom_line(aes(x = r, y = mean_inc * 365),
+            linewidth = 1.0,
+            data_mean_incidence) +
+  
+  xlab("Antibody decay rate <i>r</i>") +
+  ylab("Infection incidence") +
+  
+  coord_cartesian(ylim = c(NA, 3.0)) +
+  
+  
+  plot_theme_paper +
+  theme(legend.position = "none",
+        panel.grid.major.y = element_gridline,
+        plot.subtitle = element_markdown()) +
+  
+  ggtitle(NULL, "<b>C</b> — Average annual infection incidence<br> at solution")
 
 
 
@@ -249,7 +248,7 @@ p_examples <- ggplot() +
 
 p_examples
 
-p_top <- (p_bifurcation_min | p_attack_rate | p_period) +
+p_top <- (p_bifurcation_min | p_period | p_attack_rate) +
   plot_layout(tag_level = "new")
 
 
