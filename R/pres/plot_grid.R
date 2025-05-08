@@ -78,6 +78,7 @@ ggplot() +
   
   
   coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
+  scale_x_continuous(breaks = seq(0, 0.5, by = 0.1)) +
   xlab("Seasonal forcing strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
   guides(fill = guide_legend(nrow = 3, ncol = 5),
          colour = guide_none()) +
