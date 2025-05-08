@@ -6,8 +6,7 @@
 
 #### Julia environment
 
-All code was run on Julia v1.11.3 (or v1.9.3 as was the latest available for HPC
-running of `fig_3_period_over_grid.jl`). A Julia project has been included
+All code was run on Julia v1.11. A Julia project has been included
 (`Package.toml`) describing the necessary packages for reproduction. Run the
 following code to instantiate the necessary packages:
 
@@ -19,11 +18,12 @@ Pkg.instantiate()
 
 All necessary Julia code is provided in the `src` subdirectory.
 
-#### Basic figures
+#### Figures
 
-The files `fig_2_basic.jl`, `fig_3_bifurcation.jl`, and `fig_5_examples.jl` may 
-now be run. These will produce JLD2 files (HDF5) that we will read from R later 
+The files `fig_2_basic.jl`, `fig_3_bifurcation.jl`, `fig_5_examples.jl`, `fig_7_examples.jl` may now be run. These will produce JLD2 files (HDF5) that we will read from R later 
 to visualise the results.
+
+The data for other figures can similarly be produced using the `fig_` or `fig_supp_` `.jl` files.
 
 #### Dynamics over decay rate and seasonality
 
