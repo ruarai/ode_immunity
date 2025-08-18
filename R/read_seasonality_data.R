@@ -28,6 +28,7 @@ read_seasonality_data <- function(file) {
     ret_code = y_inf_summary[, 9],
     peak_density = y_inf_summary[, 10],
     entropy = y_inf_summary[, 11],
+    toroidal_filling = y_inf_summary[, 11],
     
     period = y_period[,1], period_sd = y_period[,2], period_n = y_period[,3],
     
