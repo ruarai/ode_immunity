@@ -10,16 +10,20 @@ hdf5_file <- "data/chaos_downsample.jld2"
 
 t_post_burn_in <- h5read(hdf5_file, "t_post_burn_in")
 x_eta <- h5read(hdf5_file, "x_eta")
-y_inc <- h5read(hdf5_file, "y_inc")
+y_inf <- h5read(hdf5_file, "y_inf")
 
 downsample_rate <- h5read(hdf5_file, "downsample_rate")
 chaos_result <- h5read(hdf5_file, "chaos_result")
 
+chaos_tbl <- chaos_result %>%
+  reshape2::melt(varnames = c("ix", "ix_d"), value.name = "chaos") %>%
+  mutate(downsample = downsample_rate[ix_d],
+         eta = x_eta[ix])
 
 
 
-y_tbl <- y_inc %>%
-  reshape2::melt(varnames = c("ix", "t"), value.name = "incidence") %>%
+y_tbl <- y_inf %>%
+  reshape2::melt(varnames = c("ix", "t"), value.name = "prevalence") %>%
   mutate(t = t_post_burn_in[t],
          eta = x_eta[ix])
 
@@ -31,40 +35,44 @@ p_bifur <- ggplot() +
              alpha = 0.5, colour = ggokabeito::palette_okabe_ito(5),
              linewidth = 1.0) +
   
-  geom_point(aes(x = eta, y = incidence),
+  geom_point(aes(x = eta, y = prevalence),
              size = 0.2, stroke = 0.1,
              y_tbl %>% filter(t %% 365 == 180))  +
   
-  coord_cartesian(ylim = c(0, 0.001), xlim = c(0.25, 0.45)) +
+  coord_cartesian(ylim = c(0, 0.005), xlim = c(0.25, 0.45)) +
   
-  xlab("Seasonal forcing strength <i>η</i>") + ylab("Infection incidence") +
+  xlab("Seasonal forcing strength <i>η</i>") + ylab("Infection prevalence") +
   plot_theme_paper +
   
   ggtitle("<b>A</b> — Bifurcation diagram over seasonal forcing strength")
 
 p_bifur
 
-chaos_tbl <- chaos_result %>%
-  reshape2::melt(varnames = c("ix", "ix_d"), value.name = "chaos") %>%
-  mutate(downsample = downsample_rate[ix_d],
-         eta = x_eta[ix])
 
 
 p_chaos_test <- ggplot() +
   
   geom_hline(yintercept = 80, linewidth = 2.0, colour = "grey80") +
   
-  geom_tile(aes(x = eta, y = downsample),
-            fill = ggokabeito::palette_okabe_ito(5), alpha = 0.5,
-            chaos_tbl %>% filter(chaos > 0.5)) +
+  geom_tile(aes(x = eta, y = downsample, fill = chaos > 0.5),
+            alpha = 0.5,
+            chaos_tbl) +
+  
+  geom_hline(aes(yintercept = downsample + 5), chaos_tbl,
+             colour = "white", linewidth = 0.5) +
   
   coord_cartesian(xlim = c(0.25, 0.45), ylim = c(0, NA)) +
+  
+  ggokabeito::scale_fill_okabe_ito(order = c(8, 5)) +
   
   xlab("Seasonal forcing strength <i>η</i>") + ylab("Downsampling rate") +
   
   plot_theme_paper +
   
-  ggtitle("<b>B</b> — Chaos classification by downsampling rate")
+  ggtitle("<b>B</b> — Chaos classification by downsampling rate") +
+  theme(legend.position = "none")
+
+p_chaos_test
 
 p_bifur / p_chaos_test
 
@@ -74,5 +82,5 @@ ggsave(
   width = 8, height = 6.75,
   bg = "white"
 )
-
+ 
 
