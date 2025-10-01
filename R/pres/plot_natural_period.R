@@ -86,7 +86,7 @@ ggplot() +
              data_period %>% filter(r == max(r)),
              size = 1.5, colour = "white") +
   
-  xlab("Antibody decay rate <i>r</i> (days<sup>-1</sup>)") +
+  xlab("Effective antibody decay rate <i>r</i> (days<sup>-1</sup>)") +
   ylab("Periods (years)") +
   
   coord_cartesian(xlim = c(0, 0.03), ylim = c(0, 4)) +

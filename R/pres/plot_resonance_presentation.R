@@ -44,7 +44,7 @@ ggplot() +
   
   coord_cartesian(xlim = c(0, 0.03), ylim = c(0, 2.0)) +
   
-  xlab("Antibody decay rate <i>r</i>") + ylab("Infection incidence") +
+  xlab("Effective antibody decay rate <i>r</i>") + ylab("Infection incidence") +
   
   plot_theme_paper +
   theme(strip.text = element_markdown(colour = "black"),
@@ -68,7 +68,7 @@ ggplot() +
   
   coord_cartesian(xlim = c(0, 0.03), ylim = c(0, 2.0)) +
   
-  xlab("Antibody decay rate <i>r</i>") + ylab("Infection incidence") +
+  xlab("Effective antibody decay rate <i>r</i>") + ylab("Infection incidence") +
   
   plot_theme_paper +
   theme(strip.text = element_markdown(colour = "black"),
@@ -98,7 +98,7 @@ ggplot() +
   scale_y_continuous(breaks = c(0.75, 1, 1.25)) +
   coord_cartesian(xlim = c(0, 0.03), ylim = c(0.71, 1.29)) +
   
-  xlab("Antibody decay rate <i>r</i>") + ylab("Proportional difference") +
+  xlab("Effective antibody decay rate <i>r</i>") + ylab("Proportional difference") +
   
   plot_theme_paper +
   theme(strip.text = element_markdown(colour = "black"),

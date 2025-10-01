@@ -100,7 +100,7 @@ p_bifurcation_min <- ggplot() +
              bifur_points,
              size = 1.5, colour = "white") +
   
-  xlab("Antibody decay rate <i>r</i>") +
+  xlab("Effective antibody decay rate <i>r</i>") +
   ylab("Infection prevalence") +
   
   coord_cartesian(ylim = c(1e-10, 2.0)) +
@@ -113,7 +113,7 @@ p_bifurcation_min <- ggplot() +
         panel.grid.major.y = element_gridline,
         plot.subtitle = element_markdown()) +
   
-  ggtitle(NULL, "<b>A</b> — Bifurcation over antibody<br> decay rate <i>r</i>")
+  ggtitle(NULL, "<b>A</b> — Bifurcation over effective antibody<br> decay rate <i>r</i>")
 
 p_bifurcation_min
 
@@ -149,7 +149,7 @@ p_period <- ggplot() +
              data_period %>% filter(r == max(r)),
              size = 1.5, colour = "white") +
   
-  xlab("Antibody decay rate <i>r</i>") +
+  xlab("Effective antibody decay rate <i>r</i>") +
   ylab("Frequency (years<sup>-1</sup>)") +
   
   coord_cartesian(xlim = c(0, 0.05), ylim = c(0, 4)) +
@@ -178,7 +178,7 @@ p_attack_rate <- ggplot() +
             linewidth = 1.0,
             data_mean_incidence) +
   
-  xlab("Antibody decay rate <i>r</i>") +
+  xlab("Effective antibody decay rate <i>r</i>") +
   ylab("Infection incidence") +
   
   coord_cartesian(ylim = c(NA, 3.0)) +
@@ -200,7 +200,7 @@ seq_t <- h5read("data/bifurcation_stable_fixed.jld2", "seq_t")
 example_labels <- tibble(
   r = rs
 ) %>%
-  mutate(r_label = str_c("<b>", c("i", "ii", "iii"), "</b>. Antibody decay rate <i>r </i>  = ", r))
+  mutate(r_label = str_c("<b>", c("i", "ii", "iii"), "</b>. Effective antibody decay rate<br> <i>r </i>  = ", r))
 
 data_examples <- data_I_sol %>%
   filter(r %in% rs) %>% 
@@ -288,7 +288,7 @@ p_supp_A <- ggplot() +
   coord_cartesian(xlim = c(-0.01,0.01),
                   ylim = c(-0.1, 0.1)) +
   
-  ggtitle(NULL, "<b>A</b> — Eigenvalues for varying<br>antibody decay rate <i>r</i>") +
+  ggtitle(NULL, "<b>A</b> — Eigenvalues for varying<br>effective antibody decay rate <i>r</i>") +
   
   plot_theme_paper
 
@@ -301,7 +301,7 @@ p_supp_B <- ggplot() +
   geom_hline(yintercept = 0, linetype = "44") +
   
   ylab("max<sub><i>i</i></sub> Re(λ<sub><i>i</i></sub>)") +
-  xlab("Antibody decay rate <i>r</i>") +
+  xlab("Effective antibody decay rate <i>r</i>") +
   
   coord_cartesian(ylim = c(-0.005, 0.005)) +
   

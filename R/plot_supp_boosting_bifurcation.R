@@ -229,7 +229,7 @@ p_bifurcation <- ggplot() +
   scale_y_log10(labels = scales::label_log(),
                 breaks = 10^c(-10, -8, -6, -4, -2, 0)) +
   
-  xlab("Mean antibody decay rate <i>r</i>") +
+  xlab("Mean effective antibody decay rate <i>r</i>") +
   ylab("Prevalence") +
   
   # coord_cartesian(xlim = c(-0.0002, 0.0075),
@@ -242,7 +242,7 @@ p_bifurcation <- ggplot() +
         panel.grid.major = element_gridline,
         plot.subtitle = element_markdown()) +
   
-  ggtitle(NULL, "<b>A</b> — Bifurcation over antibody decay rate <i>r</i>")
+  ggtitle(NULL, "<b>A</b> — Bifurcation over effective antibody decay rate <i>r</i>")
 
 p_bifurcation
 
@@ -289,7 +289,7 @@ p_period <- ggplot() +
   scale_colour_manual(name = "Model", values = scenario_colours) +
   scale_linewidth_manual(values = c(0.9, 0.7, 0.7) %>% `names<-`(scenario_labels)) +
   
-  xlab("Mean antibody decay rate <i>r</i>") +
+  xlab("Mean effective antibody decay rate <i>r</i>") +
   ylab("Frequency (years<sup>-1</sup>)") +
   
   coord_cartesian(xlim = c(0, 0.05),
@@ -310,7 +310,7 @@ p_attack_rate <- ggplot() +
   geom_line(aes(x = r, y = mean_inc * 365, colour = scenario, linewidth = scenario),
             data_mean_incidence) +
   
-  xlab("Mean antibody decay rate <i>r</i>") +
+  xlab("Mean effective antibody decay rate <i>r</i>") +
   ylab("Infection incidence") +
   
   scale_colour_manual(name = "Model", values = scenario_colours) +

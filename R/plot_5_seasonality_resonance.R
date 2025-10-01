@@ -48,7 +48,7 @@ p_incidence <- ggplot() +
   
   coord_cartesian(xlim = c(0, 0.03), ylim = c(0, 2.0)) +
   
-  xlab("Antibody decay rate <i>r</i>") + ylab("Infection incidence") +
+  xlab("Effective antibody decay rate <i>r</i>") + ylab("Infection incidence") +
   
   plot_theme_paper +
   theme(strip.text = element_markdown(colour = "white"),
@@ -77,7 +77,7 @@ p_incidence_diff <- ggplot() +
   scale_y_continuous(breaks = c(0.75, 1, 1.25)) +
   coord_cartesian(xlim = c(0, 0.03), ylim = c(0.71, 1.29)) +
   
-  xlab("Antibody decay rate <i>r</i>") + ylab("Proportional difference") +
+  xlab("Effective antibody decay rate <i>r</i>") + ylab("Proportional difference") +
   
   plot_theme_paper +
   theme(strip.text = element_markdown(colour = "white"),
@@ -150,7 +150,7 @@ p_labels <- ggplot() +
 ((p_labels / plot_spacer() + plot_layout(heights = c(20, 2))) |
 (p_incidence / p_axes_freq + plot_layout(heights = c(20, 1))) |
     (p_incidence_diff / p_axes_freq + plot_layout(heights = c(20, 1)))) +
-  plot_layout(widths = c(1, 3, 3))
+  plot_layout(widths = c(0.95, 3, 3))
 
 ggsave(
   "results/results_seasonality_resonance.pdf",

@@ -26,7 +26,7 @@ p_min <- ggplot() +
   coord_cartesian(ylim = 10^c(-12, 0)) +
   
   ylab("Minimum infection prevalence") +
-  xlab("Antibody decay rate <i>r</i>") +
+  xlab("Effective antibody decay rate <i>r</i>") +
   
   plot_theme_paper +
   
@@ -48,7 +48,7 @@ p_min <- ggplot() +
 #   coord_cartesian(ylim = c(0, NA)) +
 #   
 #   ylab("Maximum infection prevalence") +
-#   xlab("Antibody decay rate <i>r</i>") +
+#   xlab("Effective antibody decay rate <i>r</i>") +
 #   
 #   plot_theme_paper +
 #   

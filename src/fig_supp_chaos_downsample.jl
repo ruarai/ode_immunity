@@ -28,13 +28,13 @@ end
 
 
 
-scatter(fill(1, 249), [y_inc[1, 365 * t + 180] for t in 1:249], legend = false, ms = 0.1)
+scatter(fill(1, 249), [y_inf[1, 365 * t + 180] for t in 1:249], legend = false, ms = 0.1)
 
 for i in eachindex(x_eta)
-    scatter!(fill(i, 249), [y_inc[i, 365 * t + 180] for t in 1:249], legend = false, ms = 0.1)
+    scatter!(fill(i, 249), [y_inf[i, 365 * t + 180] for t in 1:249], legend = false, ms = 0.1)
 end
 
-plot!(ylims = (0, 0.001))
+plot!(ylims = (0, 0.005))
 
 downsample_rate = vcat(1, collect(10:10:200))
 
@@ -42,11 +42,11 @@ chaos_result = zeros(length(x_eta), length(downsample_rate))
 
 @showprogress Threads.@threads for i in eachindex(x_eta)
     for ix_d in eachindex(downsample_rate)
-        chaos_result[i, ix_d] = testchaos01(NaNMath.log10.(y_inc[i, 2:downsample_rate[ix_d]:end]))
+        chaos_result[i, ix_d] = testchaos01(NaNMath.log10.(y_inf[i, 2:downsample_rate[ix_d]:end]))
     end
 end
 
 heatmap(x_eta, downsample_rate, chaos_result')
 
 
-jldsave("data/chaos_downsample.jld2"; x_eta, t_post_burn_in, downsample_rate, y_inc, chaos_result)
+jldsave("data/chaos_downsample.jld2"; x_eta, t_post_burn_in, downsample_rate, y_inf, chaos_result)

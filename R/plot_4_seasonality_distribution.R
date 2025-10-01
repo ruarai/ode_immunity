@@ -65,7 +65,7 @@ p_bias <- plot_data %>%
   geom_tile(aes(x = eta, y = r, fill = season_day)) +
   
   coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
-  xlab("Seasonal forcing strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
+  xlab("Seasonal forcing strength <i>η</i>") + ylab("Effective antibody decay rate <i>r</i>") +
   
   scale_fill_gradientn(colours = hex_cols,
                        limits = c(0, 365),
@@ -95,7 +95,7 @@ p_variance <- ggplot()  +
             plot_data) +
   
   coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
-  xlab("Seasonal forcing strength <i>η</i>") + ylab("Antibody decay rate <i>r</i>") +
+  xlab("Seasonal forcing strength <i>η</i>") + ylab("Effective antibody decay rate <i>r</i>") +
   
   scale_fill_distiller(name = "Variance",
                        limits = c(0, 1),
