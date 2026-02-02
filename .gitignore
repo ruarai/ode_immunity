@@ -8,3 +8,4 @@ slurm_out/
 data/
 .vscode/
 data_old/
+R/download_spartan.R

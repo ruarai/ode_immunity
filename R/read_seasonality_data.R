@@ -44,6 +44,10 @@ read_seasonality_data <- function(file) {
       quasiperiodic = (period_n > 1) & (!periodic) & (!chaotic) & (eta > 0)
     )
   
+  if(nrow(x_vals) == 3){
+    plot_data$model_version <- x_vals[3,]
+  } 
+  
   return(plot_data)
 }
 
