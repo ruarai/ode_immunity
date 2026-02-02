@@ -24,6 +24,9 @@ struct model_parameters
 
     M::Matrix{Float64}
     p_trans::Vector{Float64}
+
+    # Sensitivity parameters
+    importation_rate::Float64
 end
 
 
@@ -35,7 +38,8 @@ function make_model_parameters(;
     b, h,
     c_jump_dist,
     eta = 0.0,
-    boosting = "independent"
+    boosting = "independent",
+    importation_rate = 0.0
 )
     S = k + 1
     c_levels = collect(2 .^ (a .* (0:k) / k))
@@ -70,7 +74,9 @@ function make_model_parameters(;
         b, h,
         c_jump_dist,
         c_levels, p_acq,
-        M, p_trans
+        M, p_trans,
+
+        importation_rate
     )    
 end
 

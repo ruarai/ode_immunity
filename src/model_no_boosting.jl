@@ -12,7 +12,7 @@ function ode_step!(du, u, model_params, t)
     end
 
     # Seasonal forcing term
-    beta_t_I = model_params.beta * (1 + model_params.eta * cos(2π * t / 365.0)) * I
+    beta_t_I = model_params.beta * (1 + model_params.eta * cos(2π * t / 365.0)) * (I + model_params.importation_rate)
     gamma_I = model_params.gamma * I
 
     # Infection flow from susceptible to infected
@@ -48,7 +48,7 @@ function ode_step_no_count!(du, u, model_params, t)
     end
 
     # Seasonal forcing term
-    beta_t_I = model_params.beta * (1 + model_params.eta * cos(2π * t / 365.0)) * I
+    beta_t_I = model_params.beta * (1 + model_params.eta * cos(2π * t / 365.0)) * (I + model_params.importation_rate)
     gamma_I = model_params.gamma * I
 
     # Infection flow from susceptible to infected
@@ -85,7 +85,7 @@ function ode_step_minimal!(du, u, model_params, t)
     end
 
     # Seasonal forcing term
-    beta_t_I = model_params.beta * (1 + model_params.eta * cos(2π * t / 365.0)) * I
+    beta_t_I = model_params.beta * (1 + model_params.eta * cos(2π * t / 365.0)) * (I + model_params.importation_rate)
     gamma_I = model_params.gamma * I
 
     # Infection flow from susceptible to infected
