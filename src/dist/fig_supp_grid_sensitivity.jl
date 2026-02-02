@@ -23,7 +23,7 @@ length(x_r)
 
 x_model_versions = 1:4
 
-length(x_eta) * length(x_r) * length(model_versions)
+length(x_eta) * length(x_r) * length(x_model_versions)
 
 x_vals = vec([(eta = x1, r = x2, m = x3) for x1 in x_eta, x2 in x_r, x3 in x_model_versions])
 
