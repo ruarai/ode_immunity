@@ -46,6 +46,7 @@ function ode_solve(
 
         dtmax = 1.0,
         reltol = 1e-10, abstol = 1e-10,
+        maxiters = 1e7,
 
         saveat = vec_saveat
     );
