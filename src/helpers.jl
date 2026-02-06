@@ -125,3 +125,27 @@ function get_peak_density(inc, t_seq; ϵ = 1e-6)
 
     return peak_density
 end
+
+function with_timeout(f::Function, seconds::Real)
+    t = Task(f)
+    schedule(t)
+    
+    timer = Timer(seconds) do tm
+        if !istaskdone(t)
+            schedule(t, InterruptException(), error=true)
+        end
+    end
+    
+    try
+        return fetch(t)
+    catch e
+        if e isa TaskFailedException
+            println("Function killed: Operation timed out.")
+            return 0.0
+        else
+            rethrow()
+        end
+    finally
+        close(timer) 
+    end
+end

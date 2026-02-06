@@ -21,7 +21,7 @@ r_step = 0.00015
 x_r = r_step:r_step:0.03
 length(x_r)
 
-x_model_versions = 1:4
+x_model_versions = 1:8
 
 length(x_eta) * length(x_r) * length(x_model_versions)
 
@@ -53,19 +53,52 @@ function get_model_parameters_version(r, eta, m)
             eta = eta
         )
     elseif m == 3
-        # Including importations
+        # Narrower post-infection immunity dist
         return make_model_parameters(
             k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
             a = baseline_a, r = r,
-            b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
-            eta = eta,
-            
-            importation_rate = 1e-7
+            b = baseline_b, h = baseline_h, c_jump_dist = Normal(6, 0.1);
+            eta = eta
         )
     elseif m == 4
-        # Higher k value
+        # Lower c_mid
+        return make_model_parameters(
+            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+            a = baseline_a, r = r,
+            b = 2^2, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
+            eta = eta
+        )
+    elseif m == 5
+        # Higher post-infection immunity dist
+        return make_model_parameters(
+            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+            a = baseline_a, r = r,
+            b = baseline_b, h = baseline_h, c_jump_dist = Normal(8, 0.5);
+            eta = eta
+        )
+    elseif m == 6
+        # Higher k value (64)
         return make_model_parameters(
             k = 64, beta = baseline_beta, gamma = baseline_gamma,
+            a = baseline_a, r = r,
+            b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
+            eta = eta
+        )
+    elseif m == 7
+        # Higher k value (128)
+        return make_model_parameters(
+            k = 128, beta = baseline_beta, gamma = baseline_gamma,
+            a = baseline_a, r = r,
+            b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
+            eta = eta
+        )
+    elseif m == 8
+        # Lower GI
+
+        reduced_gamma = 0.1
+        reduced_beta = baseline_R * reduced_gamma
+        return make_model_parameters(
+            k = baseline_k, beta = reduced_beta, gamma = reduced_gamma,
             a = baseline_a, r = r,
             b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
             eta = eta

@@ -27,7 +27,7 @@ ix_jobs = get_jobs(arg_ix, n_array, length(x_vals))
 x_vals_job = x_vals[ix_jobs]
 
 y_period = zeros(length(x_vals_job), 3)
-y_inf_summary = zeros(length(x_vals_job), 11)
+y_inf_summary = zeros(length(x_vals_job), 12)
 y_seasonality = zeros(length(x_vals_job), 2)
 
 time_start = Base.time()
@@ -62,6 +62,13 @@ Threads.@threads for i in eachindex(x_vals_job)
     y_inf_summary[i, 9] = Integer(ode_solution.retcode)
     y_inf_summary[i, 10] = get_peak_density(inc, t_post_burn_in, ϵ = 1e-10)
     y_inf_summary[i, 11] = entropy(inc)
+
+    u0 = zeros(Float64, model_params.S + 2)
+    u0[ode_ix_sus(1)] = 1.0 - n_inf_0
+    u0[ode_ix_inf(model_params.S)] = n_inf_0
+
+    prob = ContinuousDynamicalSystem(ode_step!, u0, model_params; t0 = 0.0)
+    y_inf_summary[i, 12] = with_timeout(lyapunov(prob, n_days, Ttr = n_days_burn_in, Δt = 100), 60.0)
 
     period_mean, period_sd, period_n = get_period(
         ode_solution, model_params, n_days_burn_in, n_days, 
