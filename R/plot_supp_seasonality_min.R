@@ -16,7 +16,9 @@ p_min <- ggplot() +
             colour = colour_C) +
   geom_line(aes(x = r, y = inf_min),
             linewidth = 0.7,
-            plot_data %>% filter(eta %in% c(0.1, 0.3, 0.5))) +
+            plot_data %>% filter(eta %in% c(0.1, 0.2, 0.4))) +
+  
+  geom_hline(yintercept = 10^-6, linetype = "44") +
   
   scale_y_log10(labels = scales::label_log(),
                 breaks = 10^c(-12, -8, -4, 0)) +

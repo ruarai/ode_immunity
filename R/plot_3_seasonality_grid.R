@@ -7,12 +7,13 @@ source("R/read_seasonality_data.R")
 
 plot_data <- read_seasonality_data("data/period_over_grid.jld2")
 
+inf_threshold <- 1e-6
 
 plot_data_periodic <- plot_data %>%
   filter(eta > 0) %>% 
   filter(periodic) %>% 
   mutate(period = period / 365,
-         period = pmin(period, 8),
+         period = pmin(period, 4),
          period = factor(round(period)))
 
 plot_data_chaotic <- plot_data %>% filter(chaotic)
@@ -26,7 +27,15 @@ bifur_zero <- plot_data_eta_zero %>% filter(inf_diff < 1e-3) %>% pull(r) %>% hea
 
 plot_data_quasiperiodic <- plot_data %>% filter(quasiperiodic, r < bifur_zero)
 
-year_stops <- c(1/2, 2/3, 1, 3/2, 2, 3)
+grid_factor <- 110
+r_ratio <- 16.66
+plot_data_low <- plot_data %>% filter(inf_min <= inf_threshold) %>% 
+  mutate(f = if_else(
+    xor(floor(eta * grid_factor) %% 2 == 0, floor(r * grid_factor * r_ratio) %% 2 == 0), factor(8), factor(7)
+  ))
+
+
+year_stops <- c(1/2, 2/3, 1)
 year_marks <- approxfun(plot_data_eta_zero_periodic$period, plot_data_eta_zero_periodic$r)(365 * year_stops)
 plot_data_year_marks <- tibble(r_0 = year_marks, year = year_stops) %>%
   mutate(year_label = str_c(scales::label_comma()(year), " yr"))
@@ -92,36 +101,39 @@ plot_annotations <- list(
   )
 )
 
-period_cols <- viridis::inferno(n = 8, direction = -1, begin = 0.1)
+period_cols <- viridis::inferno(n = 5, direction = -1, begin = 0.1)[1:4]
+
 
 p_period <- ggplot() +
   
   geom_tile(aes(x = eta, y = r, fill = period),
-            plot_data_periodic) +
-  geom_tile(aes(x = eta, y = r, fill = factor(9)),
+            plot_data_periodic %>% filter(period != 0)) +
+  geom_tile(aes(x = eta, y = r, fill = factor(5)),
             plot_data_quasiperiodic) +
-  geom_tile(aes(x = eta, y = r, fill = factor(10)),
+  geom_tile(aes(x = eta, y = r, fill = factor(6)),
             plot_data_chaotic) +
-  geom_tile(aes(x = eta, y = r, fill = factor(11)),
+  geom_tile(aes(x = eta, y = r, fill = factor(8)),
             plot_data_empty) +
+  geom_tile(aes(x = eta, y = r, fill = factor(f)),
+            plot_data_low) +
   
   plot_annotations +
   
   scale_fill_manual(
     name = "Period",
-    values = c(period_cols, "#0076BC", "#9ED7F3", "white") %>% 
-      `names<-`(1:11),
+    values = c(period_cols, "#0076BC", "#9ED7F3", "grey90", "white") %>% 
+      `names<-`(1:8),
     
-    labels = c("1 year", str_c(2:7, " years"), "≥8 years", "Quasiperiodic", "Chaotic", "Unclassified") %>%
-      `names<-`(1:11),
+    labels = c("1 year", str_c(2:3, " years"), "≥4 years", "Quasiperiodic", "Chaotic", "Low minimum prevalence", "Unclassified") %>%
+      `names<-`(1:8),
     
-    breaks = c(9, 1:4, 10, 5:8, 11)
+    breaks = c(1:2, 5, 6, 3:4, 7, 8)
   ) +
   
   
-  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
+  coord_fixed(ratio = 16.66, ylim = c(0.000, 0.03)) +
   xlab("Seasonal forcing strength <i>η</i>") + ylab("Effective antibody decay rate <i>r</i>") +
-  guides(fill = guide_legend(nrow = 3, ncol = 5),
+  guides(fill = guide_legend(nrow = 3, ncol = 4),
          colour = guide_none()) +
   
   plot_theme_paper +
@@ -132,7 +144,7 @@ p_period <- ggplot() +
 p_period
 
 
-color_tbl <- read_delim("~/Downloads/ScientificColourMaps8/lipari/lipari.txt", col_names = c("R", "G", "B")) %>%
+color_tbl <- read_delim("data/lipari.txt", col_names = c("R", "G", "B")) %>%
   mutate(c = rgb(R, G, B))
 
 min_cols <- color_tbl$c[seq(1, nrow(color_tbl), length.out = 128)]
@@ -404,8 +416,8 @@ p_examples
 
 
 p <- (
-  p_period + ggtitle(NULL, "<b>A</b> — Dynamics") |
-  p_min + ggtitle(NULL, "<b>B</b> — Minimum infection prevalence")
+  p_min + ggtitle(NULL, "<b>A</b> — Minimum infection prevalence") | 
+  p_period + ggtitle(NULL, "<b>B</b> — Dynamics")
 ) / p_examples
 
 
@@ -419,15 +431,7 @@ ggsave(
   bg = "white"
 )
 
-# p_legend <- cowplot::plot_grid(x[[17]])
-# 
-# 
-# ggsave(
-#   "results/results_grid_seasonality_legend.pdf",
-#   p_legend,
-#   device = cairo_pdf,
-#   width = 13/2, height = 2,
-#   bg = "white"
-# )
+
+
 
 

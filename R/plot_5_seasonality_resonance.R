@@ -9,10 +9,19 @@ source("R/plot_theme.R")
 
 plot_data <- read_seasonality_data("data/period_over_grid.jld2")
 
+xlimit <- c(0.01, 0.03)
+
 
 plot_data_eta_zero_periodic <- plot_data %>% filter(eta == 0, r < 0.09)
 bifur_zero <- plot_data %>% filter(eta == 0, inf_diff < 1e-3) %>% pull(r) %>% head(1)
 
+plot_data_min <- plot_data %>% 
+  filter(eta %in% c(0.1, 0.2, 0.4)) %>% 
+  mutate(eta_label = str_c("Seasonal forcing strength <i>η</i> = ", eta)) %>% 
+  filter(inf_min < 1e-6) %>% 
+  
+  group_by(eta, eta_label) %>% 
+  summarise(r_min = min(r), r_max = max(r))
 
 plot_data_incidence <- plot_data %>% 
   filter(r > 0.003) %>% 
@@ -22,7 +31,7 @@ plot_data_incidence <- plot_data %>%
          inc_mean_diff = inc_mean / inc_mean_eta_zero,
          log_diff = pmax(log2(inc_mean_diff), -0.4),
          period_year = approxfun(plot_data_eta_zero_periodic$r, plot_data_eta_zero_periodic$period)(r) / 365 ) %>% 
-  filter(eta %in% c(0, 0.1, 0.3, 0.5)) %>% 
+  filter(eta %in% c(0, 0.1, 0.2, 0.4)) %>% 
   mutate(eta_label = str_c("Seasonal forcing strength <i>η</i> = ", eta))
 
 
@@ -30,11 +39,13 @@ freq_breaks <- seq(0.5, 2.5, by = 0.5)
 freq_breaks_r <- approxfun(365 / plot_data_eta_zero_periodic$period, plot_data_eta_zero_periodic$r)(freq_breaks)
 
 p_incidence <- ggplot() +
+  geom_rect(aes(xmin = r_min, xmax = r_max, ymin = -Inf, ymax = Inf),
+            plot_data_min, alpha = 0.1, fill = "grey50") +
   geom_vline(aes(xintercept = r), tibble(r = c(0, freq_breaks_r)),
              linetype = "44", colour = "grey70") +
   
   annotate("rect", xmin = bifur_zero, xmax = Inf, ymin = -Inf, ymax = Inf,
-           fill = "grey70", alpha = 0.2) +
+           fill = colour_A, alpha = 0.2) +
   
   geom_line(aes(x = r, y = inc_mean * 365),
             linewidth = 0.7,
@@ -46,7 +57,7 @@ p_incidence <- ggplot() +
   
   facet_wrap(~eta_label, ncol = 1) +
   
-  coord_cartesian(xlim = c(0, 0.03), ylim = c(0, 2.0)) +
+  coord_cartesian(xlim = xlimit, ylim = c(0, 2.0)) +
   
   xlab("Effective antibody decay rate <i>r</i>") + ylab("Infection incidence") +
   
@@ -59,11 +70,15 @@ p_incidence <- ggplot() +
 p_incidence
 
 p_incidence_diff <- ggplot() +
+  
+  geom_rect(aes(xmin = r_min, xmax = r_max, ymin = -Inf, ymax = Inf),
+            plot_data_min, alpha = 0.1, fill = "grey50") +
+  
   geom_vline(aes(xintercept = r), tibble(r = c(0, freq_breaks_r)),
              linetype = "44", colour = "grey70") +
   
   annotate("rect", xmin = bifur_zero, xmax = Inf, ymin = -Inf, ymax = Inf,
-           fill = "grey70", alpha = 0.2) +
+           fill = colour_A, alpha = 0.2) +
   
   annotate("linerange", y = 1.0, xmin = 0.0, xmax = 0.1,
            colour = colour_C, linetype = "82") +
@@ -75,7 +90,7 @@ p_incidence_diff <- ggplot() +
   facet_wrap(~eta_label, ncol = 1) +
   
   scale_y_continuous(breaks = c(0.75, 1, 1.25)) +
-  coord_cartesian(xlim = c(0, 0.03), ylim = c(0.71, 1.29)) +
+  coord_cartesian(xlim = xlimit, ylim = c(0.71, 1.29)) +
   
   xlab("Effective antibody decay rate <i>r</i>") + ylab("Proportional difference") +
   
@@ -100,7 +115,7 @@ p_axes_freq <- ggplot() +
   annotate("point", x = bifur_zero, y = 0, size = 1.25, colour = "white") +
   
   
-  scale_x_continuous(limits = c(0, 0.03),
+  scale_x_continuous(limits = xlimit,
                      breaks = c(0.0, freq_breaks_r, bifur_zero),
                      labels = c(0.0, freq_breaks, "")) +
   
@@ -113,19 +128,18 @@ p_axes_freq <- ggplot() +
 p_axes_freq
 
 
+# ((p_incidence / p_axes_freq + plot_layout(heights = c(20, 1))) |
+#     (p_incidence_diff / p_axes_freq + plot_layout(heights = c(20, 1))))
+# 
+# 
+# ggsave(
+#   "results/results_seasonality_resonance.pdf",
+#   device = cairo_pdf,
+#   width = 11, height = 8,
+#   bg = "white"
+# )
 
-((p_incidence / p_axes_freq + plot_layout(heights = c(20, 1))) |
-    (p_incidence_diff / p_axes_freq + plot_layout(heights = c(20, 1))))
-
-
-ggsave(
-  "results/results_seasonality_resonance.pdf",
-  device = cairo_pdf,
-  width = 11, height = 8,
-  bg = "white"
-)
-
-plot_data_labels <- tibble(eta = c(0.1, 0.3, 0.5)) %>% 
+plot_data_labels <- tibble(eta = c(0.1, 0.2, 0.4)) %>% 
   mutate(eta_label = str_c("Seasonal forcing<br>strength<br><i>η</i> = ", eta),
          eta_label = factor(eta_label))
 
@@ -153,8 +167,8 @@ p_labels <- ggplot() +
   plot_layout(widths = c(0.95, 3, 3))
 
 ggsave(
-  "results/results_seasonality_resonance.pdf",
-  device = cairo_pdf,
+  "results/results_seasonality_resonance.png",
+  device = png,
   width = 13, height = 6.5,
   bg = "white"
 )

@@ -265,8 +265,8 @@ p_top <- (p_bifurcation_min | p_period | p_attack_rate) +
 
 
 ggsave(
-  "results/results_bifurcation.pdf",
-  device = cairo_pdf,
+  "results/results_bifurcation.png",
+  device = png,
   width = 14, height = 8,
   bg = "white"
 )
