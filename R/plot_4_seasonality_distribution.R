@@ -17,6 +17,13 @@ plot_data <- read_seasonality_data("data/period_over_grid.jld2") %>%
          season_mag = sqrt(season_x ^ 2 + season_y ^ 2),
          season_var = 1 - season_mag)
 
+grid_factor <- 110
+r_ratio <- 16.66
+plot_data_low <- plot_data %>% filter(inf_min <= inf_threshold) %>% 
+  mutate(f = if_else(
+    xor(floor(eta * grid_factor) %% 2 == 0, floor(r * grid_factor * r_ratio) %% 2 == 0), TRUE, FALSE
+  ))
+
 
 shifter <- function(x, n = 1) {
   if (n == 0) x else c(tail(x, -n), head(x, n))
@@ -38,8 +45,8 @@ hex_cols <- twilight_palette %>%
 ## TODO change these.
 example_points <- tribble(
   ~eta, ~r, ~label,
-  0.25, 0.01, "iv",
-  0.25, 0.013, "iii",
+  # 0.25, 0.01, "iv",
+  # 0.25, 0.013, "iii",
   0.25, 0.0165, "ii",
   0.05, 0.0165, "i"
 )
@@ -50,7 +57,7 @@ plot_annotations <- list(
   geom_point(aes(x = eta, y = r), example_points,
              colour = "white", size = 0.5),
   
-  geom_label(aes(x = eta + 0.015, y = r - 0.0015, label = label), example_points,
+  geom_label(aes(x = eta + 0.015, y = r + 0.0015, label = label), example_points,
              label.r = unit(0.1, "cm"), label.size = 0, fill = shades::opacity("white", 0.8))
 )
 
@@ -64,7 +71,7 @@ p_bias <- plot_data %>%
   annotate("rect", xmin = 0, xmax = 0.5, ymin = 0, ymax = 0.005, fill = "white")+
   geom_tile(aes(x = eta, y = r, fill = season_day)) +
   
-  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
+  coord_fixed(ratio = 16.66, ylim = c(0.005, 0.03)) +
   xlab("Seasonal forcing strength <i>η</i>") + ylab("Effective antibody decay rate <i>r</i>") +
   
   scale_fill_gradientn(colours = hex_cols,
@@ -74,13 +81,19 @@ p_bias <- plot_data %>%
                                   "Jul\nSummer", "Oct\nAutumn",
                                   "Jan\nWinter"),
                        name = "Mean\n(time of year)") +
+
+  geom_tile(aes(x = eta, y = r, fill = f),
+            plot_data_low %>% filter(f), fill = "grey90") +
   
+  geom_tile(aes(x = eta, y = r, fill = f),
+            plot_data_low %>% filter(!f), fill = "white") +
+  
+  guides(fill = guide_colourbar(barwidth = 15)) +
   
   plot_theme_paper +
   
   plot_annotations +
   
-  guides(fill = guide_colourbar(barwidth = 15)) +
   theme(legend.position = "bottom",
         legend.title = element_text(hjust = 0.5, margin = margin(r = 1.5, unit = "cm")),
         plot.title = element_markdown(size = 17)) +
@@ -94,13 +107,19 @@ p_variance <- ggplot()  +
   geom_tile(aes(x = eta, y = r, fill = season_var),
             plot_data) +
   
-  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
+  coord_fixed(ratio = 16.66, ylim = c(0.005, 0.03)) +
   xlab("Seasonal forcing strength <i>η</i>") + ylab("Effective antibody decay rate <i>r</i>") +
   
   scale_fill_distiller(name = "Variance",
                        limits = c(0, 1),
                        breaks = seq(0, 1, by = 0.25),
                        direction = 1) +
+  
+  geom_tile(aes(x = eta, y = r, fill = f),
+            plot_data_low %>% filter(f), fill = "grey90") +
+  
+  geom_tile(aes(x = eta, y = r, fill = f),
+            plot_data_low %>% filter(!f), fill = "white") +
   
   plot_theme_paper +
   
@@ -145,7 +164,9 @@ plot_data_ex_inc_year <- y_inc %>%
   summarise(incidence = sum(incidence)) %>%
   
   mutate(year = floor(t / 365),
-         t_year = t %% 365)
+         t_year = t %% 365) %>% 
+  
+  filter(label %in% x_labels[3:4])
 
 plot_data_ex_means <- tibble(
   x = y_seasonality[,1], y = y_seasonality[,2],
@@ -156,7 +177,9 @@ plot_data_ex_means <- tibble(
          season_mag = sqrt(x ^ 2 + y ^ 2),
          season_var = 1 - season_mag) %>%
   mutate(season_var_label = scales::label_comma(accuracy = 0.01)(season_var),
-         season_var_label = str_c("Variance = ", season_var_label))
+         season_var_label = str_c("Variance = ", season_var_label))  %>% 
+  
+  filter(label %in% x_labels[3:4])
 
 p_ex_yearly_inc <- ggplot() +
   geom_line(aes(x = t_year, y = incidence, group = year),
@@ -193,17 +216,15 @@ p_ex_yearly_inc <- ggplot() +
   
   ggtitle(NULL, "<b>C</b> — Exemplar infection incidence by time of year")
 
-p_ex_yearly_inc
 
-
-p <- ((p_bias | p_variance) / p_ex_yearly_inc) +
-  plot_layout(heights = c(3, 1))
+p <- ((p_bias | p_variance) / plot_spacer() / p_ex_yearly_inc) +
+  plot_layout(heights = c(2.7, 0.15, 1))
 
 ggsave(
   "results/results_grid_seasonal_bias.png",
   p,
   device = png,
-  width = 13, height = 11,
+  width = 13, height = 10.5,
   bg = "white"
 )
 

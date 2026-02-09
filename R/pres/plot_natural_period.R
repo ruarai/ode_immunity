@@ -89,9 +89,10 @@ ggplot() +
   xlab("Effective antibody decay rate <i>r</i> (days<sup>-1</sup>)") +
   ylab("Periods (years)") +
   
-  coord_cartesian(xlim = c(0, 0.03), ylim = c(0, 4)) +
+  coord_cartesian(xlim = c(0.00, 0.03), ylim = c(0, 1.5)) +
   
-  scale_y_continuous(labels = scales::label_comma()) +
+  scale_y_continuous(labels = scales::label_comma(),
+                     breaks = c(0, 0.5, 1.0, 1.5)) +
   # sec_x_axis +
   
   plot_theme_paper +
