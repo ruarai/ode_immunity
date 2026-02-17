@@ -1,5 +1,7 @@
 
 
+include("dependencies.jl")
+
 n_days_burn_in = 1000 * 365
 n_days = n_days_burn_in + 250 * 365
 t_post_burn_in = collect(n_days_burn_in:n_days)

@@ -1,5 +1,5 @@
 
-struct model_parameters
+@kwdef struct model_parameters
     k::Int64
     S::Int64
 

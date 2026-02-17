@@ -1,5 +1,5 @@
 
-
+include("dependencies.jl")
 
 model_params_base = make_model_parameters(
     k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
@@ -19,15 +19,15 @@ u0[ode_ix_inf(model_params_base.S)] = n_inf_0
 
 
 
-x_eta = 0.00:0.001:0.5
-x_r = 0.01:0.00006:0.025
+x_eta = collect(0.00:0.001:0.5)
+x_r = collect(0.01:0.00006:0.025)
 
 x_vals = vec([(eta = x1, r = x2) for x1 in x_eta, x2 in x_r])
 
 
 y_lyapunov = zeros(length(x_vals))
 
-@showprogress Threads.@threads for i in eachindex(x_vals) 
+@showprogress Threads.@threads for i in eachindex(x_vals)
     model_params = make_model_parameters(
         k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
         a = baseline_a, r = x_vals[i].r,
@@ -41,9 +41,11 @@ y_lyapunov = zeros(length(x_vals))
 end
 
 
-plot(x_eta, y_lyapunov)
-
 y = reshape(y_lyapunov, length(x_eta), length(x_r))
 
-
 heatmap(x_eta, x_r, y')
+
+x_eta_full = [x_vals[i].eta for i in eachindex(x_vals)]
+x_r_full = [x_vals[i].r for i in eachindex(x_vals)]
+
+jldsave("data/chaos_lyapunov.jld2"; x_eta_full, x_r_full, y_lyapunov)
