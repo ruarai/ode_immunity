@@ -22,6 +22,7 @@ chaos_tbl <- chaos_result %>%
 
 
 
+
 y_tbl <- y_inf %>%
   reshape2::melt(varnames = c("ix", "t"), value.name = "prevalence") %>%
   mutate(t = t_post_burn_in[t],
@@ -73,6 +74,10 @@ p_chaos_test <- ggplot() +
   theme(legend.position = "none")
 
 p_chaos_test
+
+
+
+
 
 p_bifur / p_chaos_test
 
