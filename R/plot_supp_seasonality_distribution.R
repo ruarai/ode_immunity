@@ -94,10 +94,12 @@ p_variance <- ggplot()  +
   coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
   xlab("Seasonal forcing strength <i>η</i>") + ylab("Effective antibody decay rate <i>r</i>") +
   
-  scale_fill_distiller(name = "Variance",
-                       limits = c(0, 1),
-                       breaks = seq(0, 1, by = 0.25),
-                       direction = 1) +
+  
+  scale_fill_gradientn(
+    name = "Variance",
+    limits = c(0, 1), breaks = seq(0, 1, by = 0.25),
+    colours = RColorBrewer::brewer.pal(name = "Blues", n = 9)[3:9]
+  ) +
   
   plot_theme_paper +
   

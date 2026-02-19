@@ -6,7 +6,7 @@ if dirname(Base.active_project()) != pwd()
 end
 
 
-if VERSION != v"1.11.3"
+if VERSION < v"1.11" || VERSION >= v"1.12"
     println("Julia version has changed. Is this correct?")
 end
 

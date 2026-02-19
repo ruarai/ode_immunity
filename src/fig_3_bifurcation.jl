@@ -41,7 +41,7 @@ period = zeros(length(x_r), 3)
     S_sol = get_sus(ode_solution, t_seq, model_params)
     y_means[i, :] = [sum(S_sol[t, :] / (1 - y_I_sol[i, t]) .* model_params.c_levels) for t in eachindex(t_seq)]
 
-    period_mean, period_sd, period_n = get_period(ode_solution, model_params, n_days_burn_in, n_days, periodic_Δt, periodic_ϵ)
+    period_mean, period_sd, period_n = get_period(ode_solution, n_days_burn_in, n_days, periodic_Δt, periodic_ϵ, 1:(model_params.S + 1))
 
     period[i, :] = [period_mean period_sd period_n]
 

@@ -46,7 +46,7 @@ hex_cols <- twilight_palette %>%
 example_points <- tribble(
   ~eta, ~r, ~label,
   # 0.25, 0.01, "iv",
-  # 0.25, 0.013, "iii",
+  0.05, 0.0085, "iii",
   0.25, 0.0165, "ii",
   0.05, 0.0165, "i"
 )
@@ -110,10 +110,11 @@ p_variance <- ggplot()  +
   coord_fixed(ratio = 16.66, ylim = c(0.005, 0.03)) +
   xlab("Seasonal forcing strength <i>η</i>") + ylab("Effective antibody decay rate <i>r</i>") +
   
-  scale_fill_distiller(name = "Variance",
-                       limits = c(0, 1),
-                       breaks = seq(0, 1, by = 0.25),
-                       direction = 1) +
+  scale_fill_gradientn(
+    name = "Variance",
+    limits = c(0, 1), breaks = seq(0, 1, by = 0.25),
+    colours = RColorBrewer::brewer.pal(name = "Blues", n = 9)[3:9]
+  ) +
   
   geom_tile(aes(x = eta, y = r, fill = f),
             plot_data_low %>% filter(f), fill = "grey90") +
@@ -144,9 +145,9 @@ y_inc <- h5read("data/seasonality_bias_examples.jld2", "y_inc")
 y_seasonality <- h5read("data/seasonality_bias_examples.jld2", "y_seasonality")
 
 x_labels <- str_c(
-  "<b>", c("iv", "iii", "ii", "i"), ".</b> ",
+  "<b>", c("iii", "ii", "i"), ".</b> ",
   " <i>η</i> = ", scales::label_comma(accuracy = 0.01)(x_eta),
-  ", <i>r</i> = ", scales::label_comma(accuracy = 0.001)(x_r), ""
+  ", <i>r</i> = ", scales::label_comma(accuracy = 0.0001)(x_r), ""
 )
 
 c_levels <- 10 ^ seq(0, 8, by = 8 / 32)
@@ -164,9 +165,7 @@ plot_data_ex_inc_year <- y_inc %>%
   summarise(incidence = sum(incidence)) %>%
   
   mutate(year = floor(t / 365),
-         t_year = t %% 365) %>% 
-  
-  filter(label %in% x_labels[3:4])
+         t_year = t %% 365)
 
 plot_data_ex_means <- tibble(
   x = y_seasonality[,1], y = y_seasonality[,2],
@@ -177,9 +176,7 @@ plot_data_ex_means <- tibble(
          season_mag = sqrt(x ^ 2 + y ^ 2),
          season_var = 1 - season_mag) %>%
   mutate(season_var_label = scales::label_comma(accuracy = 0.01)(season_var),
-         season_var_label = str_c("Variance = ", season_var_label))  %>% 
-  
-  filter(label %in% x_labels[3:4])
+         season_var_label = str_c("Variance = ", season_var_label))
 
 p_ex_yearly_inc <- ggplot() +
   geom_line(aes(x = t_year, y = incidence, group = year),
@@ -216,6 +213,7 @@ p_ex_yearly_inc <- ggplot() +
   
   ggtitle(NULL, "<b>C</b> — Exemplar infection incidence by time of year")
 
+p_ex_yearly_inc
 
 p <- ((p_bias | p_variance) / plot_spacer() / p_ex_yearly_inc) +
   plot_layout(heights = c(2.7, 0.15, 1))

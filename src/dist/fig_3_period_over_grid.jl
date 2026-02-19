@@ -71,8 +71,9 @@ Threads.@threads for i in eachindex(x_vals_job)
     y_inf_summary[i, 12] = with_timeout(lyapunov(prob, n_days, Ttr = n_days_burn_in, Δt = 100), 60.0)
 
     period_mean, period_sd, period_n = get_period(
-        ode_solution, model_params, n_days_burn_in, n_days, 
-        periodic_Δt, periodic_ϵ
+        ode_solution, n_days_burn_in, n_days, 
+        periodic_Δt, periodic_ϵ,
+        1:(model_params.S + 1)
     )
 
     y_period[i, :] = [period_mean period_sd period_n]

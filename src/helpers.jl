@@ -42,9 +42,9 @@ function get_summ_boosting(ode_solution, t, model_params)
 end
 
 
-function get_period(ode_sol, model_params, burn_in_days, n_days, Δt, ϵ)
+function get_period(ode_sol, burn_in_days, n_days, Δt, ϵ, compartments)
     t = burn_in_days:Δt:n_days
-    y = ode_sol(t)[1:(model_params.S + 1), :]'
+    y = ode_sol(t)[compartments, :]'
     y_zeroed = copy(y)
 
     for j in axes(y, 1)

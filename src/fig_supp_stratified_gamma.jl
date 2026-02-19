@@ -1,3 +1,4 @@
+
 include("dependencies.jl")
 using ForwardDiff
 
@@ -6,7 +7,7 @@ n_days = 200 * 365
 t_seq = 0:n_days
 
 periodic_Δt = 0.25
-x_r = collect(0.0005:0.0005:0.05)
+x_r = collect(0.0005:0.005:0.05)
 
 y_fixed_I = zeros(length(x_r))
 y_I_sol = zeros(length(x_r), length(t_seq))
@@ -20,7 +21,9 @@ period = zeros(length(x_r), 3)
     model_params_boosting = make_model_parameters(
         k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
         a = baseline_a, r = x_r[i],
-        b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
+        b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist,
+
+        gamma_by_strata = true,
 
         boosting = "multiplicative"
     )
@@ -50,12 +53,6 @@ period = zeros(length(x_r), 3)
     y_eigs[i] = eigvals(J)
 end
 
-
-y_eigs_stack = stack(y_eigs)
-y_real_eigs = real.(y_eigs_stack)
-y_imag_eigs = imag.(y_eigs_stack)
-
-jldsave(
-    "data/bifurcations_boosting.jld2";
-    x_r, y_fixed_I, y_I_sol, y_inc_sol, period, y_real_eigs
-)
+plot(y_fixed_I)
+plot!(maximum(y_I_sol[:, n_days_burn_in:end], dims = 2))
+plot!(minimum(y_I_sol[:, n_days_burn_in:end], dims = 2))

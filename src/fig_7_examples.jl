@@ -6,12 +6,11 @@ n_days = n_days_burn_in + 250 * 365
 t_seq = 1:n_days
 t_post_burn_in = n_days_burn_in:n_days
 
-# 0.25, 0.01, "iv",
-# 0.25, 0.013, "iii",
-# 0.25, 0.016, "ii",
-# 0.05, 0.016, "i"
-x_eta = [0.25 0.25 0.25 0.05]
-x_r = [0.01 0.013 0.0165 0.0165]
+#   0.05, 0.0085, "iii",
+#   0.25, 0.0165, "ii",
+#   0.05, 0.0165, "i"
+x_eta = [0.05 0.25 0.05]
+x_r = [0.0085 0.0165 0.0165]
 
 y_sus = zeros(length(x_eta), length(t_seq), baseline_k + 1)
 y_inf = zeros(length(x_eta), length(t_seq))

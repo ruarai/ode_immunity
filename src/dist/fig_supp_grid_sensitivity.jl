@@ -21,7 +21,7 @@ r_step = 0.00015
 x_r = r_step:r_step:0.03
 length(x_r)
 
-x_model_versions = 1:8
+x_model_versions = 1:10
 
 length(x_eta) * length(x_r) * length(x_model_versions)
 
@@ -47,12 +47,20 @@ function get_model_parameters_version(r, eta, m)
     elseif m == 2
         # Broader immunity curve (h = 4 instead of 8)
         return make_model_parameters(
-            k = 64, beta = baseline_beta, gamma = baseline_gamma,
+            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
             a = baseline_a, r = r,
             b = baseline_b, h = 4, c_jump_dist = baseline_c_jump_dist;
             eta = eta
         )
     elseif m == 3
+        # Narrower immunity curve (h = 12 instead of 8)
+        return make_model_parameters(
+            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+            a = baseline_a, r = r,
+            b = baseline_b, h = 12, c_jump_dist = baseline_c_jump_dist;
+            eta = eta
+        )
+    elseif m == 4
         # Narrower post-infection immunity dist
         return make_model_parameters(
             k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
@@ -60,7 +68,15 @@ function get_model_parameters_version(r, eta, m)
             b = baseline_b, h = baseline_h, c_jump_dist = Normal(6, 0.1);
             eta = eta
         )
-    elseif m == 4
+    elseif m == 5
+        # Wider post-infection immunity dist
+        return make_model_parameters(
+            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+            a = baseline_a, r = r,
+            b = baseline_b, h = baseline_h, c_jump_dist = Normal(6, 1.0);
+            eta = eta
+        )
+    elseif m == 6
         # Lower c_mid
         return make_model_parameters(
             k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
@@ -68,15 +84,15 @@ function get_model_parameters_version(r, eta, m)
             b = 2^2, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
             eta = eta
         )
-    elseif m == 5
-        # Higher post-infection immunity dist
+    elseif m == 7
+        # Higher c_mid
         return make_model_parameters(
             k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
             a = baseline_a, r = r,
-            b = baseline_b, h = baseline_h, c_jump_dist = Normal(8, 0.5);
+            b = 2^4, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
             eta = eta
         )
-    elseif m == 6
+    elseif m == 8
         # Higher k value (64)
         return make_model_parameters(
             k = 64, beta = baseline_beta, gamma = baseline_gamma,
@@ -84,7 +100,7 @@ function get_model_parameters_version(r, eta, m)
             b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
             eta = eta
         )
-    elseif m == 7
+    elseif m == 9
         # Higher k value (128)
         return make_model_parameters(
             k = 128, beta = baseline_beta, gamma = baseline_gamma,
@@ -92,21 +108,19 @@ function get_model_parameters_version(r, eta, m)
             b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
             eta = eta
         )
-    elseif m == 8
-        # Lower GI
-
-        reduced_gamma = 0.1
-        reduced_beta = baseline_R * reduced_gamma
+    elseif m == 10
+        # Importations
         return make_model_parameters(
-            k = baseline_k, beta = reduced_beta, gamma = reduced_gamma,
+            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
             a = baseline_a, r = r,
             b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
-            eta = eta
+            eta = eta,
+
+            importation_rate = 1e-7
         )
     else
         error("Invalid m")
     end
-
 end
 
 

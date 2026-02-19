@@ -22,6 +22,9 @@
     c_levels::Vector{Float64}
     p_acq::Vector{Float64}
 
+    # For sensitivity analysis, applies only to model with boosting
+    gamma_strata::Vector{Float64}
+
     M::Matrix{Float64}
     p_trans::Vector{Float64}
 
@@ -39,12 +42,19 @@ function make_model_parameters(;
     c_jump_dist,
     eta = 0.0,
     boosting = "independent",
-    importation_rate = 0.0
+    importation_rate = 0.0,
+    gamma_by_strata = false
 )
     S = k + 1
     c_levels = collect(2 .^ (a .* (0:k) / k))
     
     p_acq = (c_levels .^ h) ./ (b ^ h .+ c_levels .^ h)
+
+    gamma_strata = if gamma_by_strata
+        gamma .+ (c_levels .^ h) ./ (10 ^ h .+ c_levels .^ h)
+    else
+        fill(gamma, S)
+    end
 
     p_trans = zeros(S)
     M = zeros(S, S)
@@ -73,7 +83,7 @@ function make_model_parameters(;
         wane_transition_rate,
         b, h,
         c_jump_dist,
-        c_levels, p_acq,
+        c_levels, p_acq, gamma_strata,
         M, p_trans,
 
         importation_rate
