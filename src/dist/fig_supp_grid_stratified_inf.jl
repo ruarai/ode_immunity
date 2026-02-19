@@ -21,7 +21,7 @@ r_step = 0.00015
 x_r = r_step:r_step:0.03
 length(x_r)
 
-x_model_versions = 1:3
+x_model_versions = 1:5
 
 length(x_eta) * length(x_r) * length(x_model_versions)
 
@@ -32,91 +32,62 @@ x_vals_job = x_vals[ix_jobs]
 
 y_period = zeros(length(x_vals_job), 3)
 y_inf_summary = zeros(length(x_vals_job), 11)
-y_seasonality = zeros(length(x_vals_job), 2)
 
 time_start = Base.time()
 
 function get_model_parameters_version(r, eta, m)
     if m == 1
-        return make_model_parameters(
-            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-            a = baseline_a, r = r,
-            b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
-            eta = eta
-        )
-    elseif m == 2
-        # Broader immunity curve (h = 4 instead of 8)
-        return make_model_parameters(
-            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-            a = baseline_a, r = r,
-            b = baseline_b, h = 4, c_jump_dist = baseline_c_jump_dist;
-            eta = eta
-        )
-    elseif m == 3
-        # Narrower immunity curve (h = 12 instead of 8)
-        return make_model_parameters(
-            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-            a = baseline_a, r = r,
-            b = baseline_b, h = 12, c_jump_dist = baseline_c_jump_dist;
-            eta = eta
-        )
-    elseif m == 4
-        # Narrower post-infection immunity dist
-        return make_model_parameters(
-            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-            a = baseline_a, r = r,
-            b = baseline_b, h = baseline_h, c_jump_dist = Normal(6, 0.1);
-            eta = eta
-        )
-    elseif m == 5
-        # Wider post-infection immunity dist
-        return make_model_parameters(
-            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-            a = baseline_a, r = r,
-            b = baseline_b, h = baseline_h, c_jump_dist = Normal(6, 1.0);
-            eta = eta
-        )
-    elseif m == 6
-        # Lower c_mid
-        return make_model_parameters(
-            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-            a = baseline_a, r = r,
-            b = 2^2, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
-            eta = eta
-        )
-    elseif m == 7
-        # Higher c_mid
-        return make_model_parameters(
-            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-            a = baseline_a, r = r,
-            b = 2^4, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
-            eta = eta
-        )
-    elseif m == 8
-        # Higher k value (64)
-        return make_model_parameters(
-            k = 64, beta = baseline_beta, gamma = baseline_gamma,
-            a = baseline_a, r = r,
-            b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
-            eta = eta
-        )
-    elseif m == 9
-        # Higher k value (128)
-        return make_model_parameters(
-            k = 128, beta = baseline_beta, gamma = baseline_gamma,
-            a = baseline_a, r = r,
-            b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
-            eta = eta
-        )
-    elseif m == 10
-        # Importations
+        # Baseline
         return make_model_parameters(
             k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
             a = baseline_a, r = r,
             b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
             eta = eta,
 
-            importation_rate = 1e-7
+            boosting = "none"
+        )
+    elseif m == 2
+        # With multiplicative boosting
+        return make_model_parameters(
+            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+            a = baseline_a, r = r,
+            b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
+            eta = eta,
+
+            boosting = "multiplicative"
+        )
+    elseif m == 3
+        # Gamma by strata with low mid-point
+        return make_model_parameters(
+            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+            a = baseline_a, r = r,
+            b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
+            eta = eta,
+
+            boosting = "none",
+            gamma_by_strata = true, gamma_by_strata_b = 4
+        )
+    elseif m == 4
+        # Gamma by strata with mid mid-point
+        return make_model_parameters(
+            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+            a = baseline_a, r = r,
+            b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
+            eta = eta,
+
+            boosting = "none",
+            gamma_by_strata = true, gamma_by_strata_b = 8
+        )
+    elseif m == 5
+        # Gamma by strata with high mid-point
+        return make_model_parameters(
+            k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
+            a = baseline_a, r = r,
+            b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
+            eta = eta,
+
+            boosting = "none",
+            gamma_by_strata = true, gamma_by_strata_b = 16
         )
     else
         error("Invalid m")
@@ -124,18 +95,20 @@ function get_model_parameters_version(r, eta, m)
 end
 
 
-Threads.@threads for i in eachindex(x_vals_job)
+@showprogress Threads.@threads for i in eachindex(x_vals_job)
     println("Running job $(ix_jobs[i])")
 
     model_params = get_model_parameters_version(x_vals_job[i].r, x_vals_job[i].eta, x_vals_job[i].m)
 
-    ode_solution = ode_solve(
+    ode_solution = ode_solve_boosting(
         model_params, n_days, n_inf_0,
         saveat_step = periodic_Δt, n_days_burn_in = n_days_burn_in
     )
 
-    inf = get_inf(ode_solution, t_post_burn_in, model_params)
-    inc = get_inc(ode_solution, t_post_burn_in, model_params; maintain_length = false)
+    sus, inf, count = get_results_boosting(ode_solution, t_post_burn_in, model_params)
+
+    inf = sum(inf, dims = 2)
+    inc = diff(count)
 
     y_inf_summary[i, 1] = minimum(inf)
     y_inf_summary[i, 2] = maximum(inf)
@@ -151,15 +124,12 @@ Threads.@threads for i in eachindex(x_vals_job)
     y_inf_summary[i, 11] = entropy(inc)
 
     period_mean, period_sd, period_n = get_period(
-        ode_solution, model_params, n_days_burn_in, n_days, 
-        periodic_Δt, periodic_ϵ
+        ode_solution, n_days_burn_in, n_days, 
+        periodic_Δt, periodic_ϵ,
+        1:(model_params.S * 2)
     )
 
     y_period[i, :] = [period_mean period_sd period_n]
-
-    seasonality_x, seasonality_y = get_seasonality_coordinates(ode_solution, t_post_burn_in, model_params)
-
-    y_seasonality[i, :] = [seasonality_x, seasonality_y]
 end
 
 time_elapsed = Base.time() - time_start
@@ -167,6 +137,6 @@ time_elapsed = Base.time() - time_start
 println("Completed $(length(ix_jobs)) jobs in $(round(time_elapsed, digits = 2)), ($(round(time_elapsed/length(ix_jobs), digits = 2)) seconds/job)")
 
 x_vals_job = stack(x_vals_job)
-jldsave("data_dist/period_grid_supp/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_summary, y_seasonality)
+jldsave("data_dist/period_grid_stratified/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_summary, y_seasonality)
 
 println("Outputs saved.")

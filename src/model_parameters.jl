@@ -43,7 +43,8 @@ function make_model_parameters(;
     eta = 0.0,
     boosting = "independent",
     importation_rate = 0.0,
-    gamma_by_strata = false
+    gamma_by_strata = false,
+    gamma_by_strata_b = baseline_b
 )
     S = k + 1
     c_levels = collect(2 .^ (a .* (0:k) / k))
@@ -51,7 +52,7 @@ function make_model_parameters(;
     p_acq = (c_levels .^ h) ./ (b ^ h .+ c_levels .^ h)
 
     gamma_strata = if gamma_by_strata
-        gamma .+ (c_levels .^ h) ./ (10 ^ h .+ c_levels .^ h)
+        gamma .+ (c_levels .^ h) ./ (gamma_by_strata_b ^ h .+ c_levels .^ h)
     else
         fill(gamma, S)
     end
