@@ -1,14 +1,5 @@
 
-
-
-
-model_params = make_model_parameters(
-    k = baseline_k, beta = baseline_beta, gamma = baseline_gamma,
-    a = baseline_a, r = 0.001,
-    b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist
-)
-
-x0 = get_steady_state(model_params)
+include("dependencies.jl")
 
 
 using BifurcationKit, Accessors

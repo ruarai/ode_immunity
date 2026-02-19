@@ -8,17 +8,17 @@ source("R/read_seasonality_data.R")
 plot_data_raw <- read_seasonality_data("data/period_over_grid_supp.jld2")
 
 plot_data <- plot_data_raw %>% 
-  
-  filter(model_version != 8, model_version != 5) %>% 
   mutate(model_label = case_when(
     model_version == 1 ~ "<b>A</b>. Baseline",
     model_version == 2 ~ "<b>B</b>. Lower <i>h</i> (<i>h</i> = 4)",
-    model_version == 3 ~ "<b>C</b>. Low var. <i>X</i> (<i>X</i> ~ N(6, 0.1))",
-    model_version == 4 ~ "<b>D</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 2<sup>2</sup>)",
-    # model_version == 5 ~ "<b>E</b> — Higher post-inf dist",
-    model_version == 6 ~ "<b>E</b>. Higher <i>k</i> (<i>k</i> = 64)",
-    model_version == 7 ~ "<b>F</b>. Higher <i>k</i> (<i>k</i> = 128)",
-    # model_version == 8 ~ "<b>H</b> — Lower generation interval"
+    model_version == 3 ~ "<b>C</b>. Higher <i>h</i> (<i>h</i> = 12)",
+    model_version == 4 ~ "<b>D</b>. Narrower jump dist. (<i>&sigma;</i> = 0.1)",
+    model_version == 5 ~ "<b>E</b>. Wider jump dist. (<i>&sigma;</i> = 1.0)",
+    model_version == 6 ~ "<b>F</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 4)",
+    model_version == 7 ~ "<b>G</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 16)",
+    model_version == 8 ~ "<b>H</b>. Higher <i>k</i> (<i>k</i> = 64)",
+    model_version == 9 ~ "<b>I</b>. Higher <i>k</i> (<i>k</i> = 128)",
+    model_version == 10 ~ "<b>J</b>. Including importations"
   ))
 
 

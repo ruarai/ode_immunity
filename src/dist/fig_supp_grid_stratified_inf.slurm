@@ -15,4 +15,4 @@ module load SUNDIALS/6.3.0
 
 export JULIA_NUM_THREADS=${SLURM_CPUS_PER_TASK}
 
-julia src/dist/fig_supp_stratified_inf.jl ${SLURM_ARRAY_TASK_ID} ${SLURM_ARRAY_TASK_MAX}
+julia src/dist/fig_supp_grid_stratified_inf.jl ${SLURM_ARRAY_TASK_ID} ${SLURM_ARRAY_TASK_MAX}
