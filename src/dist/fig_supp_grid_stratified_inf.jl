@@ -137,6 +137,6 @@ time_elapsed = Base.time() - time_start
 println("Completed $(length(ix_jobs)) jobs in $(round(time_elapsed, digits = 2)), ($(round(time_elapsed/length(ix_jobs), digits = 2)) seconds/job)")
 
 x_vals_job = stack(x_vals_job)
-jldsave("data_dist/period_grid_stratified/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_summary, y_seasonality)
+jldsave("data_dist/period_grid_stratified/$(arg_ix).jld2"; x_vals_job, y_period, y_inf_summary)
 
 println("Outputs saved.")

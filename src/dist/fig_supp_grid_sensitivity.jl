@@ -116,7 +116,7 @@ function get_model_parameters_version(r, eta, m)
             b = baseline_b, h = baseline_h, c_jump_dist = baseline_c_jump_dist;
             eta = eta,
 
-            importation_rate = 1e-7
+            importation_rate = 1e-5
         )
     else
         error("Invalid m")
