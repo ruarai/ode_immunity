@@ -5,21 +5,15 @@ library(patchwork)
 source("R/plot_theme.R")
 source("R/read_seasonality_data.R")
 
-plot_data_raw <- read_seasonality_data("data/period_over_grid_supp.jld2")
+plot_data_raw <- read_seasonality_data("data/period_over_grid_stratified.jld2")
 
-plot_data <- plot_data_raw %>% 
-  # filter(model_version != 10) %>% 
+plot_data <- plot_data_raw%>% 
   mutate(model_label = case_when(
     model_version == 1 ~ "<b>A</b>. Baseline",
-    model_version == 10 ~ "<b>B</b>. Including importations",
-    model_version == 3 ~ "<b>C</b>. Higher <i>h</i> (<i>h</i> = 12)",
-    model_version == 2 ~ "<b>D</b>. Lower <i>h</i> (<i>h</i> = 4)",
-    model_version == 4 ~ "<b>E</b>. Narrower jump dist. (<i>&sigma;</i> = 0.1)",
-    model_version == 5 ~ "<b>F</b>. Wider jump dist. (<i>&sigma;</i> = 1.0)",
-    model_version == 6 ~ "<b>G</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 4)",
-    model_version == 7 ~ "<b>H</b>. Higher <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 16)",
-    model_version == 8 ~ "<b>I</b>. Higher <i>k</i> (<i>k</i> = 64)",
-    model_version == 9 ~ "<b>K</b>. Higher <i>k</i> (<i>k</i> = 128)"
+    model_version == 2 ~ "<b>B</b>. With boosting",
+    model_version == 3 ~ "<b>C</b>. Varying recovery rate 1",
+    model_version == 4 ~ "<b>D</b>. Varying recovery rate 2",
+    model_version == 5 ~ "<b>E</b>. Varying recovery rate 3"
   ))
 
 
@@ -62,7 +56,7 @@ p_period <- ggplot() +
     breaks = c(9, 1:4, 10, 5:8, 11)
   ) +
   
-  facet_wrap(~model_label, ncol = 5, dir = "v") +
+  facet_wrap(~model_label, ncol = 3) +
   
   
   coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
@@ -76,6 +70,7 @@ p_period <- ggplot() +
         strip.text = element_markdown())
 
 p_period
+
 
 color_tbl <- read_delim("data/lipari.txt", col_names = c("R", "G", "B")) %>%
   mutate(c = rgb(R, G, B))
@@ -112,16 +107,15 @@ p_min <- ggplot(plot_data) +
 
 p_min
 
+
 p_period / p_min
 
 
 ggsave(
-  "results/results_supp_seasonality_sensitivity.png",
+  "results/results_supp_seasonality_sensitivity_strat.png",
   device = png, bg = "white",
-  width = 17, height = 18
+  width = 14, height = 18
 )
-
-
 
 
 
