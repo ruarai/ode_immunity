@@ -16,10 +16,10 @@ n_days_burn_in = 100 * 365
 n_days = n_days_burn_in + 100 * 365
 
 
-x_eta = 0.00:0.005:0.5
+x_eta = 0.00:0.05:0.5
 length(x_eta)
 
-sigma_step = 0.0001
+sigma_step = 0.001
 x_sigma = sigma_step:sigma_step:0.01
 length(x_sigma)
 
@@ -58,8 +58,6 @@ u0 = [0.99, 0.01, 0.0]
 end
 
 
-y = reshape(minimum(y_sol, dims = 1), length(x_eta), length(x_sigma))
-
 y_per = y_period[1, :]
 
 is_periodic = (y_period[1, :] .% 365 .< 1) .| (y_period[1, :] .% 365 .> 364)
@@ -74,25 +72,4 @@ heatmap(x_eta, x_sigma, min.(4, y' ./ 365))
 y = reshape(y_inf_summary[1, :], length(x_eta), length(x_sigma))
 
 heatmap(x_eta, x_sigma, max.(-10,log10.(y')))
-
-
-
-p = (beta = baseline_beta, gamma = baseline_gamma, sigma = 0.002, eta = 0.25)
-tspan = (0.0, n_days) 
-
-
-prob = ODEProblem(sir_ode!, u0, tspan, p)
-
-sol = solve(
-    prob,
-
-    dtmax = 1.0,
-    reltol = 1e-14, abstol = 1e-14,
-
-    saveat = n_days_burn_in:0.25:n_days
-)
-
-plot(sol)
-
-get_period(sol, n_days_burn_in, n_days, 0.25, periodic_ϵ, 1:3)
 
