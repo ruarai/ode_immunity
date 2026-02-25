@@ -8,19 +8,36 @@ source("R/read_seasonality_data.R")
 plot_data_raw <- read_seasonality_data("data/period_over_grid_supp.jld2")
 
 plot_data <- plot_data_raw %>% 
-  # filter(model_version != 10) %>% 
+  filter(model_version != 10) %>%
   mutate(model_label = case_when(
     model_version == 1 ~ "<b>A</b>. Baseline",
-    model_version == 10 ~ "<b>B</b>. Including importations",
-    model_version == 3 ~ "<b>C</b>. Higher <i>h</i> (<i>h</i> = 12)",
-    model_version == 2 ~ "<b>D</b>. Lower <i>h</i> (<i>h</i> = 4)",
-    model_version == 4 ~ "<b>E</b>. Narrower jump dist. (<i>&sigma;</i> = 0.1)",
-    model_version == 5 ~ "<b>F</b>. Wider jump dist. (<i>&sigma;</i> = 1.0)",
-    model_version == 6 ~ "<b>G</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 4)",
-    model_version == 7 ~ "<b>H</b>. Higher <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 16)",
-    model_version == 8 ~ "<b>I</b>. Higher <i>k</i> (<i>k</i> = 64)",
-    model_version == 9 ~ "<b>K</b>. Higher <i>k</i> (<i>k</i> = 128)"
-  ))
+    model_version == 3 ~ "<b>B</b>. Higher <i>h</i> (<i>h</i> = 12)",
+    model_version == 2 ~ "<b>C</b>. Lower <i>h</i> (<i>h</i> = 4)",
+    model_version == 4 ~ "<b>D</b>. Narrower jump dist. (<i>&sigma;</i> = 0.1)",
+    model_version == 5 ~ "<b>E</b>. Wider jump dist. (<i>&sigma;</i> = 1.0)",
+    model_version == 6 ~ "<b>F</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 4)",
+    model_version == 7 ~ "<b>G</b>. Higher <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 16)",
+    model_version == 8 ~ "<b>H</b>. Higher <i>k</i> (<i>k</i> = 64)",
+    model_version == 9 ~ "<b>I</b>. Higher <i>k</i> (<i>k</i> = 128)"
+    # model_version == 10 ~ "<b>B</b>. Including importations"
+  )) %>% 
+  
+  filter(eta > 0.005) %>% 
+  mutate(
+    model_label = factor(
+      model_label,
+      levels = c(
+        "<b>A</b>. Baseline", " ", 
+        "<b>B</b>. Higher <i>h</i> (<i>h</i> = 12)", 
+        "<b>C</b>. Lower <i>h</i> (<i>h</i> = 4)",
+        "<b>D</b>. Narrower jump dist. (<i>&sigma;</i> = 0.1)", 
+        "<b>E</b>. Wider jump dist. (<i>&sigma;</i> = 1.0)", 
+        "<b>F</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 4)",
+        "<b>G</b>. Higher <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 16)", 
+        "<b>H</b>. Higher <i>k</i> (<i>k</i> = 64)", "<b>I</b>. Higher <i>k</i> (<i>k</i> = 128)"
+      )
+    )
+  )
 
 
 plot_data_periodic <- plot_data %>%
@@ -37,6 +54,22 @@ plot_data_empty <- plot_data %>% filter(!periodic, !quasiperiodic, !chaotic)
 
 plot_data_quasiperiodic <- plot_data %>% filter(quasiperiodic)
 
+plot_filler <- tibble(
+  model_label = factor(
+    " ",
+    levels = c(
+      "<b>A</b>. Baseline", " ", 
+      "<b>B</b>. Higher <i>h</i> (<i>h</i> = 12)", 
+      "<b>C</b>. Lower <i>h</i> (<i>h</i> = 4)",
+      "<b>D</b>. Narrower jump dist. (<i>&sigma;</i> = 0.1)", 
+      "<b>E</b>. Wider jump dist. (<i>&sigma;</i> = 1.0)", 
+      "<b>F</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 4)",
+      "<b>G</b>. Higher <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 16)", 
+      "<b>H</b>. Higher <i>k</i> (<i>k</i> = 64)", "<b>I</b>. Higher <i>k</i> (<i>k</i> = 128)"
+    )
+  )
+)
+
 
 period_cols <- viridis::inferno(n = 8, direction = -1, begin = 0.1)
 
@@ -50,6 +83,8 @@ p_period <- ggplot() +
             plot_data_chaotic) +
   geom_tile(aes(x = eta, y = r, fill = factor(11)),
             plot_data_empty) +
+  
+  geom_blank(aes(x = 0), plot_filler) +
   
   scale_fill_manual(
     name = "Period",
@@ -84,6 +119,8 @@ min_cols <- color_tbl$c[seq(1, nrow(color_tbl), length.out = 128)]
 
 p_min <- ggplot(plot_data) +
   geom_tile(aes(x = eta, y = r, fill = log10(inf_min))) +
+  
+  geom_blank(aes(x = 0), plot_filler) +
   
   scale_fill_stepsn(
     # colours = rev(colorspace::diverging_hcl(n = 20, h = c(240, 15), c = c(60, 80), l = c(75, 5), power = c(1.2, 1.5))),

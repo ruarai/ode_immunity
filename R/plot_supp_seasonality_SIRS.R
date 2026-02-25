@@ -5,20 +5,7 @@ library(patchwork)
 source("R/plot_theme.R")
 source("R/read_seasonality_data.R")
 
-plot_data_raw <- read_seasonality_data("data/period_over_grid_stratified.jld2")
-
-plot_data <- plot_data_raw %>% 
-  filter(model_version != 4) %>% 
-  mutate(model_label = case_when(
-    model_version == 1 ~ "<b>A</b>. Baseline<br>",
-    model_version == 2 ~ "<b>B</b>. With boosting<br>",
-    model_version == 3 ~ "<b>C</b>. Varying recovery rate<br>scenario 1",
-    model_version == 4 ~ "<b>D</b>. Varying recovery rate ---",
-    model_version == 5 ~ "<b>D</b>. Varying recovery rate<br>scenario 2"
-  )) %>% 
-  
-  filter(eta > 0.005)
-
+plot_data <- read_seasonality_data("data/period_over_grid_SIRS.jld2")
 
 plot_data_periodic <- plot_data %>%
   filter(eta > 0) %>% 
@@ -41,8 +28,8 @@ p_period <- ggplot() +
   
   geom_tile(aes(x = eta, y = r, fill = period),
             plot_data_periodic) +
-  geom_tile(aes(x = eta, y = r, fill = factor(9)),
-            plot_data_quasiperiodic) +
+  # geom_tile(aes(x = eta, y = r, fill = factor(9)),
+  #           plot_data_quasiperiodic) +
   geom_tile(aes(x = eta, y = r, fill = factor(10)),
             plot_data_chaotic) +
   geom_tile(aes(x = eta, y = r, fill = factor(11)),
@@ -59,11 +46,9 @@ p_period <- ggplot() +
     breaks = c(9, 1:4, 10, 5:8, 11)
   ) +
   
-  facet_wrap(~model_label, ncol = 4) +
   
-  
-  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
-  xlab("Seasonal forcing strength <i>η</i>") + ylab("Effective antibody decay rate <i>r</i>") +
+  coord_fixed(ratio = 50, ylim = c(0, 0.01)) +
+  xlab("Seasonal forcing strength <i>η</i>") + ylab("Immunity waning rate <i>σ</i>") +
   guides(fill = guide_legend(nrow = 3, ncol = 5),
          colour = guide_none()) +
   
@@ -93,13 +78,12 @@ p_min <- ggplot(plot_data) +
                "", "", "", "-7", "", "", "", "-5", "", "", "", "-3", "", "", 
                "", "-1")
   ) +
-  
-  facet_wrap(~model_label, ncol = 4) +
+
   
   plot_theme_paper +
   
-  coord_fixed(ratio = 16.66, ylim = c(0, 0.03)) +
-  xlab("Seasonal forcing strength <i>η</i>") + ylab("Effective antibody decay rate <i>r</i>")  +
+  coord_fixed(ratio = 50, ylim = c(0, 0.01)) +
+  xlab("Seasonal forcing strength <i>η</i>") + ylab("Immunity waning rate <i>σ</i>") +
   
   plot_theme_paper +
   guides(fill = guide_colourbar(barwidth = 15),
@@ -111,13 +95,13 @@ p_min <- ggplot(plot_data) +
 p_min
 
 
-p_period / p_min
+p_period + ggtitle(NULL, "<b>A</b> — Dynamics") | p_min + ggtitle(NULL, "<b>A</b> — Minimum infection prevalence")
 
 
 ggsave(
-  "results/results_supp_seasonality_sensitivity_strat.png",
+  "results/results_supp_seasonality_SIRS.png",
   device = png, bg = "white",
-  width = 14, height = 12
+  width = 14, height = 8.5
 )
 
 

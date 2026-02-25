@@ -12,64 +12,34 @@ function sir_ode!(du, u, p, t)
 end
 
 
-n_days_burn_in = 100 * 365
-n_days = n_days_burn_in + 100 * 365
-
-
-x_eta = 0.00:0.05:0.5
-length(x_eta)
-
-sigma_step = 0.001
-x_sigma = sigma_step:sigma_step:0.01
-length(x_sigma)
-
-x_vals = vec([(eta = x1, sigma = x2) for x1 in x_eta, x2 in x_sigma])
-
-y_period = zeros(3, length(x_vals))
-y_inf_summary = zeros(4, length(x_vals))
-
+n_days_burn_in = 1000 * 365
+n_days = n_days_burn_in + 250 * 365
 
 u0 = [0.99, 0.01, 0.0]
-
-@showprogress Threads.@threads for i in eachindex(x_vals)
-    p = (beta = baseline_beta, gamma = baseline_gamma, sigma = x_vals[i].sigma, eta = x_vals[i].eta)
-    tspan = (0.0, n_days) 
-
-    prob = ODEProblem(sir_ode!, u0, tspan, p)
-
-    sol = solve(
-        prob,
-        Rodas5P(),
-
-        dtmax = 1.0,
-        reltol = 1e-10, abstol = 1e-10,
-
-        saveat = n_days_burn_in:0.25:n_days
-    )
-
-    y_period[:, i] .= get_period(sol, n_days_burn_in, n_days, 0.25, periodic_ϵ, 1:3)
-
-    inf = [sol(t)[2] for t in n_days_burn_in:n_days]
-
-    y_inf_summary[1, i] = minimum(inf)
-    y_inf_summary[2, i] = maximum(inf)
-    y_inf_summary[3, i] = mean(inf)
-    y_inf_summary[4, i] = testchaos01(NaNMath.log10.(inf[1:80:end]))
-end
+p = (beta = baseline_beta, gamma = baseline_gamma, sigma = 0.01, eta = 0.25)
+tspan = (0.0, n_days) 
 
 
-y_per = y_period[1, :]
 
-is_periodic = (y_period[1, :] .% 365 .< 1) .| (y_period[1, :] .% 365 .> 364)
+prob = ODEProblem(sir_ode!, u0, tspan, p)
 
-y_per[.!is_periodic] .= NaN
+sol = solve(
+    prob,
+    Rodas5P(),
 
-y = reshape(y_per, length(x_eta), length(x_sigma))
+    dtmax = 1.0,
+    reltol = 1e-10, abstol = 1e-10,
 
-heatmap(x_eta, x_sigma, min.(4, y' ./ 365))
+    saveat = n_days_burn_in:0.25:n_days
+)
 
 
-y = reshape(y_inf_summary[1, :], length(x_eta), length(x_sigma))
+get_period(
+    sol, n_days_burn_in, n_days, 
+    0.25, 1e-9,
+    1:3
+)
 
-heatmap(x_eta, x_sigma, max.(-10,log10.(y')))
+plot([sol(t)[3] for t in (n_days_burn_in + 1):(n_days_burn_in + 365 * 25)])
 
+scatter(repeat(1:365, outer = 250), [sol(t)[2] for t in (n_days_burn_in + 1):(n_days_burn_in + 365 * 250)])
