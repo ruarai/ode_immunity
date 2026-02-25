@@ -13,10 +13,10 @@ periodic_Δt = 0.25
 t_post_burn_in = n_days_burn_in:n_days
 
 # Seasonality
-x_eta = 0.00:0.0005:0.5
+x_eta = 0.00:0.001:0.5
 length(x_eta)
 
-sigma_step = 0.00001
+sigma_step = 0.00002
 x_sigma = sigma_step:sigma_step:0.01
 length(x_sigma)
 
@@ -69,6 +69,9 @@ time_start = Base.time()
     y_inf_summary[i, 2] = maximum(inf)
     y_inf_summary[i, 3] = mean(inf)
     y_inf_summary[i, 4] = testchaos01(NaNMath.log10.(inf[1:80:end]))
+
+    # prob_lya = ContinuousDynamicalSystem(sir_ode!, u0, p; t0 = 0.0, diffeq = (alg = Rodas5P(), abstol = 1e-10, reltol = 1e-10))
+    # y_inf_summary[i, 11] = lyapunov(prob_lya, n_days, Ttr = n_days_burn_in, Δt = 100)
 end
 
 time_elapsed = Base.time() - time_start
