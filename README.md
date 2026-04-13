@@ -25,6 +25,8 @@ to visualise the results.
 
 The data for other figures can similarly be produced using the `fig_` or `fig_supp_` `.jl` files.
 
+Pre-produced JLD2 files used in the manuscript have been archived on OSF (data.zip at osf.io/us9t8). 
+
 #### Dynamics over decay rate and seasonality
 
 The figure describing dynamics over varying antibody decay rate and strength of 
