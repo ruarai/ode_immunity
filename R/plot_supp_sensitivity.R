@@ -10,15 +10,15 @@ plot_data_raw <- read_seasonality_data("data/period_over_grid_supp.jld2")
 plot_data <- plot_data_raw %>% 
   filter(model_version != 10) %>%
   mutate(model_label = case_when(
-    model_version == 1 ~ "<b>A</b>. Baseline",
-    model_version == 3 ~ "<b>B</b>. Higher <i>h</i> (<i>h</i> = 12)",
-    model_version == 2 ~ "<b>C</b>. Lower <i>h</i> (<i>h</i> = 4)",
-    model_version == 4 ~ "<b>D</b>. Narrower jump dist. (<i>&sigma;</i> = 0.1)",
-    model_version == 5 ~ "<b>E</b>. Wider jump dist. (<i>&sigma;</i> = 1.0)",
-    model_version == 6 ~ "<b>F</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 4)",
-    model_version == 7 ~ "<b>G</b>. Higher <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 16)",
-    model_version == 8 ~ "<b>H</b>. Higher <i>k</i> (<i>k</i> = 64)",
-    model_version == 9 ~ "<b>I</b>. Higher <i>k</i> (<i>k</i> = 128)"
+    model_version == 1 ~ "<b>A</b>. Baseline<br>",
+    model_version == 3 ~ "<b>B</b>. Higher <i>h</i> (<i>h</i> = 12)<br>",
+    model_version == 2 ~ "<b>C</b>. Lower <i>h</i> (<i>h</i> = 4)<br>",
+    model_version == 4 ~ "<b>D</b>. Narrower post-infection<br>antibody dist. (<i>&sigma;</i> = 0.1)",
+    model_version == 5 ~ "<b>E</b>. Wider post-infection<br>antibody dist. (<i>&sigma;</i> = 1.0)",
+    model_version == 6 ~ "<b>F</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 4)<br>",
+    model_version == 7 ~ "<b>G</b>. Higher <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 16)<br>",
+    model_version == 8 ~ "<b>H</b>. Higher <i>k</i> (<i>k</i> = 64)<br>",
+    model_version == 9 ~ "<b>I</b>. Higher <i>k</i> (<i>k</i> = 128)<br>"
     # model_version == 10 ~ "<b>B</b>. Including importations"
   )) %>% 
   
@@ -27,14 +27,15 @@ plot_data <- plot_data_raw %>%
     model_label = factor(
       model_label,
       levels = c(
-        "<b>A</b>. Baseline", " ", 
-        "<b>B</b>. Higher <i>h</i> (<i>h</i> = 12)", 
-        "<b>C</b>. Lower <i>h</i> (<i>h</i> = 4)",
-        "<b>D</b>. Narrower jump dist. (<i>&sigma;</i> = 0.1)", 
-        "<b>E</b>. Wider jump dist. (<i>&sigma;</i> = 1.0)", 
-        "<b>F</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 4)",
-        "<b>G</b>. Higher <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 16)", 
-        "<b>H</b>. Higher <i>k</i> (<i>k</i> = 64)", "<b>I</b>. Higher <i>k</i> (<i>k</i> = 128)"
+        "<b>A</b>. Baseline<br>", " ", 
+        "<b>B</b>. Higher <i>h</i> (<i>h</i> = 12)<br>", 
+        "<b>C</b>. Lower <i>h</i> (<i>h</i> = 4)<br>",
+        "<b>D</b>. Narrower post-infection<br>antibody dist. (<i>&sigma;</i> = 0.1)", 
+        "<b>E</b>. Wider post-infection<br>antibody dist. (<i>&sigma;</i> = 1.0)", 
+        "<b>F</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 4)<br>",
+        "<b>G</b>. Higher <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 16)<br>", 
+        "<b>H</b>. Higher <i>k</i> (<i>k</i> = 64)<br>", 
+        "<b>I</b>. Higher <i>k</i> (<i>k</i> = 128)<br>"
       )
     )
   )
@@ -58,14 +59,14 @@ plot_filler <- tibble(
   model_label = factor(
     " ",
     levels = c(
-      "<b>A</b>. Baseline", " ", 
-      "<b>B</b>. Higher <i>h</i> (<i>h</i> = 12)", 
-      "<b>C</b>. Lower <i>h</i> (<i>h</i> = 4)",
-      "<b>D</b>. Narrower jump dist. (<i>&sigma;</i> = 0.1)", 
-      "<b>E</b>. Wider jump dist. (<i>&sigma;</i> = 1.0)", 
-      "<b>F</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 4)",
-      "<b>G</b>. Higher <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 16)", 
-      "<b>H</b>. Higher <i>k</i> (<i>k</i> = 64)", "<b>I</b>. Higher <i>k</i> (<i>k</i> = 128)"
+      "<b>A</b>. Baseline<br>", " ", 
+      "<b>B</b>. Higher <i>h</i> (<i>h</i> = 12)<br>", 
+      "<b>C</b>. Lower <i>h</i> (<i>h</i> = 4)<br>",
+      "<b>D</b>. Narrower post-infection<br>antibody dist. (<i>&sigma;</i> = 0.1)", 
+      "<b>E</b>. Wider post-infection<br>antibody dist. (<i>&sigma;</i> = 1.0)", 
+      "<b>F</b>. Lower <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 4)<br>",
+      "<b>G</b>. Higher <i>c</i><sub>mid</sub> (<i>c</i><sub>mid</sub> = 16)<br>", 
+      "<b>H</b>. Higher <i>k</i> (<i>k</i> = 64)", "<b>I</b>. Higher <i>k</i> (<i>k</i> = 128)<br>"
     )
   )
 )
